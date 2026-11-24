@@ -31,3 +31,20 @@ Require strong, unique credentials and modern authentication protections; disabl
 - [MITRE ATT&CK: Initial Access](https://attack.mitre.org/tactics/TA0001/)
 - [MITRE ATT&CK: Valid Accounts](https://attack.mitre.org/techniques/T1078/)
 - [Microsoft: Security guidance for NTLM](https://learn.microsoft.com/windows-server/security/kerberos/ntlm-overview)
+
+## Common entry conditions
+
+| Entry condition | What it means | Important limitation |
+| --- | --- | --- |
+| Weak or reused credential | A real account secret is accepted by an authentication service | Successful authentication grants only that account's configured rights |
+| Kerberos account setting | A response is available for an account with an unsafe authentication setting | Offline password guessing succeeds only if the secret is recoverable |
+| Relayable authentication | An authentication exchange can be reused by an inadequately protected service | A trigger, network path, and vulnerable destination must all align |
+| Vulnerable software | A specific product/build has a security flaw | Exposure depends on version, patch state, configuration, and vendor-defined prerequisites |
+
+## Validate the foothold safely
+
+Define what counts as success before testing: for example, confirmation that an approved test identity authenticates to a designated lab service. Do not equate failed logons with proof that no risk exists, or a successful low-privilege logon with administrative compromise. Use designated test accounts, agreed rate and lockout limits, and a rollback contact for any authentication test. Preserve timestamps and source-host context so the blue team can correlate the event.
+
+## Evidence to retain
+
+Record the account or service involved, the affected setting or patch level, the source and destination, the observed result, and whether state changed. Do not retain reusable passwords, hashes, tickets, or tokens in ordinary reports. If a credential is exposed in an authorized test, handle it as a secret and coordinate rotation with the owner.

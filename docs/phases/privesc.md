@@ -28,3 +28,20 @@ Continuously review effective ACLs on privileged users, groups, computers, GPOs,
 - [MITRE ATT&CK: Privilege Escalation](https://attack.mitre.org/tactics/TA0004/)
 - [Microsoft: Active Directory Certificate Services overview](https://learn.microsoft.com/windows-server/identity/ad-cs/active-directory-certificate-services-overview)
 - [SpecterOps: Certified Pre-Owned](https://specterops.io/wp-content/uploads/sites/3/2022/06/Certified_Pre-Owned.pdf)
+
+## Validate every edge
+
+| Check | Question |
+| --- | --- |
+| Starting identity | Which exact principal and current session are in scope? |
+| Effective permission | Does that principal have the required right after inheritance and nested-group membership are resolved? |
+| Target state | Is the affected ACL, policy, delegation setting, template, or software version actually present? |
+| Reachability | Can the approved test system reach the target service under the rules of engagement? |
+| Resulting authority | What identity or action would the path provide, and what can that identity actually access? |
+| Operational safety | Could validation alter directory state, issue a credential, disrupt a service, or affect users? |
+
+## Findings versus confirmed impact
+
+Report the complete prerequisite chain and the evidence for each link. A static graph or template scanner may over-approximate reachable paths because it cannot always account for current group membership, CA policy, network restrictions, or service-side authorization. Use a non-destructive validation where possible; any state-changing proof should be explicitly approved, isolated, reversible, and coordinated with the system owner.
+
+Prioritize repairs at the earliest shared control in multiple paths: overly broad object write rights, weak enrollment policy, unnecessary delegation, unpatched domain controllers, or excessive administrative access. After remediation, recalculate the path and confirm dependent services still function.

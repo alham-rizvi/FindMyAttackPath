@@ -29,3 +29,18 @@ Protect and monitor replication permissions, domain-controller memory and config
 - [MITRE ATT&CK: Persistence](https://attack.mitre.org/tactics/TA0003/)
 - [MITRE ATT&CK: Steal or Forge Kerberos Tickets](https://attack.mitre.org/techniques/T1558/)
 - [Microsoft: AD forest recovery guide](https://learn.microsoft.com/windows-server/identity/ad-ds/manage/forest-recovery-guide/ad-forest-recovery-guide)
+
+## Persistence artifact classes
+
+| Artifact class | Examples | Recovery focus |
+| --- | --- | --- |
+| Directory state | Group membership, ACLs, SID history, delegation, rogue directory registrations | Compare with approved baselines and audit records; remove unauthorized changes |
+| Authentication keys | krbtgt or service-account secrets, CA private keys, trust secrets | Rotate or revoke using a dependency-aware vendor procedure |
+| Host state | Modified authentication components, services, WMI subscriptions, scheduled policy | Preserve evidence, rebuild or restore trusted systems where needed |
+| Issued credentials | Certificates, Kerberos tickets, cloud sessions | Revoke or expire artifacts and review relying systems |
+
+## Recovery sequence
+
+Contain the affected identity and systems, preserve forensic evidence, identify all persistence paths, and coordinate key or credential rotation with service owners. Remove only confirmed unauthorized changes; careless deletion of replication, CA, or policy state can interrupt legitimate operations. Verify recovery from a known-good baseline and continue monitoring for reappearance or use of old credentials.
+
+For domain-wide key exposure, follow Microsoft's forest-recovery and key-reset guidance exactly. Do not assume that one password reset invalidates all existing sessions, certificates, or tickets. Document which secrets were rotated, which systems received the change, and what evidence demonstrates that the old path is no longer usable.

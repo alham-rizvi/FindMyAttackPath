@@ -32,3 +32,19 @@ Establish baselines for directory-query volume and source hosts; restrict sensit
 - [MITRE ATT&CK: Account Discovery](https://attack.mitre.org/techniques/T1087/)
 - [MITRE ATT&CK: Permission Groups Discovery](https://attack.mitre.org/techniques/T1069/)
 - [Microsoft: Active Directory Domain Services overview](https://learn.microsoft.com/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview)
+
+## What is being mapped
+
+| Area | Examples of directory or host data | Why it matters |
+| --- | --- | --- |
+| Identity | Users, service identities, groups, account state | Reveals ownership, privilege, and authentication posture |
+| Systems | Computers, operating systems, server roles | Helps define trust boundaries and patch exposure |
+| Authorization | Group nesting, ACLs, delegated rights, GPO links | Shows how control of one object might affect another |
+| Authentication services | SPNs, certificate templates, CAs, trusts | Identifies dependencies and configuration that deserve review |
+| Runtime state | Sessions, shares, remote services | Helps assess where an identity is currently used and where data is exposed |
+
+## Interpreting findings
+
+Separate **observed fact** from **hypothesis**. Seeing a writable-looking ACL, a published certificate template, or an active privileged session does not prove that the assessed identity can use it, that a service will accept the resulting authentication, or that a route is reachable from the authorized test network. Record the source, collection time, identity used, and the permissions or settings that need validation.
+
+Prioritize findings by the sensitivity of the affected object, the effective access of the assessed principal, the number of independent conditions required, and the likely operational impact of validation. Prefer read-only confirmation and ask the system owner before testing anything that could lock accounts, alter policy, or expose secrets.

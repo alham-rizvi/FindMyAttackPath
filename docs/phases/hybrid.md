@@ -28,3 +28,19 @@ Inventory and restrict synchronization service identities, protect hybrid-joined
 - [Microsoft: How Microsoft Entra Connect works](https://learn.microsoft.com/entra/identity/hybrid/connect/whatis-azure-ad-connect)
 - [Microsoft: Primary Refresh Tokens](https://learn.microsoft.com/entra/identity/devices/concept-primary-refresh-token)
 - [FIDO Alliance: Passkeys](https://fidoalliance.org/passkeys/)
+
+## Boundaries to assess
+
+| Boundary | Relevant questions |
+| --- | --- |
+| Forest or domain trust | Which identities can authenticate across it? Are filtering and selective authentication configured as intended? |
+| Directory synchronization | Which objects and attributes are synchronized, and what roles does the sync identity hold in each environment? |
+| Device registration | Is the endpoint managed, compliant, and bound to the identity that is signing in? |
+| Session and token | What is the artifact's scope and lifetime, and can it be revoked centrally? |
+| Cloud authorization | Which tenant roles, application permissions, and Conditional Access policies apply? |
+
+## Coordinated response
+
+Treat an on-premises and cloud incident as one identity incident when the environments share credentials, devices, synchronization, or trust. Preserve relevant sign-in and audit logs, contain the compromised endpoint and sync identity, revoke sessions where appropriate, and review both directory and tenant role changes. Password rotation alone may not revoke an active session or repair a compromised device.
+
+Use the tenant's documented recovery process and involve both AD and cloud administrators. After containment, verify device registration, synchronization health, authentication methods, recovery contacts, application credentials, and cross-forest trust settings before returning the identity to normal use.

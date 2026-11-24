@@ -5,24 +5,134 @@ label: "NTLM reflection"
 phase: "initial"
 tools: ["impacket", "petitpotam"]
 cve: "cve-2025-33073"
-detect: "Loopback-pattern 4624 type 3; anomalous local relay traffic."
+detect: "Correlate SMB access-control, authentication, network-logon, endpoint, and patch telemetry; do not treat loopback or relay events as proof of CVE-2025-33073."
 mitre: "T1557.001"
 tag: "new"
 ---
-NTLM reflection is a relay scenario in which a host's authentication exchange is redirected back to a local service that may accept it under unsafe conditions.
 
-## Prerequisite
-The relevant local service and protocol protections are misconfigured or vulnerable.
+# NTLM reflection
 
-## How it works
+This page discusses CVE-2025-33073 only at the level supported by the public summary. NVD describes it as improper access control in Windows SMB that could allow an authorized attacker to elevate privileges over a network. It does not, without a Microsoft advisory or direct technical evidence, establish the reflection, loopback, or relay mechanics sometimes associated with related SMB hypotheses.
 
-The technique relies on an authentication exchange being accepted by a service that should not trust that reflected identity. Feasibility varies by Windows version, patch level, service, and protocol protections; the presence of NTLM alone does not establish that a host is vulnerable.
+## CVE summary versus technique hypothesis
 
-## Defensive checks
+| Source | What is known |
+| --- | --- |
+| NVD | CVE-2025-33073 is described as improper access control in Windows SMB allowing an authorized attacker to elevate privileges over a network. |
+| Microsoft advisory | Use the MSRC advisory below for affected Windows versions, severity, prerequisites, mitigations, and implementation detail. |
+| This page | It treats NTLM reflection as a separate, evidence-limited hypothesis: an SMB authorization or authentication issue may have to do with identity or network access, but reflection/relay behavior must be proved independently. |
 
-Apply current security updates, require SMB signing, enable Extended Protection or channel binding for applicable services, and reduce NTLM use. Correlate same-host or loopback authentication patterns with service activity and patch level. Validate exposure using vendor guidance in a controlled environment.
+> **Authorized assessment only:** This guide describes assessment concepts and defensive validation for controlled, explicitly authorized environments. It does not provide target commands, exploit recipes, credential-guessing parameters, or step-by-step attack instructions.
+
+## Relevant objects and normal purpose
+
+Windows SMB, NTLMSSP or other SMB authentication, SMB share/session authorization, network access, service accounts, Windows security-update state, and endpoint/network audit data.
+
+Normally, these components perform directory lookup, authentication, authorization, certificate issuance, remote administration, or credential protection. A risk hypothesis should preserve this normal use and identify the narrow departure that would create unintended control.
+
+| Review item | Normal role | What to validate |
+| --- | --- | --- |
+| Identity or account | Represents the requesting, delegated, or target security principal | Scope, group membership, SID, account state, MFA or authentication policy, and administrative tier |
+| Directory or policy object | Stores configuration and authorization | Object type, attributes, ACL/owner, replication state, and documented business purpose |
+| Protocol or service | Moves authentication or management information | Endpoint, signing/encryption, channel binding, version, patch state, and whether it is required |
+| Resulting credential or ticket | Authorizes a bounded operation | Lifetime, purpose/EKU/SPN, issuer or KDC, target audience, and revocation or rotation behavior |
+
+## Prerequisites and scope
+
+A Windows SMB environment within the CVE's affected version range according to the authoritative Microsoft advisory, plus an authorized network test position and a controlled lab or test identity.
+
+**Typical prerequisites**
+
+- Written authorization covering the identities, hosts, domains or tenants, data, and time window.
+- A scoped account or lab artifact that exercises the relevant object or protocol without affecting unrelated systems.
+- Visibility into directory state, authentication, endpoint, and audit telemetry sufficient to distinguish the hypothesis from normal administration.
+- A recovery or rollback owner and approval for any configuration change or cleanup.
+
+**Prerequisites should be confirmed rather than inferred.** Exact OS build and patch state, whether the Microsoft advisory applies, network position, SMB reachability and authorization, account rights, signing and authentication policy, and approved test scope.
+
+## Conceptual attack chain
+
+```mermaid
+flowchart LR
+  A[Authorized identity or assessment context] --> B[Establish the relevant object and protocol]
+  B --> C[Identify a configuration or permission mismatch]
+  C --> D{Can the mismatch authorize unintended identity or action?}
+  D -->|No| E[Record as non-impacting or configuration-dependent]
+  D -->|Yes| F[Validate in a lab or approved recovery scope]
+  F --> G[Measure effective access and telemetry]
+  G --> H[Contain, remediate, and retest]
+```
+
+The chain is conceptual: discovery establishes the object and normal trust relationship; a controlled validation establishes whether configuration and effective access preserve that trust; and impact is measured by the action or identity that a permitted principal can actually obtain. Stop at a negative or inconclusive result, and do not attempt to expand scope based on a tool label alone.
+
+## Conditions and limits affecting impact
+
+Reflection or relay is not a generic property of CVE-2025-33073. The CVE summary establishes improper SMB access control and network privilege elevation at a high level; any specific loopback or NTLM reflection mechanism requires separate vendor/technical substantiation.
+
+Other conditions frequently alter the result:
+
+- **Patch and version:** Verify the exact OS, application, DC, CA, Entra, or protocol implementation. Vendor changes and security updates may remove a historical condition.
+- **Scope:** Domain, forest, tenant, application, device, network segment, and resource authorization can narrow or broaden the effect.
+- **Identity state:** Disabled accounts, expired credentials, Protected Users, authentication policies, account restrictions, and MFA may invalidate a theoretical path.
+- **Cryptographic state:** Ticket/credential lifetime, key rotation, revocation, trust chains, certificates, and key protection are separate from directory permissions.
+- **Telemetry completeness:** Missing or delayed logs do not prove absence; correlate identity, directory, endpoint, network, and application records.
+
+## Defensive validation
+
+Use independent checks rather than relying on a single alert or tool result:
+
+1. Confirm that the object or protocol is present, required, and owned by a documented business role.
+2. Resolve effective ACL, group, role, device, tenant, or service permissions, including inherited and nested rights.
+3. Verify the configuration against the exact host, DC, CA, application, or tenant version in scope.
+4. Attempt only approved read-only or lab-safe validation. Compare the observed identity and resulting privilege with policy.
+5. Correlate the result with audit, authentication, directory, endpoint, network, and application telemetry.
+
+The existing page-level telemetry note is: **Loopback-pattern 4624 type 3; anomalous local relay traffic.** It is legacy graph metadata and is not evidence for CVE-2025-33073. It should not be used as the CVE detection rule. Correlate SMB authorization, network-logon, endpoint, and patch state instead.
+
+### Useful telemetry
+
+| Source | Examples to correlate |
+| --- | --- |
+| Directory or identity audit | Object reads or writes, ACL/attribute changes, role changes, trust or credential configuration, and successful/failed sign-ins |
+| Authentication/KDC or cloud sign-in | Account and source, protocol, KDC/DC or tenant, target SPN/resource, certificate or MFA method, and policy evaluation |
+| Endpoint and process telemetry | Security process access, service or WMI activity, scheduled tasks, registry/hive access, remote-management sessions, and memory/integrity alerts |
+| Network and DNS | SMB/RPC/LDAP/Kerberos/NTLM/HTTP/DNS flows, loopback or relay patterns, unusual source relationships, and destination endpoints |
+| Certificate or key infrastructure | Request and issuance records, template use, key use, CRL/OCSP state, enrollment changes, and relying-party authentication failures |
+
+Baseline the source, host, account, time, and expected administrative workflow before calling a sequence anomalous. A one-event match can be noisy or version-dependent.
+
+## Mitigation and recovery
+
+- Apply least privilege to directory objects, service identities, hosts, delegation relationships, CA templates, cloud roles, and local administrator groups.
+- Keep systems supported and patched; use the vendor’s current security guidance and test mitigations for compatibility before broad deployment.
+- Enforce strong authentication and administrative separation, including tiered administration, MFA/Conditional Access, Protected Users or equivalent policies, and credential isolation where appropriate.
+- Restrict protocol and management surfaces by firewall, signing/channel binding, endpoint policy, and network segmentation. Remove unused templates, services, shares, subscriptions, or trust features.
+- Centralize and retain identity, directory, endpoint, CA, DNS, and cloud logs. Alert on correlated state changes and abnormal effective access rather than isolated event IDs.
+
+For suspected compromise, preserve evidence, isolate affected hosts or identities, revoke sessions and relevant credentials, rotate only with an approved incident plan, and verify replication and cache propagation. Some secrets require two-stage rotation or cross-domain/tenant cleanup because old keys, tickets, or credentials may remain effective until they expire or are replaced. Reassess with a clean or restricted test identity after recovery.
+
+## Tools and validation discipline
+
+The graph metadata identifies ["impacket", "petitpotam"]. These are dual-use tools; use only read-only or lab-safe workflows for the authorized scope.
+
+No commands or payloads are provided on this page. Prefer vendor-supported inventories, directory queries in read-only mode, and purpose-built lab replicas for proof. Where the graph marks a tool, confirm that its collection mode is authorized and interpret its findings against live configuration.
 
 ## References
 
-- [MITRE ATT&CK: LLMNR/NBT-NS Poisoning and SMB Relay](https://attack.mitre.org/techniques/T1557/001/)
-- [Microsoft Security Response Center](https://msrc.microsoft.com/)
+- [MITRE ATT&CK: T1557.001](https://attack.mitre.org/)
+
+- [NVD: CVE-2025-33073](https://nvd.nist.gov/vuln/detail/CVE-2025-33073)
+- [Microsoft Security Update Guide: CVE-2025-33073](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2025-33073)
+- [Microsoft: Kerberos authentication overview](https://learn.microsoft.com/en-us/windows-server/security/kerberos/kerberos-authentication-overview)
+- [MITRE ATT&CK: Steal or Forge Kerberos Tickets](https://attack.mitre.org/techniques/T1558/)
+- [MITRE ATT&CK mapping](https://attack.mitre.org/techniques/1557.001/)
+
+## Reporting checklist
+
+- Exact environment, OS/DC/CA/tenant versions, domain or tenant scope, and assessment window.
+- Objects and effective principals involved, with object distinguished names or resource IDs.
+- Configuration values and the normal business purpose for each permission or protocol.
+- Preconditions that were confirmed, rejected, or not testable.
+- Observed impact, effective identity or privilege, and affected resource scope.
+- Relevant directory, authentication, endpoint, network, certificate, and cloud telemetry.
+- Remediation owner, rollback/rotation requirements, and verification criteria.
