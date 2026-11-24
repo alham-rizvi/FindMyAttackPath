@@ -19,7 +19,7 @@ The DNSAdmins group is intended to delegate administration of Windows DNS. On a 
 ## Conceptual path
 
 ```mermaid
-flowchart LR
+flowchart TD
   A[Principal has DNS administration rights] --> B[Rights reach a DNS service configuration boundary]
   B --> C[DNS Server service consumes the changed configuration]
   C --> D[Host impact depends on service identity and safeguards]

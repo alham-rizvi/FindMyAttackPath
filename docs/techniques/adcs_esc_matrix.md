@@ -12,14 +12,14 @@ tag: null
 
 # AD CS ESC taxonomy overview
 
-The ESC labels are a commonly used taxonomy for Active Directory Certificate Services (AD CS) misconfiguration and certificate-trust paths. This page summarizes ESC1–ESC16, covering template policy, directory permissions, CA permissions, enrollment endpoints, private-key protection, and certificate-to-account mapping. Taxonomy versions can add or revise labels; a scanner label is a lead to validate—not proof of issuance, impersonation, or privilege.
+The ESC labels are a commonly used taxonomy for Active Directory Certificate Services (AD CS) misconfiguration and certificate-trust paths. This page summarizes ESC1–ESC17, covering template policy, directory permissions, CA permissions, enrollment endpoints, private-key protection, and certificate-to-account mapping. Taxonomy versions can add or revise labels; a scanner label is a lead to validate—not proof of issuance, impersonation, or privilege.
 
 > **Authorized assessment only:** Use these categories to structure read-only review and defensive validation. Do not request certificates, relay authentication, alter CA/template state, or test real identities unless the owner has explicitly approved that exact action.
 
 ## Assessment path
 
 ```mermaid
-flowchart LR
+flowchart TD
   A[Inventory enterprise CAs and templates] --> B[Review effective directory and CA permissions]
   B --> C[Check enrollment policy and identity fields]
   C --> D[Review endpoint protections and certificate mapping]
@@ -49,8 +49,9 @@ flowchart LR
 | ESC14 | Explicit certificate-to-account mappings are weak or controlled by principals that should not manage identity bindings. | Are `altSecurityIdentities` mappings strong, uniquely bound, and writable only by trusted identity administrators? |
 | ESC15 | Legacy schema-version-1 template behavior may allow an application policy to be supplied in a way that changes certificate purpose. | Are legacy templates still needed, and can they be replaced with current schema and constrained application policies? |
 | ESC16 | CA configuration suppresses the security extension used for strong certificate-to-account binding. | Is the CA security extension enabled, and are certificate mapping and compatibility exceptions reviewed across all issuing CAs? |
+| [ESC17](adcs_esc17.md) | A template combines the Server Authentication purpose with requester-influenced subject/SAN fields, letting a low-privileged enrollee obtain a valid server identity certificate for an arbitrary internal hostname. | Does any Server Authentication-capable template allow enrollee-supplied subject, and is enrollment on those templates restricted to the specific servers/services that need it? |
 
-These are screening categories, not a single exploit chain. Applicability depends on Windows/CA versions, effective permissions, template publication, approval and signature policy, network reachability, certificate trust, mapping behavior, and the relying party. The current Certipy wiki index also lists ESC17; its definition is not included here because it was not independently verified for this update. Confirm the current taxonomy and behavior against vendor documentation and a controlled lab before treating this matrix as exhaustive.
+These are screening categories, not a single exploit chain. Applicability depends on Windows/CA versions, effective permissions, template publication, approval and signature policy, network reachability, certificate trust, mapping behavior, and the relying party. ESC17 was added to the public taxonomy in 2026 (proposed by the Digitrace team, merged into the Certipy wiki); confirm the current taxonomy and behavior against vendor documentation and a controlled lab before treating this matrix as exhaustive, since the list may continue to grow.
 
 ## Safe validation and reporting
 

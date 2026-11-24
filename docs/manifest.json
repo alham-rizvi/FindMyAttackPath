@@ -668,5 +668,15 @@
     "id": "passkey_replay",
     "type": "technique",
     "path": "docs/techniques/passkey_replay.md"
+  },
+  {
+    "id": "sites_acl_abuse",
+    "type": "technique",
+    "path": "docs/techniques/sites_acl_abuse.md"
+  },
+  {
+    "id": "adcs_esc17",
+    "type": "technique",
+    "path": "docs/techniques/adcs_esc17.md"
   }
 ]

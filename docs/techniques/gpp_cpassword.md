@@ -19,7 +19,7 @@ Older Group Policy Preferences could store a `cpassword` value in policy XML und
 ## Conceptual path
 
 ```mermaid
-flowchart LR
+flowchart TD
   A[Legacy preference contains cpassword] --> B[Policy file is readable from SYSVOL]
   B --> C[Secret is recoverable from the stored value]
   C --> D[Account may still be active or reused]

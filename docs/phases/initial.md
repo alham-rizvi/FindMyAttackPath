@@ -12,7 +12,7 @@ The important transition is from observation to an authenticated identity, sessi
 ## Typical progression
 
 ```mermaid
-flowchart LR
+flowchart TD
   A[External or unauthenticated visibility] --> B{Weak credential or unsafe auth configuration?}
   B -->|No| C[No foothold from this path]
   B -->|Yes| D[Valid identity or relayed authentication]

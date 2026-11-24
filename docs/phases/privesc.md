@@ -10,14 +10,14 @@ Move from an existing identity to greater control by taking advantage of excessi
 Assess the effective permissions and configuration, not just group names. A finding is meaningful only when the current principal can reach the vulnerable object or service, the affected setting is active, and the resulting identity has privileges that matter. Misconfiguration-based paths and CVE-based paths have different remediation: least privilege and configuration correction versus patching, with defense-in-depth for both.
 
 ```mermaid
-flowchart LR
+flowchart TD
   A[Existing principal] --> B[Excessive right or vulnerable service]
   B --> C[Change trust, policy, delegation, or certificate state]
   C --> D[Authenticate as or act for a higher-privilege identity]
   D --> E[Validate scope and contain the path]
 ```
 
-The graph includes ACL and GPO abuse, DNSAdmins, machine-account creation, delegation variants, Shadow Credentials, AD CS ESC1–ESC16, and named vulnerabilities such as noPac and ResetNightmare.
+The graph includes ACL and GPO abuse, DNSAdmins, machine-account creation, delegation variants, Shadow Credentials, AD Sites & Services ACL abuse, AD CS ESC1–ESC17, and named vulnerabilities such as noPac and ResetNightmare.
 
 ## Defensive view
 

@@ -37,7 +37,7 @@ file directly (`file://`) will fail with a CORS error. Any static server works.
 ## How it's wired together
 
 ```mermaid
-flowchart LR
+flowchart TD
   subgraph docs["docs folder, the source of truth"]
     MD["markdown files: frontmatter plus body"]
     MAN["manifest.json"]
@@ -65,7 +65,7 @@ also have a full-size viewer with SVG and source downloads.
 ## The kill chain the graph is built around
 
 ```mermaid
-flowchart LR
+flowchart TD
   recon["Recon and Enumeration"] --> initial["Initial Access and Foothold"]
   initial --> cred["Credential Access"]
   cred --> privesc["Domain Privilege Escalation"]

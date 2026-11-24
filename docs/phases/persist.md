@@ -10,7 +10,7 @@ Maintain access after the original foothold is removed, often by changing direct
 An incident response must identify what was changed and which secrets may have been exposed. Ticket-forging material, service keys, certificates, SID history, replication rights, rogue directory registrations, and modified authentication components call for different containment steps. Rebuilding trust in a domain can require coordinated key rotation and staged validation, not a single account reset.
 
 ```mermaid
-flowchart LR
+flowchart TD
   A[Privileged access or secret] --> B[Create alternate trust or authentication path]
   B --> C[Access survives ordinary credential change]
   C --> D[Detect directory, certificate, or host change]

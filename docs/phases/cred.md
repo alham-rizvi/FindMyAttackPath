@@ -10,7 +10,7 @@ Obtain or recover authentication material that can be used to impersonate an ide
 Credential exposure usually follows access to a place where secrets are stored or used: process memory, a registry hive, a backup or database, a user's profile, a service account, or an authentication exchange. Some techniques collect material for offline analysis; others require privileged access to a domain controller or endpoint. Password-derived material must be handled as a secret even when it is not directly readable.
 
 ```mermaid
-flowchart LR
+flowchart TD
   A[Access to host, account, or directory data] --> B[Secret-bearing store or protocol]
   B --> C[Credential, hash, key, or ticket exposed]
   C --> D[Validate and scope the identity]

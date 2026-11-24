@@ -16,6 +16,41 @@ DCSync is the use of Microsoft Directory Replication Service Remote Protocol (MS
 
 > **Authorized assessment only:** This guide is for controlled labs and explicitly authorized assessments. It contains no commands, exploit procedure or real-target instructions.
 
+## Beginner-friendly walkthrough
+
+**In plain terms:** domain controllers normally replicate password data *to each other* using a special replication protocol — it's how a second DC stays in sync with the first. DCSync abuses the fact that the protocol itself doesn't check "are you actually a domain controller," only "do you hold the replication right." An account with that right can pretend to be a DC for a moment and ask the real DC to replicate a chosen account's secrets straight to it.
+
+**Objects abused / affected**
+
+| Object | Normal purpose | What this technique touches |
+| --- | --- | --- |
+| `DS-Replication-Get-Changes` / `-All` extended rights | Let real DCs replicate directory data to each other | If granted to a non-DC principal, that principal can request the same replication |
+| `krbtgt` account secret | Signs every Kerberos TGT in the domain | The single highest-value target: recovering it enables [golden tickets](golden.md) |
+| Any user/computer account secret | Normal credential | Can be requested individually without touching that account's live session |
+
+```mermaid
+flowchart TD
+  A["Principal holds replication rights (often via ACL abuse)"] --> B["Send a replication request to a real DC"]
+  B --> C["DC treats the request as legitimate inter-DC sync"]
+  C --> D["Password hash / secret for the chosen account is returned"]
+  D --> E["krbtgt secret recovered → domain-wide persistence (golden ticket)"]
+```
+
+**Stages, and which tool typically covers each one**
+
+1. **Get the right** — this almost always follows [ACL abuse](acl_abuse.md) or an existing Domain Admin-equivalent membership; DCSync is rarely the first step in a chain.
+2. **Request the secret** — `Mimikatz`'s `lsadump` functionality and `Impacket`'s replication-focused script both speak MS-DRSR well enough to make this request look like ordinary replication traffic.
+3. **Use the output** — a recovered `krbtgt` hash leads directly to [golden ticket](golden.md) forgery; any other recovered account hash can be used for [pass-the-hash](pth.md).
+
+Reference shape of the rights being checked for on the domain object itself (not a live query):
+
+```text
+ACE: Allow  CORP\svc-backup  DS-Replication-Get-Changes-All
+```
+
+Very few accounts legitimately need that right — real DCs already have it implicitly. Anything else holding it is worth investigating immediately.
+
+
 ## Protocol and objects
 
 MS-DRSR normally synchronizes Active Directory naming-context data among DCs over RPC. A DC replica is identified and authenticated, then requests changed objects and replication metadata.
