@@ -86,7 +86,8 @@ tool(s) that run it and, where one applies, the CVE it exploits.
 index.html              the graph — fetches docs/, falls back to the embedded snapshot
 vercel.json             pins this as a plain static deploy (no build step)
 docs/
-  manifest.json         index of every node file below
+  manifest.json         index of every graph node file below
+  README_START_HERE.md   authorized AD assessment study guide
   phases/*.md           the 7 kill-chain phases
   techniques/*.md       attack techniques, one file each
   tools/*.md            tool/repo metadata referenced by techniques
@@ -95,6 +96,10 @@ scripts/
   embed-docs.py         refreshes index.html's bundled fallback snapshot from docs/
 CONTRIBUTING.md         file format + step-by-step guide for adding a new attack vector
 ```
+
+## Starter study guide
+
+For a guided, command-free route through authorized Active Directory red-team assessment topics, see [docs/README_START_HERE.md](docs/README_START_HERE.md).
 
 ## Contributing
 

@@ -12,39 +12,33 @@ tag: "new"
 
 # Resource-Based Constrained Delegation (RBCD)
 
-Resource-Based Constrained Delegation is an ACL on a target computer that names identities allowed to obtain delegated access to that resource.
+## Concept
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+Kerberos delegation permits a service to act on behalf of a user when accessing another service. In resource-based constrained delegation, the target resource’s directory object specifies which principals may act on its behalf. The relevant security descriptor is stored in `msDS-AllowedToActOnBehalfOfOtherIdentity`.
 
-## Relevant objects and normal purpose
+RBCD is a legitimate feature, not inherently a vulnerability. Risk arises when an untrusted or overly broad principal can change the target’s delegation policy, or when an inappropriate principal is already authorized. The ability to create computer accounts—sometimes influenced by MachineAccountQuota—may be relevant in some environments, but it does not alone grant RBCD rights or guarantee an escalation path.
 
-Target computer object and `msDS-AllowedToActOnBehalfOfOtherIdentity`, controlled account, S4U2Proxy, target SPN/DNS, machine-account state and target resource ACL are relevant.
+```mermaid
+flowchart LR
+  A[Principal can alter target delegation policy] --> B[Unapproved delegate is trusted by target]
+  B --> C[Kerberos delegation may act for users to target services]
+  C --> D[Impact depends on service, user, and policy controls]
+```
 
-## Prerequisite chain
+## Prerequisites and affected objects
 
-Write/control rights to the target attribute and a controlled account usable in S4U are required. The target must accept the resulting service ticket and authorize the action.
+Assess computer and service objects with the delegation attribute set, the identities named in its security descriptor, who can modify that descriptor, and the target services and user populations involved. Review ACL inheritance, ownership, nested groups, MachineAccountQuota policy, and whether sensitive accounts are protected from delegation. Validate that each relationship has a service owner and documented business need.
 
+A writable computer object or nonzero MachineAccountQuota is not sufficient by itself to establish exploitability. Delegation protocol constraints, SPN/service coverage, account privileges, encryption support, and target configuration determine possible impact.
 
-## Impact limits and failure cases
+## Detection
 
-Attribute semantics, target OS/KDC, account type/control, machine-account policy, SPN/DNS and target ACL vary. Writing the attribute is not automatic privilege.
+Monitor Event 5136 and equivalent directory-change telemetry for changes to `msDS-AllowedToActOnBehalfOfOtherIdentity`, especially on domain controllers, servers hosting sensitive services, and other high-value computer objects. Correlate the actor, originating system, before/after security descriptor, and approved change record. Audit newly created computer accounts and changes in effective write permissions as supporting context.
 
-## Detection and validation
+## Remediation
 
-Audit 5136/4662 writes to the RBCD attribute, computer changes, S4U/4769 and target service access from unexpected identities.
+Limit write access to computer and service objects; remove unjustified delegate entries; and grant delegation only to named, managed principals for a defined service need. Set MachineAccountQuota according to organizational requirements, rather than assuming a default is safe or dangerous in isolation. Mark sensitive accounts as non-delegable where appropriate, and review unconstrained and classic constrained delegation separately.
 
-Validate an impact hypothesis by correlating the relevant identity, directory, authentication, endpoint, network or cloud telemetry for the exact host, account and time. One event ID or tool label is not proof of success.
+## Limits and related topics
 
-## Mitigation and recovery
-
-**Mitigation:** Remove broad computer-object write rights, restrict machine/delegation administration and monitor RBCD attributes.
-
-**Recovery:** Preserve evidence, isolate affected systems and identities, remove unauthorized state through approved procedures, review relevant credentials/sessions and retest in a clean lab.
-
-## References
-
-- [Microsoft: Kerberos authentication overview](https://learn.microsoft.com/windows-server/security/kerberos/kerberos-authentication-overview)
-- [Microsoft: Credential protection](https://learn.microsoft.com/windows-server/security/credentials-protection-and-management/credential-protection-and-management)
-- [Microsoft: Active Directory Domain Services](https://learn.microsoft.com/windows-server/identity/ad-ds/)
-- [Microsoft: Security auditing](https://learn.microsoft.com/windows/security/threat-protection/auditing/security-auditing-overview)
-- [MITRE ATT&CK: T1558](https://attack.mitre.org/techniques/T1558/)
+RBCD does not automatically enable impersonation to every service or arbitrary use of every identity. Validate exposure through configuration review and approved non-invasive methods. See [MachineAccountQuota](machineaccountquota.md), [constrained delegation](constrained_deleg.md), and [ACL abuse](acl_abuse.md).

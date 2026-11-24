@@ -12,72 +12,33 @@ tag: null
 
 # AS-REP roasting
 
-Kerberos pre-authentication normally requires the account key before the KDC issues an AS-REP. The AS-REP roasting hypothesis applies only to accounts configured not to require it.
+## Concept
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+Kerberos pre-authentication normally requires a client to demonstrate knowledge of its secret before the Key Distribution Center (KDC) returns the account’s initial authentication response. An account configured with the `DONT_REQ_PREAUTH` setting is an exception: the KDC can return an AS-REP without that proof. Part of the response is protected using key material derived from the account’s password, so an observer may be able to test password guesses offline.
 
-## Beginner-friendly walkthrough
-
-**In plain terms:** normally, logging into a Kerberos domain requires you to first "prove" who you are with a password-derived key before the server will hand you a ticket. A small number of accounts are configured to skip that proof step. For those accounts, anyone can simply ask for a ticket, and the response is encrypted with a key derived from that account's password — which can then be checked offline against a wordlist, exactly like checking a lock against a set of keys at home instead of at the door.
-
-**Objects abused / affected**
-
-| Object | Normal purpose | What this technique touches |
-| --- | --- | --- |
-| `userAccountControl` flag `DONT_REQ_PREAUTH` | Legacy compatibility setting on some accounts | Its presence is what makes an account "roastable" at all |
-| AS-REP (initial Kerberos reply) | Normally only issued after proof of the password | Issued without proof for flagged accounts, encrypted with that account's key |
-| Account password | Authentication secret | What an attacker is trying to recover via offline guessing |
+This is distinct from Kerberoasting: it concerns the initial AS exchange and accounts that do not require pre-authentication, rather than service tickets associated with SPNs. It does not mean the password is disclosed in plaintext, nor that every such account can be cracked. Success depends on password strength and available guessing resources.
 
 ```mermaid
-flowchart TD
-  A["Enumerate accounts with pre-auth disabled"] --> B["Request AS-REP for each one, no proof required"]
-  B --> C["Capture the encrypted AS-REP blob"]
-  C --> D["Offline guessing against the blob"]
-  D --> E["If a guess decrypts correctly: that account's password is known"]
+flowchart LR
+  A[In-scope account with pre-authentication disabled] --> B[KDC can return AS-REP without prior proof]
+  B --> C[Response includes password-derived protection]
+  C --> D[Offline password-guessing exposure]
 ```
 
-**Stages, and which tool typically covers each one**
+## Prerequisites and affected objects
 
-1. **Find the candidates** — `PowerView`/LDAP recon identifies accounts with `DONT_REQ_PREAUTH` set (surfaced in the recon phase above).
-2. **Request the material** — `Rubeus` (Windows) or `Impacket`'s relevant script (cross-platform) requests the AS-REP for each candidate account; no valid credential is required to do this for a flagged account.
-3. **Offline recovery** — `hashcat` runs the actual guessing work against the captured material, completely offline and with no further contact to the domain.
+A review needs visibility into user-account flags and the organization’s documented exceptions. A vulnerable configuration is an account that does not require Kerberos pre-authentication, particularly if it is privileged, reused, service-related, or protected by a weak or old password. Assessment should establish the flag, business justification, account owner, privileges, password-management method, and whether the account remains active.
 
-Reference shape of the flag being checked for (not a live query):
+The presence of the setting alone does not establish recoverability or account compromise. Offline guessing creates no repeated online password attempts, so ordinary lockout controls do not prevent that phase; however, a strong independently generated secret can make guessing infeasible.
 
-```text
-userAccountControl: 0x410200   # includes DONT_REQ_PREAUTH
-```
+## Detection
 
-The fix is simple and permanent: clear that flag unless there is a specific, documented legacy reason for it, and use a long random password or a managed service account instead.
+Review Event 4768 (TGT request) and its pre-authentication-related fields, looking for requests associated with accounts configured to bypass pre-authentication and for unusual request patterns or sources. Interpret fields with the relevant Windows version and event schema; a simple absent-value rule can be misleading. Correlate with account inventory and expected client behavior.
 
+## Remediation
 
-## Relevant objects and normal purpose
+Enable Kerberos pre-authentication unless a documented compatibility requirement justifies an exception. For exceptions, use long, random, uniquely managed passwords; minimize privileges; monitor use; and establish an owner and review date. Disable or retire unnecessary accounts and investigate any evidence that password material may have been recovered. See [Kerberoasting](kerberoast.md) for a related but distinct Kerberos exposure.
 
-The relevant account flags (`DONT_REQ_PREAUTH`/`UF_DONT_REQUIRE_PREAUTH`), sAMAccountName/UPN, supported ticket encryption types, KDC, AS-REP, account password and account privilege/reuse are the core evidence.
+## Limits
 
-## Prerequisite chain
-
-An account with pre-authentication disabled must be visible to the KDC and return AS-REP material. Offline recovery depends on password strength and ticket encryption; no password guessing is described here.
-
-
-## Impact limits and failure cases
-
-A weak or reused password has greater impact, but a strong password or unprivileged account may yield no practical privilege. Account lockout does not prevent offline verification after AS-REP material exists.
-
-## Detection and validation
-
-Review 4768 AS exchanges and pre-authentication failures, account UAC/flag changes, and later use of the account. Baseline normal legacy accounts and correlate 4768 with the KDC, source and target account.
-
-Validate an impact hypothesis by correlating the relevant identity, directory, authentication, endpoint, network or cloud telemetry for the exact host, account and time. One event ID or tool label is not proof of success.
-
-## Mitigation and recovery
-
-**Mitigation:** Remove pre-authentication exemptions except for documented compatibility, enforce strong unique passwords and AES as compatible, restrict account privilege, and rotate exposed secrets.
-
-**Recovery:** Preserve evidence, isolate affected systems and identities, remove unauthorized state through approved procedures, review relevant credentials/sessions and retest in a clean lab.
-
-## References
-
-- [Microsoft: Kerberos authentication overview](https://learn.microsoft.com/windows-server/security/kerberos/kerberos-authentication-overview)
-- [Microsoft: Credential protection](https://learn.microsoft.com/windows-server/security/credentials-protection-and-management/credential-protection-and-management)
-- [MITRE ATT&CK: T1558.004](https://attack.mitre.org/techniques/T1558/004/)
+This page describes risk assessment and defensive validation only. It does not provide a workflow for collecting AS-REP material or attempting password recovery. Results from an authorized review should be reported as configuration exposure unless evidence supports a stronger conclusion.
