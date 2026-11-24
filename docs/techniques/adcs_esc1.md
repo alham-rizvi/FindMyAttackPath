@@ -12,117 +12,40 @@ tag: null
 
 # ADCS ESC1
 
-AD CS certificate templates can permit enrollment and can embed identity and usage information in issued certificates.
+ESC1 is an AD CS misconfiguration class in which template enrollment and name/EKU policy permit a principal to obtain an authentication-capable certificate representing an identity outside the requester’s normal AD identity.
 
-> **Authorized assessment only:** This guide describes assessment concepts and defensive validation for controlled, explicitly authorized environments. It does not provide target commands, exploit recipes, credential-guessing parameters, or step-by-step attack instructions.
+> **Authorized assessment only:** This guide is for controlled labs and explicitly authorized reviews. It provides no issuance commands, exploit recipes or credential-recovery procedure.
 
-## Relevant objects and normal purpose
+## AD CS objects and normal purpose
 
-Enterprise CAs, template objects, EKUs, subject/SAN controls, issuance policies, and PKI trust are central.
+An enterprise CA (`pKIEnrollmentService`) publishes `pKICertificateTemplate` objects. For an ESC1 hypothesis correlate `nTSecurityDescriptor`, `msPKI-Certificate-Name-Flag`, `msPKI-Enrollment-Flag`, `msPKI-RA-Signature`, `pKIExtendedKeyUsage`, application policies, validity and key settings. The normal purpose is controlled enrollment for a documented identity and certificate use.
 
-Normally, these components perform directory lookup, authentication, authorization, certificate issuance, remote administration, or credential protection. A risk hypothesis should preserve this normal use and identify the narrow departure that would create unintended control.
+## Prerequisite chain
 
-| Review item | Normal role | What to validate |
-| --- | --- | --- |
-| Identity or account | Represents the requesting, delegated, or target security principal | Scope, group membership, SID, account state, MFA or authentication policy, and administrative tier |
-| Directory or policy object | Stores configuration and authorization | Object type, attributes, ACL/owner, replication state, and documented business purpose |
-| Protocol or service | Moves authentication or management information | Endpoint, signing/encryption, channel binding, version, patch state, and whether it is required |
-| Resulting credential or ticket | Authorizes a bounded operation | Lifetime, purpose/EKU/SPN, issuer or KDC, target audience, and revocation or rotation behavior |
-
-## Prerequisites and scope
-
-A published authentication-capable template, enrollment rights for the assessed principal, and a permitted identity-binding weakness under that template and CA policy.
-
-**Typical prerequisites**
-
-- Written authorization covering the identities, hosts, domains or tenants, data, and time window.
-- A scoped account or lab artifact that exercises the relevant object or protocol without affecting unrelated systems.
-- Visibility into directory state, authentication, endpoint, and audit telemetry sufficient to distinguish the hypothesis from normal administration.
-- A recovery or rollback owner and approval for any configuration change or cleanup.
-
-**Prerequisites should be confirmed rather than inferred.** Template publication and effective access; subject/SAN rules; approval and signature controls; EKU and authentication trust; domain or application support for certificates.
-
-## Conceptual attack chain
+The template must be published, the assessed principal needs effective enrollment rights, name policy must permit identity outside the requester’s normal identity, issuance approval/signature controls must permit the request, the EKU and certificate chain must be accepted for authentication or a useful purpose, and a relying party must trust the issuing chain.
 
 ```mermaid
-flowchart LR
-  A[Authorized identity or assessment context] --> B[Establish the relevant object and protocol]
-  B --> C[Identify a configuration or permission mismatch]
-  C --> D{Can the mismatch authorize unintended identity or action?}
-  D -->|No| E[Record as non-impacting or configuration-dependent]
-  D -->|Yes| F[Validate in a lab or approved recovery scope]
-  F --> G[Measure effective access and telemetry]
-  G --> H[Contain, remediate, and retest]
+flowchart TD
+  A[Published pKICertificateTemplate] --> B[Effective enroll rights]
+  B --> C[Requester-controlled identity field]
+  C --> D[CA permits issuance]
+  D --> E[Relying party accepts EKU and chain]
 ```
 
-The chain is conceptual: discovery establishes the object and normal trust relationship; a controlled validation establishes whether configuration and effective access preserve that trust; and impact is measured by the action or identity that a permitted principal can actually obtain. Stop at a negative or inconclusive result, and do not attempt to expand scope based on a tool label alone.
+## Impact limits
 
-## Conditions and limits affecting impact
+Manager approval, authorized-signature/RA policy, directory-derived subject rules, template/CA policy modules, EKU, chain trust and relying-party authentication policy can block impact. A requester-controlled SAN or client-auth EKU is not enough when publication, trust or downstream acceptance is absent.
 
-Even a permissive template may produce no useful identity if issuance is rejected, the certificate EKU is not accepted, or the target principal cannot authenticate with certificates.
+## Detection and validation
 
-Other conditions frequently alter the result:
-
-- **Patch and version:** Verify the exact OS, application, DC, CA, Entra, or protocol implementation. Vendor changes and security updates may remove a historical condition.
-- **Scope:** Domain, forest, tenant, application, device, network segment, and resource authorization can narrow or broaden the effect.
-- **Identity state:** Disabled accounts, expired credentials, Protected Users, authentication policies, account restrictions, and MFA may invalidate a theoretical path.
-- **Cryptographic state:** Ticket/credential lifetime, key rotation, revocation, trust chains, certificates, and key protection are separate from directory permissions.
-- **Telemetry completeness:** Missing or delayed logs do not prove absence; correlate identity, directory, endpoint, network, and application records.
-
-## Defensive validation
-
-Use independent checks rather than relying on a single alert or tool result:
-
-1. Confirm that the object or protocol is present, required, and owned by a documented business role.
-2. Resolve effective ACL, group, role, device, tenant, or service permissions, including inherited and nested rights.
-3. Verify the configuration against the exact host, DC, CA, application, or tenant version in scope.
-4. Attempt only approved read-only or lab-safe validation. Compare the observed identity and resulting privilege with policy.
-5. Correlate the result with audit, authentication, directory, endpoint, network, and application telemetry.
-
-The existing page-level telemetry note is: **Certificate issuance (4886/4887) for an unexpected UPN.** This is a starting hypothesis, not a standalone detection rule. Validate event schemas and enrichments for your Windows and cloud versions.
-
-### Useful telemetry
-
-| Source | Examples to correlate |
-| --- | --- |
-| Directory or identity audit | Object reads or writes, ACL/attribute changes, role changes, trust or credential configuration, and successful/failed sign-ins |
-| Authentication/KDC or cloud sign-in | Account and source, protocol, KDC/DC or tenant, target SPN/resource, certificate or MFA method, and policy evaluation |
-| Endpoint and process telemetry | Security process access, service or WMI activity, scheduled tasks, registry/hive access, remote-management sessions, and memory/integrity alerts |
-| Network and DNS | SMB/RPC/LDAP/Kerberos/NTLM/HTTP/DNS flows, loopback or relay patterns, unusual source relationships, and destination endpoints |
-| Certificate or key infrastructure | Request and issuance records, template use, key use, CRL/OCSP state, enrollment changes, and relying-party authentication failures |
-
-Baseline the source, host, account, time, and expected administrative workflow before calling a sequence anomalous. A one-event match can be noisy or version-dependent.
+Correlate CA 4886/4887 issuance events with template, requester, subject/SAN, EKU, source host and approver. Directory audit 5136 can identify template/ACL changes. Baseline approved enrollment workflows and verify effective ACL/template values in the directory rather than relying on a tool’s ESC label.
 
 ## Mitigation and recovery
 
-- Apply least privilege to directory objects, service identities, hosts, delegation relationships, CA templates, cloud roles, and local administrator groups.
-- Keep systems supported and patched; use the vendor’s current security guidance and test mitigations for compatibility before broad deployment.
-- Enforce strong authentication and administrative separation, including tiered administration, MFA/Conditional Access, Protected Users or equivalent policies, and credential isolation where appropriate.
-- Restrict protocol and management surfaces by firewall, signing/channel binding, endpoint policy, and network segmentation. Remove unused templates, services, shares, subscriptions, or trust features.
-- Centralize and retain identity, directory, endpoint, CA, DNS, and cloud logs. Alert on correlated state changes and abnormal effective access rather than isolated event IDs.
-
-For suspected compromise, preserve evidence, isolate affected hosts or identities, revoke sessions and relevant credentials, rotate only with an approved incident plan, and verify replication and cache propagation. Some secrets require two-stage rotation or cross-domain/tenant cleanup because old keys, tickets, or credentials may remain effective until they expire or are replaced. Reassess with a clean or restricted test identity after recovery.
-
-## Tools and validation discipline
-
-The graph metadata identifies ["certipy", "certify"]. These are dual-use tools; use only read-only or lab-safe workflows for the authorized scope.
-
-No commands or payloads are provided on this page. Prefer vendor-supported inventories, directory queries in read-only mode, and purpose-built lab replicas for proof. Where the graph marks a tool, confirm that its collection mode is authorized and interpret its findings against live configuration.
+Remove unsafe publishing, restrict enrollment/template modification, require directory-derived subject names for authentication templates and add approval or authorized-signature policy where appropriate. Revoke only certificates with confirmed misuse, preserve CA and authentication evidence, remove unsafe template state and revalidate in a lab. Reset identities only if their authentication context was actually used.
 
 ## References
 
-- [MITRE ATT&CK: T1649](https://attack.mitre.org/)
-
-- [Microsoft: AD CS overview](https://learn.microsoft.com/en-us/windows-server/identity/ad-cs/active-directory-certificate-services-overview)
-- [Microsoft: Certificate templates](https://learn.microsoft.com/en-us/windows-server/identity/ad-cs/certificate-template-concepts)
-- [MITRE ATT&CK mapping](https://attack.mitre.org/techniques/1649/)
-
-## Reporting checklist
-
-- Exact environment, OS/DC/CA/tenant versions, domain or tenant scope, and assessment window.
-- Objects and effective principals involved, with object distinguished names or resource IDs.
-- Configuration values and the normal business purpose for each permission or protocol.
-- Preconditions that were confirmed, rejected, or not testable.
-- Observed impact, effective identity or privilege, and affected resource scope.
-- Relevant directory, authentication, endpoint, network, certificate, and cloud telemetry.
-- Remediation owner, rollback/rotation requirements, and verification criteria.
+- [Microsoft: AD CS overview](https://learn.microsoft.com/windows-server/identity/ad-cs/active-directory-certificate-services-overview)
+- [Microsoft: Certificate template concepts](https://learn.microsoft.com/windows-server/identity/ad-cs/certificate-template-concepts)
+- [MITRE ATT&CK: T1649](https://attack.mitre.org/techniques/T1649/)
