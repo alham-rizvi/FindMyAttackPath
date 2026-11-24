@@ -57,6 +57,11 @@ list it in `docs/manifest.json`, open a PR. If you also want the single-file fal
 your change (useful for hosts that only take one file), run `python3 scripts/embed-docs.py`
 before deploying — see [`scripts/embed-docs.py`](scripts/embed-docs.py).
 
+The resource index includes searchable tool and reference tabs plus recent project commits.
+Use the lower-right toolbox to recolor the graph or download selected phases as JSON, CSV,
+CSS, or SVG. Node detail panels can be expanded for wide tables and diagrams; Mermaid diagrams
+also have a full-size viewer with SVG and source downloads.
+
 ## The kill chain the graph is built around
 
 ```mermaid

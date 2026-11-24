@@ -172,6 +172,7 @@ a{color:var(--accent)}
 #tableSearch{width:100%; background:var(--code-bg); border:1px solid var(--glass-border); color:var(--fg);
   padding:9px 11px; border-radius:9px; font-size:13.5px; margin-bottom:12px}
 #tableSearch:focus{outline:2px solid var(--accent); outline-offset:1px}
+#referenceTable td:last-child{overflow-wrap:anywhere}
 .resource-tabs{display:flex; gap:7px; margin:4px 0 12px; border-bottom:1px solid var(--glass-border)}
 .resource-tab{padding:8px 11px; border:0; border-bottom:2px solid transparent; background:transparent;
   color:var(--muted); cursor:pointer; font:600 12px Inter, sans-serif}
@@ -264,7 +265,6 @@ tr[hidden]{display:none}
 </div>
 
 <aside id="detail" class="glass">
-  <button class="closeBtn" id="closeDetail">✕</button>
   <p class="empty" id="detailEmpty">Click any node — a phase, a technique, a tool or a CVE — for its prerequisite, the detection artifact a blue team would actually see, and the tool used to run it.</p>
 </aside>
 
@@ -324,8 +324,9 @@ tr[hidden]{display:none}
           <p style="font-size:13.5px;line-height:1.6;margin:0">
             Drag to pan, scroll/pinch to zoom, drag a node to pin it. Use the search box to jump to a technique or
             tool by name, or the <em>Show</em> chips to hide a whole node type. <em>Tool &amp; resource index</em>
-            lists every repo behind the graph's tool nodes in one searchable table. Mermaid diagrams can be opened
-            in a large viewer and downloaded as SVG or editable Mermaid source.
+            includes searchable tools and references plus recent project commits. Open the toolbox at the lower right
+            to customize background and node colors, expand node details, or download selected phases as JSON, CSV,
+            CSS or SVG. Mermaid diagrams can also be opened in a large viewer and downloaded as SVG or editable source.
           </p>
         </div>
         <div class="field">
@@ -610,6 +611,9 @@ try{
 }catch(error){ console.warn("Saved graph colors could not be loaded", error); }
 if(colorSettings.background) rootStyle.setProperty("--bg", colorSettings.background);
 const palette = {...defaultPalette, ...colorSettings.types};
+Object.entries(colorSettings.types).forEach(([type,value])=>{
+  rootStyle.setProperty(`--${type==="technique"?"tech":type}`, value);
+});
 const nodeColor = d=> colorSettings.nodes[d.id] || palette[d.type];
 
 /* ---------- render: force graph, full viewport ---------- */
@@ -690,10 +694,14 @@ graphNodes.forEach(node=>{
 });
 backgroundColorInput.value = colorSettings.background || rootColors.getPropertyValue("--bg").trim();
 colorTarget.addEventListener("change", refreshNodeColors);
+refreshNodeColors();
 nodeColorInput.addEventListener("input", ()=>{
   const target = colorTarget.value;
   if(target.startsWith("node:")) colorSettings.nodes[target.slice(5)] = nodeColorInput.value;
-  else colorSettings.types[target] = nodeColorInput.value;
+  else{
+    colorSettings.types[target] = nodeColorInput.value;
+    rootStyle.setProperty(`--${target==="technique"?"tech":target}`, nodeColorInput.value);
+  }
   palette[target] = nodeColorInput.value;
   refreshNodeColors(); saveColorSettings();
 });
@@ -706,6 +714,7 @@ document.getElementById("resetColors").addEventListener("click", ()=>{
   colorSettings = {background:"", types:{}, nodes:{}};
   Object.assign(palette, defaultPalette);
   rootStyle.removeProperty("--bg");
+  Object.keys(defaultPalette).forEach(type=>rootStyle.removeProperty(`--${type==="technique"?"tech":type}`));
   localStorage.removeItem("findmyattackpath-colors");
   backgroundColorInput.value = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
   refreshNodeColors();
@@ -766,7 +775,7 @@ function selectedSvg(nodes, selectedLinks){
     const x = (Number.isFinite(node.x) ? node.x : 0)-minX+pad;
     const y = (Number.isFinite(node.y) ? node.y : 0)-minY+pad;
     const stroke = node.tag==="new" ? (colorSettings.types.cve || defaultPalette.cve) : rootColors.getPropertyValue("--bg").trim();
-    return `<g data-node-id="${escapeHtml(node.id)}"><circle cx="${x}" cy="${y}" r="${radius(node)}" fill="${nodeColor(node)}" stroke="${stroke}" stroke-width="2"/><text x="${x+radius(node)+7}" y="${y+4}" fill="${rootColors.getPropertyValue("--fg").trim()}" font-family="Inter, sans-serif" font-size="13">${escapeHtml(node.label)}</text></g>`;
+    return `<g data-node-id="${escapeHtml(node.id)}" data-node-type="${node.type}"><circle cx="${x}" cy="${y}" r="${radius(node)}" fill="${nodeColor(node)}" stroke="${stroke}" stroke-width="2"/><text x="${x+radius(node)+7}" y="${y+4}" fill="${rootColors.getPropertyValue("--fg").trim()}" font-family="Inter, sans-serif" font-size="13">${escapeHtml(node.label)}</text></g>`;
   }).join("");
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" role="img"><rect width="100%" height="100%" fill="${rootColors.getPropertyValue("--bg").trim()}"/><g>${lines}${marks}</g><text x="${width-14}" y="${height-12}" text-anchor="end" fill="${rootColors.getPropertyValue("--muted").trim()}" font-family="Inter, sans-serif" font-size="9">Created by Alham Rizvi</text></svg>`;
 }
@@ -794,9 +803,11 @@ document.getElementById("downloadSelection").addEventListener("click", ()=>{
       [node.id,node.type,node.label,node.data.phase||"",nodeColor(node)])];
     saveDiagramFile(`${filename}.csv`,"text/csv;charset=utf-8",rows.map(row=>row.map(csvCell).join(",")).join("\r\n"));
   }else if(format === "css"){
-    const vars=Object.entries(palette).map(([type,value])=>`  --${type}: ${value};`).join("\n");
+    const vars=Object.entries(palette).map(([type,value])=>`  --${type==="technique"?"tech":type}: ${value};`).join("\n");
+    const typeRules=Object.entries(palette).map(([type,value])=>
+      `[data-node-type="${type}"] circle { fill: ${value}; }`).join("\n");
     const rules=selectedNodes.map(node=>`[data-node-id="${node.id.replace(/["\\]/g,"\\$&")}"] circle { fill: ${nodeColor(node)}; }`).join("\n");
-    saveDiagramFile(`${filename}.css`,"text/css;charset=utf-8",`:root {\n${vars}\n  --bg: ${colorSettings.background || rootColors.getPropertyValue("--bg").trim()};\n}\n${rules}\n`);
+    saveDiagramFile(`${filename}.css`,"text/css;charset=utf-8",`:root {\n${vars}\n  --bg: ${colorSettings.background || rootColors.getPropertyValue("--bg").trim()};\n}\n${typeRules}\n${rules}\n`);
   }else{
     const svgContent=selectedSvg(selectedNodes,selectedLinks);
     if(svgContent) saveDiagramFile(`${filename}.svg`,"image/svg+xml;charset=utf-8",svgContent);
