@@ -1,10 +1,8 @@
 # FindMyAttackPath
+<img width="1360" height="768" alt="image" src="https://github.com/user-attachments/assets/265c55aa-2252-4ca0-a9dc-2c4790cdb49c" />
 
-<img width="1360" height="768" alt="image" src="https://github.com/user-attachments/assets/34927284-579a-4184-832d-e6a2bb185a16" />
-
-
-An open-source, click-through map of the Active Directory attack chain — recon to domain
-dominance to hybrid/cloud pivot — built for authorized red-team engagements, Active Directory
+An open-source, click-through map of the Active Directory attack chain: recon to domain
+dominance to hybrid/cloud pivot, built for authorized red-team engagements, Active Directory
 exploitation assessment practice, and job-role preparation. It is not defense-only: red-teamers
 can use it to understand and assess attack paths, while detection and mitigation notes help
 teams validate controls. Use it only within written authorization or an isolated lab.
@@ -13,9 +11,6 @@ Every phase, technique, tool and CVE on the graph is backed by a Markdown file u
 [`docs/`](docs/). Click a node and its connections ("wires") light up. The detail panel shows
 the available context, such as affected objects, potential impact, detection and defensive
 measures, plus related tools where listed.
-
-> Compiled for authorized testing and study (OSCP/CRTO-style prep). Reverify current patch
-> status before relying on anything tagged "new."
 
 ## Deploy it
 
