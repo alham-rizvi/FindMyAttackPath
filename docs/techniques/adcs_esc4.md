@@ -30,6 +30,15 @@ flowchart LR
 
 Effective control depends on the template DACL, ownership, inheritance, nested groups, CA publication, replication and the exact attribute that can be changed. A writable template is not automatically exploitable; CA policy and relying-party behavior still matter.
 
+## Affected object and fix
+
+```text
+Object: pKICertificateTemplate
+Setting to review: nTSecurityDescriptor, owner, inherited ACEs, and write-property rights
+Risky state: Non-PKI principals can change the template or its security descriptor
+Fix target: Only designated PKI administrators can modify template policy or ACLs
+```
+
 ## Defensive review
 
 Resolve effective rights on every authentication-capable template, including inherited permissions and group nesting. Restrict owner, DACL and write-property rights to tiered PKI administrators. Remove unnecessary publication and compare settings with an approved baseline.

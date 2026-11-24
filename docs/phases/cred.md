@@ -23,6 +23,25 @@ Techniques represented here include LSASS, SAM / LSA and NTDS extraction, ticket
 
 Reduce local administrator rights, enable Credential Guard and LSASS protections where compatible, protect domain-controller backups and database files, use managed service accounts, and prefer long randomly generated secrets. Monitor access to sensitive processes and stores, unexpected replication activity, and unusual Kerberos request patterns. After suspected exposure, revoke sessions where possible and rotate credentials in dependency-aware order; changing one password does not invalidate every ticket or derived secret.
 
+## Objects and defensive configuration
+
+```text
+Object: Endpoint LSASS process and local SAM/LSA stores
+Risky state: Broad local admin access or unprotected credential material
+Defensive target: Credential Guard and supported LSASS protections; least privilege
+Fix: Reduce local administrators, enable compatible protections, and investigate access
+
+Object: Service identity and Group Policy Preferences files in SYSVOL
+Risky state: Reusable password in a legacy preference or unmanaged service account
+Defensive target: gMSA or another approved secret-management system; no stored preference password
+Fix: Remove the legacy secret, rotate it, and check for reuse and dependent services
+
+Object: Domain-controller database and backup stores
+Risky state: Backup or database access exceeds authorized roles
+Defensive target: Tier-0 access controls, protected backups, and monitored recovery paths
+Fix: Restrict access and assess credential rotation/recovery scope with identity owners
+```
+
 ## References
 
 - [MITRE ATT&CK: Credential Access](https://attack.mitre.org/tactics/TA0006/)

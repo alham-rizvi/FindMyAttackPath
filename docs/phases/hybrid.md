@@ -22,6 +22,25 @@ Relevant graph entries include trust-ticket abuse, Entra Connect credential expo
 
 Inventory and restrict synchronization service identities, protect hybrid-joined endpoints, enforce phishing-resistant authentication and Conditional Access, monitor unusual token and sign-in patterns, and review cross-forest trust filtering. Cloud incident response should revoke sessions and refresh tokens as appropriate while also containing the on-prem source of compromise.
 
+## Objects and defensive configuration
+
+```text
+Object: Directory synchronization identity and connector configuration
+Risky state: Excessive on-prem/cloud privileges, unmanaged credentials, or unknown sync scope
+Defensive target: Least privilege, protected secret storage, and documented object/attribute scope
+Fix: Reduce rights through the supported deployment process and rotate exposed credentials
+
+Object: Hybrid-joined endpoint, PRT/session, and authentication policy
+Risky state: Unmanaged device or token/session outside expected user and device context
+Defensive target: Device compliance, phishing-resistant authentication, and Conditional Access
+Fix: Contain the endpoint and revoke affected sessions using tenant recovery procedures
+
+Object: Forest trust, app registration, service principal, and tenant role assignment
+Risky state: Excessive trust scope, application permission, or privileged role assignment
+Defensive target: Explicit business owner, minimal scope, and audited changes
+Fix: Remove unneeded authorization and validate both on-premises and cloud dependencies
+```
+
 ## References
 
 - [MITRE ATT&CK: Cloud Accounts](https://attack.mitre.org/techniques/T1078/004/)

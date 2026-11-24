@@ -22,6 +22,25 @@ Pass-the-hash, pass-the-ticket, overpass-the-hash, WMI / WinRM / SMB, RDP, and W
 
 Segment administrative tiers, restrict remote-management paths, use Windows Defender Firewall and just-in-time administration, and prevent privileged accounts from signing in to lower-trust hosts. Correlate logon type, source device, account, destination, and process / service creation. Use unique local administrator passwords and review cached or disconnected sessions on shared systems.
 
+## Objects and defensive configuration
+
+```text
+Object: Destination computer and local administrator groups
+Risky state: Broad membership or shared/reused local administrator credentials
+Defensive target: Named admin roles, unique managed local passwords, and tier boundaries
+Fix: Remove unjustified membership and rotate exposed local credentials
+
+Object: WinRM, RDP, SMB, WMI, and host firewall policy
+Risky state: Remote management reachable from untrusted segments or identities
+Defensive target: Approved source hosts, least-privilege access, and required protocol protections
+Fix: Restrict inbound paths and test management workflows before enforcing policy
+
+Object: User sessions and cached authentication material
+Risky state: Privileged sessions persist on lower-trust or shared endpoints
+Defensive target: Tiered logon policy, reduced credential caching, and timely session revocation
+Fix: Contain the endpoint, revoke affected sessions, and investigate subsequent logons
+```
+
 ## References
 
 - [MITRE ATT&CK: Lateral Movement](https://attack.mitre.org/tactics/TA0008/)

@@ -30,6 +30,15 @@ flowchart LR
 
 The CA setting alone does not establish a path. Template publication, effective enrollment, EKU, approval/signature requirements, CA policy, chain trust and strong account mapping all affect whether a certificate is accepted for an unintended identity.
 
+## Affected object and fix
+
+```text
+Object: Enterprise CA policy/configuration
+Setting to review: EditFlags and EDITF_ATTRIBUTESUBJECTALTNAME2 behavior
+Risky state: CA-wide requester-supplied SAN handling is enabled without a required use case
+Fix target: Disable unnecessary SAN handling; keep identity directory-derived and enrollment narrow
+```
+
 ## Defensive review
 
 Disable CA-wide SAN behavior unless a documented service requires it. Prefer directory-derived identity fields; restrict authentication-template enrollment; and test application compatibility in a lab before changing CA policy.

@@ -26,6 +26,21 @@ Related techniques in this graph include password spraying, AS-REP roasting, Ker
 
 Require strong, unique credentials and modern authentication protections; disable unnecessary NTLM and enforce signing / channel binding / Extended Protection where supported. Audit Kerberos pre-authentication settings and service-account password hygiene. Use rate-aware identity protection and correlate authentication failures across many accounts with subsequent successful logons. Changes to live authentication controls should be tested for compatibility.
 
+## Objects and defensive configuration
+
+```text
+Object: AD user or service account
+Risky state: Kerberos pre-authentication is not required, or a password is weak/reused
+Defensive target: Require pre-authentication; use unique, managed secrets and suitable
+                  account lockout/rate controls
+Fix: Correct the account setting, rotate exposed secrets, and review dependent services
+
+Object: NTLM-dependent service or endpoint
+Risky state: Unnecessary NTLM; signing, channel binding, or Extended Protection absent
+Defensive target: Restrict NTLM and enforce supported protocol protections
+Fix: Apply a compatibility-tested policy and verify the service's authentication logs
+```
+
 ## References
 
 - [MITRE ATT&CK: Initial Access](https://attack.mitre.org/tactics/TA0001/)

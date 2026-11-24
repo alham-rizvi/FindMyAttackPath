@@ -30,6 +30,15 @@ flowchart LR
 
 The template must be published and enrollable by the assessed principal. CA approval, authorized signatures, chain trust, key usage and relying-party policy can constrain acceptance. A broad EKU is a risk indicator, not proof that a certificate can authenticate as another identity.
 
+## Affected object and fix
+
+```text
+Object: pKICertificateTemplate
+Setting to review: pKIExtendedKeyUsage and msPKI-Certificate-Application-Policy
+Risky state: Any Purpose or no EKU where the business requirement is narrower
+Fix target: Only the required application purpose; enrollment limited to its owner group
+```
+
 ## Defensive review
 
 Replace broad or absent EKUs with the narrow application policy required by the service. Remove unused templates, restrict enrollment and template modification, and test dependent services in a lab before changing issuance policy.

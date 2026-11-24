@@ -30,6 +30,15 @@ flowchart LR
 
 The assigned CA right, CA policy, request state, template eligibility and relying-party acceptance determine impact. Distinguish configuration management from certificate-manager actions, and do not infer domain privilege from a CA role alone.
 
+## Affected object and fix
+
+```text
+Object: Enterprise CA security descriptor and administrative role assignments
+Settings to review: Manage CA and Manage Certificates rights
+Risky state: Rights assigned beyond the documented PKI administration/approval workflow
+Fix target: Named, tiered roles; separation of duties where practical; audited approvals
+```
+
 ## Defensive review
 
 Restrict CA administration and certificate approval to documented, tiered roles. Separate duties where practical, protect privileged groups, require change control, and review emergency access and stale assignments.

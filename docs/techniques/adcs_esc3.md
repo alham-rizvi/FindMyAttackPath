@@ -30,6 +30,15 @@ flowchart LR
 
 The agent certificate must be issued and accepted for the relevant workflow; the principal must have effective rights; the target template and CA must permit the delegated request; and the relying party must trust the chain and identity. Approval, authorized signatures, template restrictions and strong certificate mapping can break the path.
 
+## Affected object and fix
+
+```text
+Objects: Enrollment-agent template, target templates, and their security descriptors
+Settings to review: Enrollment-agent EKU, effective Enroll rights, issuance requirements
+Risky state: Broad agent enrollment or delegated scope without required approval/signatures
+Fix target: Documented agent roles, narrow target-template scope, and enforced approval policy
+```
+
 ## Defensive review
 
 Keep enrollment-agent templates unpublished when unused. Restrict agent enrollment and target-template rights to documented service roles, require appropriate authorized signatures or approval, and review whether the delegated scope is limited to expected identities and purposes.

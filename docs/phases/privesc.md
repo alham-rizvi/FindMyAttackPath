@@ -23,6 +23,25 @@ The graph includes ACL and GPO abuse, DNSAdmins, machine-account creation, deleg
 
 Continuously review effective ACLs on privileged users, groups, computers, GPOs, and certificate templates. Minimize who can enroll in authentication-capable templates, remove unnecessary delegation, restrict machine-account creation where operationally appropriate, and patch supported systems. Alert on privilege-bearing directory changes and certificate issuance, and verify remediation by re-evaluating the complete path rather than just the original finding.
 
+## Objects and defensive configuration
+
+```text
+Object: Privileged user/group, computer, GPO, CA, or certificate template
+Risky state: Unintended write/owner/enrollment rights or broadly delegated control
+Defensive target: Effective ACLs match a documented least-privilege owner and workflow
+Fix: Remove excess rights, review inheritance/nested groups, and verify after replication
+
+Object: Delegation and computer-account configuration
+Risky state: Unneeded delegation or broad ability to create/change computer identities
+Defensive target: Only documented services and roles retain the required settings
+Fix: Remove unused delegation; review machine-account creation policy with service owners
+
+Object: CA policy, enrollment endpoint, and issued-certificate mapping
+Risky state: Weak identity binding, excessive enrollment, or unnecessary endpoint exposure
+Defensive target: Directory-derived identity, restricted enrollment, strong mapping, protected CA
+Fix: Correct the earliest shared control and validate the full path in an isolated lab
+```
+
 ## References
 
 - [MITRE ATT&CK: Privilege Escalation](https://attack.mitre.org/tactics/TA0004/)

@@ -30,6 +30,15 @@ flowchart LR
 
 Impact depends on the exact object, its consumers, replication, CA policy and relying-party trust. A write permission on an unrelated or unused object may not create a meaningful path; identify the object's role before scoring.
 
+## Affected object and fix
+
+```text
+Objects: Enterprise CA, enrollment-service, OID, NTAuth, and related PKI objects
+Setting to review: nTSecurityDescriptor and object-specific write/owner permissions
+Risky state: Unapproved principals can alter trusted PKI configuration or trust state
+Fix target: Tiered PKI administration, change control, and monitored least-privilege ACLs
+```
+
 ## Defensive review
 
 Inventory ACLs for enterprise CA, OID, enrollment-service, NTAuth and related configuration objects. Limit writes to designated PKI administrators, use change control for trust modifications, and maintain known-good configuration exports and recovery procedures.

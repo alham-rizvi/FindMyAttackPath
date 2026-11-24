@@ -24,6 +24,25 @@ The graph covers DCSync, forged or modified Kerberos tickets, Skeleton Key, Gold
 
 Protect and monitor replication permissions, domain-controller memory and configuration, certificate-authority private keys, privileged group membership, and trust settings. Maintain secure backups and a tested recovery plan. During response, preserve evidence and coordinate containment with identity administrators to avoid disrupting replication or invalidating dependencies prematurely.
 
+## Objects and defensive configuration
+
+```text
+Object: AdminSDHolder, protected accounts, privileged groups, and directory ACLs
+Risky state: Unapproved owner, DACL, membership, delegation, or SID-history changes
+Defensive target: Known-good baselines and narrowly controlled Tier-0 administration
+Fix: Restore verified state and confirm protected-object processing has completed
+
+Object: krbtgt/service-account keys, CA private keys, and forest-trust secrets
+Risky state: Suspected exposure, unmanaged copies, or stale trust credentials
+Defensive target: Protected key storage and vendor-approved, dependency-aware rotation
+Fix: Preserve evidence and use the relevant forest/PKI recovery procedure
+
+Object: Certificates, tickets, cloud sessions, and host persistence
+Risky state: Active artifacts or unauthorized state survives a password reset
+Defensive target: Revocation/session containment plus a clean host and directory baseline
+Fix: Revoke or expire affected artifacts and verify that old paths no longer work
+```
+
 ## References
 
 - [MITRE ATT&CK: Persistence](https://attack.mitre.org/tactics/TA0003/)
