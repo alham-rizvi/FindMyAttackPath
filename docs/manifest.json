@@ -1,0 +1,582 @@
+[
+  {
+    "id": "recon",
+    "type": "phase",
+    "path": "docs/phases/recon.md"
+  },
+  {
+    "id": "initial",
+    "type": "phase",
+    "path": "docs/phases/initial.md"
+  },
+  {
+    "id": "cred",
+    "type": "phase",
+    "path": "docs/phases/cred.md"
+  },
+  {
+    "id": "privesc",
+    "type": "phase",
+    "path": "docs/phases/privesc.md"
+  },
+  {
+    "id": "lateral",
+    "type": "phase",
+    "path": "docs/phases/lateral.md"
+  },
+  {
+    "id": "persist",
+    "type": "phase",
+    "path": "docs/phases/persist.md"
+  },
+  {
+    "id": "hybrid",
+    "type": "phase",
+    "path": "docs/phases/hybrid.md"
+  },
+  {
+    "id": "bloodhound",
+    "type": "tool",
+    "path": "docs/tools/bloodhound.md"
+  },
+  {
+    "id": "sharphound",
+    "type": "tool",
+    "path": "docs/tools/sharphound.md"
+  },
+  {
+    "id": "bloodhoundpy",
+    "type": "tool",
+    "path": "docs/tools/bloodhoundpy.md"
+  },
+  {
+    "id": "rusthound",
+    "type": "tool",
+    "path": "docs/tools/rusthound.md"
+  },
+  {
+    "id": "goodhound",
+    "type": "tool",
+    "path": "docs/tools/goodhound.md"
+  },
+  {
+    "id": "improhound",
+    "type": "tool",
+    "path": "docs/tools/improhound.md"
+  },
+  {
+    "id": "powerview",
+    "type": "tool",
+    "path": "docs/tools/powerview.md"
+  },
+  {
+    "id": "adrecon",
+    "type": "tool",
+    "path": "docs/tools/adrecon.md"
+  },
+  {
+    "id": "adpeas",
+    "type": "tool",
+    "path": "docs/tools/adpeas.md"
+  },
+  {
+    "id": "adcollector",
+    "type": "tool",
+    "path": "docs/tools/adcollector.md"
+  },
+  {
+    "id": "sauroneye",
+    "type": "tool",
+    "path": "docs/tools/sauroneye.md"
+  },
+  {
+    "id": "snaffler",
+    "type": "tool",
+    "path": "docs/tools/snaffler.md"
+  },
+  {
+    "id": "lapstoolkit",
+    "type": "tool",
+    "path": "docs/tools/lapstoolkit.md"
+  },
+  {
+    "id": "certipy",
+    "type": "tool",
+    "path": "docs/tools/certipy.md"
+  },
+  {
+    "id": "certify",
+    "type": "tool",
+    "path": "docs/tools/certify.md"
+  },
+  {
+    "id": "forgecert",
+    "type": "tool",
+    "path": "docs/tools/forgecert.md"
+  },
+  {
+    "id": "pkinittools",
+    "type": "tool",
+    "path": "docs/tools/pkinittools.md"
+  },
+  {
+    "id": "certsync",
+    "type": "tool",
+    "path": "docs/tools/certsync.md"
+  },
+  {
+    "id": "rubeus",
+    "type": "tool",
+    "path": "docs/tools/rubeus.md"
+  },
+  {
+    "id": "kekeo",
+    "type": "tool",
+    "path": "docs/tools/kekeo.md"
+  },
+  {
+    "id": "minikerberos",
+    "type": "tool",
+    "path": "docs/tools/minikerberos.md"
+  },
+  {
+    "id": "krbrelayx",
+    "type": "tool",
+    "path": "docs/tools/krbrelayx.md"
+  },
+  {
+    "id": "mimikatz",
+    "type": "tool",
+    "path": "docs/tools/mimikatz.md"
+  },
+  {
+    "id": "impacket",
+    "type": "tool",
+    "path": "docs/tools/impacket.md"
+  },
+  {
+    "id": "netexec",
+    "type": "tool",
+    "path": "docs/tools/netexec.md"
+  },
+  {
+    "id": "crackmapexec",
+    "type": "tool",
+    "path": "docs/tools/crackmapexec.md"
+  },
+  {
+    "id": "evilwinrm",
+    "type": "tool",
+    "path": "docs/tools/evilwinrm.md"
+  },
+  {
+    "id": "kerbrute",
+    "type": "tool",
+    "path": "docs/tools/kerbrute.md"
+  },
+  {
+    "id": "responder",
+    "type": "tool",
+    "path": "docs/tools/responder.md"
+  },
+  {
+    "id": "inveigh",
+    "type": "tool",
+    "path": "docs/tools/inveigh.md"
+  },
+  {
+    "id": "hashcat",
+    "type": "tool",
+    "path": "docs/tools/hashcat.md"
+  },
+  {
+    "id": "petitpotam",
+    "type": "tool",
+    "path": "docs/tools/petitpotam.md"
+  },
+  {
+    "id": "coercer",
+    "type": "tool",
+    "path": "docs/tools/coercer.md"
+  },
+  {
+    "id": "mitm6",
+    "type": "tool",
+    "path": "docs/tools/mitm6.md"
+  },
+  {
+    "id": "bloodyad",
+    "type": "tool",
+    "path": "docs/tools/bloodyad.md"
+  },
+  {
+    "id": "whisker",
+    "type": "tool",
+    "path": "docs/tools/whisker.md"
+  },
+  {
+    "id": "pywhisker",
+    "type": "tool",
+    "path": "docs/tools/pywhisker.md"
+  },
+  {
+    "id": "aadinternals",
+    "type": "tool",
+    "path": "docs/tools/aadinternals.md"
+  },
+  {
+    "id": "roadtools",
+    "type": "tool",
+    "path": "docs/tools/roadtools.md"
+  },
+  {
+    "id": "adcheatsheet",
+    "type": "tool",
+    "path": "docs/tools/adcheatsheet.md"
+  },
+  {
+    "id": "addefense",
+    "type": "tool",
+    "path": "docs/tools/addefense.md"
+  },
+  {
+    "id": "patt",
+    "type": "tool",
+    "path": "docs/tools/patt.md"
+  },
+  {
+    "id": "powermad",
+    "type": "tool",
+    "path": "docs/tools/powermad.md"
+  },
+  {
+    "id": "rbcdpy",
+    "type": "tool",
+    "path": "docs/tools/rbcdpy.md"
+  },
+  {
+    "id": "dploot",
+    "type": "tool",
+    "path": "docs/tools/dploot.md"
+  },
+  {
+    "id": "donpapi",
+    "type": "tool",
+    "path": "docs/tools/donpapi.md"
+  },
+  {
+    "id": "ldapsearch-ad",
+    "type": "tool",
+    "path": "docs/tools/ldapsearch-ad.md"
+  },
+  {
+    "id": "windapsearch",
+    "type": "tool",
+    "path": "docs/tools/windapsearch.md"
+  },
+  {
+    "id": "gpoddity",
+    "type": "tool",
+    "path": "docs/tools/gpoddity.md"
+  },
+  {
+    "id": "sharpgpoabuse",
+    "type": "tool",
+    "path": "docs/tools/sharpgpoabuse.md"
+  },
+  {
+    "id": "adsearch",
+    "type": "tool",
+    "path": "docs/tools/adsearch.md"
+  },
+  {
+    "id": "semperis-purple-knight",
+    "type": "tool",
+    "path": "docs/tools/semperis-purple-knight.md"
+  },
+  {
+    "id": "timeroast",
+    "type": "tool",
+    "path": "docs/tools/timeroast.md"
+  },
+  {
+    "id": "shadowcoerce",
+    "type": "tool",
+    "path": "docs/tools/shadowcoerce.md"
+  },
+  {
+    "id": "dfscoerce",
+    "type": "tool",
+    "path": "docs/tools/dfscoerce.md"
+  },
+  {
+    "id": "cve-2026-54121",
+    "type": "cve",
+    "path": "docs/cves/cve-2026-54121.md"
+  },
+  {
+    "id": "cve-2026-27912",
+    "type": "cve",
+    "path": "docs/cves/cve-2026-27912.md"
+  },
+  {
+    "id": "cve-2025-33073",
+    "type": "cve",
+    "path": "docs/cves/cve-2025-33073.md"
+  },
+  {
+    "id": "cve-2021-42287",
+    "type": "cve",
+    "path": "docs/cves/cve-2021-42287.md"
+  },
+  {
+    "id": "cve-2020-1472",
+    "type": "cve",
+    "path": "docs/cves/cve-2020-1472.md"
+  },
+  {
+    "id": "ldap_enum",
+    "type": "technique",
+    "path": "docs/techniques/ldap_enum.md"
+  },
+  {
+    "id": "bloodhound_collect",
+    "type": "technique",
+    "path": "docs/techniques/bloodhound_collect.md"
+  },
+  {
+    "id": "session_recon",
+    "type": "technique",
+    "path": "docs/techniques/session_recon.md"
+  },
+  {
+    "id": "laps_gmsa",
+    "type": "technique",
+    "path": "docs/techniques/laps_gmsa.md"
+  },
+  {
+    "id": "adcs_enum",
+    "type": "technique",
+    "path": "docs/techniques/adcs_enum.md"
+  },
+  {
+    "id": "trust_enum",
+    "type": "technique",
+    "path": "docs/techniques/trust_enum.md"
+  },
+  {
+    "id": "pwspray",
+    "type": "technique",
+    "path": "docs/techniques/pwspray.md"
+  },
+  {
+    "id": "asreproast",
+    "type": "technique",
+    "path": "docs/techniques/asreproast.md"
+  },
+  {
+    "id": "kerberoast",
+    "type": "technique",
+    "path": "docs/techniques/kerberoast.md"
+  },
+  {
+    "id": "coerce_relay",
+    "type": "technique",
+    "path": "docs/techniques/coerce_relay.md"
+  },
+  {
+    "id": "ntlm_reflection",
+    "type": "technique",
+    "path": "docs/techniques/ntlm_reflection.md"
+  },
+  {
+    "id": "cname_relay",
+    "type": "technique",
+    "path": "docs/techniques/cname_relay.md"
+  },
+  {
+    "id": "lsass_dump",
+    "type": "technique",
+    "path": "docs/techniques/lsass_dump.md"
+  },
+  {
+    "id": "sam_lsa",
+    "type": "technique",
+    "path": "docs/techniques/sam_lsa.md"
+  },
+  {
+    "id": "ntds_dump",
+    "type": "technique",
+    "path": "docs/techniques/ntds_dump.md"
+  },
+  {
+    "id": "ticket_dump",
+    "type": "technique",
+    "path": "docs/techniques/ticket_dump.md"
+  },
+  {
+    "id": "dpapi",
+    "type": "technique",
+    "path": "docs/techniques/dpapi.md"
+  },
+  {
+    "id": "dmsa_ouroboros",
+    "type": "technique",
+    "path": "docs/techniques/dmsa_ouroboros.md"
+  },
+  {
+    "id": "timeroasting",
+    "type": "technique",
+    "path": "docs/techniques/timeroasting.md"
+  },
+  {
+    "id": "acl_abuse",
+    "type": "technique",
+    "path": "docs/techniques/acl_abuse.md"
+  },
+  {
+    "id": "gpo_abuse",
+    "type": "technique",
+    "path": "docs/techniques/gpo_abuse.md"
+  },
+  {
+    "id": "machineaccountquota",
+    "type": "technique",
+    "path": "docs/techniques/machineaccountquota.md"
+  },
+  {
+    "id": "unconstrained_deleg",
+    "type": "technique",
+    "path": "docs/techniques/unconstrained_deleg.md"
+  },
+  {
+    "id": "constrained_deleg",
+    "type": "technique",
+    "path": "docs/techniques/constrained_deleg.md"
+  },
+  {
+    "id": "rbcd",
+    "type": "technique",
+    "path": "docs/techniques/rbcd.md"
+  },
+  {
+    "id": "shadow_creds",
+    "type": "technique",
+    "path": "docs/techniques/shadow_creds.md"
+  },
+  {
+    "id": "adcs_esc1",
+    "type": "technique",
+    "path": "docs/techniques/adcs_esc1.md"
+  },
+  {
+    "id": "adcs_esc8",
+    "type": "technique",
+    "path": "docs/techniques/adcs_esc8.md"
+  },
+  {
+    "id": "certighost",
+    "type": "technique",
+    "path": "docs/techniques/certighost.md"
+  },
+  {
+    "id": "resetnightmare",
+    "type": "technique",
+    "path": "docs/techniques/resetnightmare.md"
+  },
+  {
+    "id": "nopac",
+    "type": "technique",
+    "path": "docs/techniques/nopac.md"
+  },
+  {
+    "id": "pth",
+    "type": "technique",
+    "path": "docs/techniques/pth.md"
+  },
+  {
+    "id": "ptt",
+    "type": "technique",
+    "path": "docs/techniques/ptt.md"
+  },
+  {
+    "id": "opth",
+    "type": "technique",
+    "path": "docs/techniques/opth.md"
+  },
+  {
+    "id": "wmi_exec",
+    "type": "technique",
+    "path": "docs/techniques/wmi_exec.md"
+  },
+  {
+    "id": "rdp_lateral",
+    "type": "technique",
+    "path": "docs/techniques/rdp_lateral.md"
+  },
+  {
+    "id": "wmi_fileless",
+    "type": "technique",
+    "path": "docs/techniques/wmi_fileless.md"
+  },
+  {
+    "id": "dcsync",
+    "type": "technique",
+    "path": "docs/techniques/dcsync.md"
+  },
+  {
+    "id": "golden",
+    "type": "technique",
+    "path": "docs/techniques/golden.md"
+  },
+  {
+    "id": "diamond",
+    "type": "technique",
+    "path": "docs/techniques/diamond.md"
+  },
+  {
+    "id": "silver",
+    "type": "technique",
+    "path": "docs/techniques/silver.md"
+  },
+  {
+    "id": "skeleton_key",
+    "type": "technique",
+    "path": "docs/techniques/skeleton_key.md"
+  },
+  {
+    "id": "golden_cert",
+    "type": "technique",
+    "path": "docs/techniques/golden_cert.md"
+  },
+  {
+    "id": "dcshadow",
+    "type": "technique",
+    "path": "docs/techniques/dcshadow.md"
+  },
+  {
+    "id": "sidhistory",
+    "type": "technique",
+    "path": "docs/techniques/sidhistory.md"
+  },
+  {
+    "id": "trust_ticket",
+    "type": "technique",
+    "path": "docs/techniques/trust_ticket.md"
+  },
+  {
+    "id": "aadconnect",
+    "type": "technique",
+    "path": "docs/techniques/aadconnect.md"
+  },
+  {
+    "id": "prt_pivot",
+    "type": "technique",
+    "path": "docs/techniques/prt_pivot.md"
+  },
+  {
+    "id": "passkey_replay",
+    "type": "technique",
+    "path": "docs/techniques/passkey_replay.md"
+  }
+]
