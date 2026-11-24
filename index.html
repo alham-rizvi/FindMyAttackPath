@@ -149,7 +149,7 @@ a{color:var(--accent)}
 #indexOverlay{position:fixed; inset:0; z-index:40; display:none; align-items:center; justify-content:center; padding:20px;
   background:rgba(10,14,15,0.35); backdrop-filter:blur(2px);}
 #indexOverlay.open{display:flex}
-#indexModal{width:min(880px, 100%); max-height:min(82vh, 760px); padding:22px; display:flex; flex-direction:column; min-height:0}
+#indexModal{width:min(1180px, calc(100vw - 40px)); height:min(88vh, 900px); max-height:calc(100vh - 40px); padding:22px; display:flex; flex-direction:column; min-height:0}
 #aboutOverlay{position:fixed; inset:0; z-index:40; display:none; align-items:center; justify-content:center; padding:20px;
   background:rgba(10,14,15,0.35); backdrop-filter:blur(2px);}
 #aboutOverlay.open{display:flex}
@@ -218,6 +218,14 @@ a{color:var(--accent)}
 @media (max-width: 700px){
   .markdown-browser{grid-template-columns:1fr; grid-template-rows:minmax(120px, 180px) minmax(220px, 1fr)}
   .text-browser{grid-template-columns:1fr; grid-template-rows:minmax(120px, 180px) minmax(220px, 1fr)}
+}
+@media (max-width: 760px){
+  #indexOverlay{padding:8px}
+  #indexModal{width:calc(100vw - 16px); height:calc(100vh - 16px); max-height:none; padding:14px}
+  .resource-tabs{overflow-x:auto; flex-wrap:nowrap}
+  .resource-tab{white-space:nowrap}
+  #docsBtn span{display:none}
+  #docsBtn{width:44px;padding:0;justify-content:center}
 }
 .commit-list{overflow:auto; border:1px solid var(--glass-border); border-radius:12px; padding:8px 12px}
 .commit-item{padding:10px 2px; border-bottom:1px solid var(--glass-border)}
@@ -1315,11 +1323,35 @@ function addFileViewerButtons(list, viewer, input, type, paths){
       openTextFile(input.value, viewer, type);
     }
   });
+  input.addEventListener("input", ()=>{
+    const query = input.value.trim().toLowerCase();
+    list.querySelectorAll(".text-file").forEach(button=>{
+      button.hidden = Boolean(query) && !button.dataset.path.toLowerCase().includes(query);
+    });
+  });
 }
 const txtList = document.getElementById("txtList");
 const txtViewer = document.getElementById("txtViewer");
 const txtPath = document.getElementById("txtPath");
 addFileViewerButtons(txtList, txtViewer, txtPath, "text", []);
+async function discoverTxtFiles(){
+  const candidates = [];
+  if(window.location.pathname.endsWith("/") || window.location.pathname.endsWith("/index.html")){
+    const origin = window.location.origin + window.location.pathname.replace(/index\.html$/, "");
+    try{
+      const response = await fetch(origin);
+      if(response.ok){
+        const html = await response.text();
+        const links = [...html.matchAll(/href=["']([^"'?#]+\.txt)["']/gi)].map(match=>match[1]);
+        candidates.push(...links.map(link=>link.replace(/^\.?\//,"")));
+      }
+    }catch(error){ console.warn("TXT file discovery could not read the directory", error); }
+  }
+  const unique = [...new Set(candidates)];
+  if(!unique.length) txtViewer.innerHTML = '<p class="resource-note">Enter a same-origin TXT path above to view it.</p>';
+  else addFileViewerButtons(txtList, txtViewer, txtPath, "text", unique);
+}
+discoverTxtFiles();
 const jsonList = document.getElementById("jsonList");
 const jsonViewer = document.getElementById("jsonViewer");
 const jsonPath = document.getElementById("jsonPath");
@@ -1394,18 +1426,38 @@ document.querySelectorAll(".resource-tab").forEach(tab=>{
     document.querySelectorAll(".resource-panel").forEach(panel=>
       panel.classList.toggle("active", panel.id===tab.dataset.panel));
     const search = document.getElementById("tableSearch");
-    search.hidden = ["commitsPanel","markdownPanel","txtPanel","jsonPanel"].includes(tab.dataset.panel);
-    search.placeholder = tab.dataset.panel==="referencesPanel"
-      ? "Filter by reference, topic or URL…" : "Filter by name, category or purpose…";
+    search.hidden = tab.dataset.panel==="commitsPanel";
+    search.placeholder =
+      tab.dataset.panel==="referencesPanel" ? "Filter by reference, topic or URL…" :
+      tab.dataset.panel==="markdownPanel" ? "Search all Markdown paths and content…" :
+      tab.dataset.panel==="txtPanel" ? "Search TXT file paths…" :
+      tab.dataset.panel==="jsonPanel" ? "Search JSON file paths…" :
+      "Filter by name, category or purpose…";
+    search.value = "";
     if(tab.dataset.panel==="commitsPanel") loadRecentCommits();
   });
 });
 document.getElementById("tableSearch").addEventListener("input", (e)=>{
   const q = e.target.value.trim().toLowerCase();
   const activePanel = document.querySelector(".resource-tab.active").dataset.panel;
-  const table = activePanel==="referencesPanel"
-    ? "#referenceTable tbody tr" : "#resTable tbody tr";
-  document.querySelectorAll(table).forEach(tr=>{ tr.hidden = Boolean(q) && !tr.dataset.search.includes(q); });
+  if(activePanel==="referencesPanel"){
+    document.querySelectorAll("#referenceTable tbody tr").forEach(tr=>{
+      tr.hidden = Boolean(q) && !tr.dataset.search.includes(q);
+    });
+  }else if(activePanel==="toolsPanel"){
+    document.querySelectorAll("#resTable tbody tr").forEach(tr=>{
+      tr.hidden = Boolean(q) && !tr.dataset.search.includes(q);
+    });
+  }else if(activePanel==="markdownPanel"){
+    markdownSearch.value = q;
+    markdownSearch.dispatchEvent(new Event("input"));
+  }else if(activePanel==="txtPanel"){
+    txtPath.value = q;
+    txtPath.dispatchEvent(new Event("input"));
+  }else if(activePanel==="jsonPanel"){
+    jsonPath.value = q;
+    jsonPath.dispatchEvent(new Event("input"));
+  }
 });
 
 } /* end buildApp */
