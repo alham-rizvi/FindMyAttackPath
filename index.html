@@ -124,6 +124,9 @@ a{color:var(--accent)}
 #detail .field{margin-bottom:11px}
 #detail .field label{display:block; font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:3px; font-weight:600}
 #detail .field p{font-size:13.5px; line-height:1.55; margin:0}
+#detail .md-table-wrap{overflow:auto; border:1px solid var(--glass-border); border-radius:8px; margin:8px 0}
+#detail table.md-table{font-size:11px; min-width:520px}
+#detail .md-table th,#detail .md-table td{padding:6px 7px}
 #detail .toollist{display:flex; flex-wrap:wrap; gap:6px}
 #detail .tool-pill{font-family:"JetBrains Mono",monospace; font-size:11px; background:var(--code-bg); border:1px solid var(--glass-border);
   border-radius:6px; padding:3px 8px; cursor:pointer}
@@ -376,6 +379,31 @@ function renderMarkdownBlock(md){
     codeBlocks.push(code.replace(/^\w*\n/, ""));
     return "\u0000CODE" + (codeBlocks.length-1) + "\u0000";
   });
+  const tableBlocks = [];
+  const lines = work.split(/\r?\n/);
+  const renderedLines = [];
+  function tableCells(line){
+    return line.trim().replace(/^\|/,"").replace(/\|$/,"").split("|").map(cell=>cell.trim());
+  }
+  for(let i=0;i<lines.length;){
+    const header = lines[i] && lines[i].trim().startsWith("|") ? tableCells(lines[i]) : null;
+    const separator = lines[i+1] && lines[i+1].trim().startsWith("|") ? tableCells(lines[i+1]) : null;
+    const validSeparator = header && separator && header.length === separator.length &&
+      separator.every(cell=> /^:?-{3,}:?$/.test(cell));
+    if(validSeparator){
+      const rows = [];
+      i += 2;
+      while(i < lines.length && lines[i].trim().startsWith("|")) rows.push(tableCells(lines[i++]));
+      const headHtml = header.map(cell=>`<th>${mdInline(cell)}</th>`).join("");
+      const bodyHtml = rows.map(row=>`<tr>${header.map((_, index)=>`<td>${mdInline(row[index] || "")}</td>`).join("")}</tr>`).join("");
+      tableBlocks.push(`<div class="md-table-wrap"><table class="md-table"><thead><tr>${headHtml}</tr></thead><tbody>${bodyHtml}</tbody></table></div>`);
+      renderedLines.push("\u0000TABLE" + (tableBlocks.length-1) + "\u0000");
+    }else{
+      renderedLines.push(lines[i]);
+      i++;
+    }
+  }
+  work = renderedLines.join("\n");
   let html = escapeHtml(work);
   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
   html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
@@ -384,6 +412,7 @@ function renderMarkdownBlock(md){
   let out = paras;
   out = out.replace(/\u0000CODE(\d+)\u0000/g, (_, i)=> `<pre class="mono" style="white-space:pre-wrap;font-size:12px">${escapeHtml(codeBlocks[i])}</pre>`);
   out = out.replace(/\u0000MERMAID(\d+)\u0000/g, (_, i)=> `<div class="mermaid-wrap"><pre class="mermaid">${escapeHtml(mermaidBlocks[i])}</pre></div>`);
+  out = out.replace(/<p>\u0000TABLE(\d+)\u0000<\/p>/g, (_, i)=> tableBlocks[i]);
   return {html: out, hasMermaid: mermaidBlocks.length>0};
 }
 
@@ -575,7 +604,7 @@ function saveDiagramFile(filename, type, content){
   document.body.appendChild(link);
   link.click();
   link.remove();
-  setTimeout(()=> URL.revokeObjectURL(url), 0);
+  setTimeout(()=> URL.revokeObjectURL(url), 1000);
 }
 function closeDiagram(){
   diagramOverlay.classList.remove("open");
@@ -632,8 +661,12 @@ document.getElementById("closeDiagram").addEventListener("click", closeDiagram);
 diagramOverlay.addEventListener("click", ev=>{ if(ev.target === diagramOverlay) closeDiagram(); });
 document.getElementById("downloadDiagramSvg").addEventListener("click", ()=>{
   const svg = diagramStage.querySelector("svg");
-  if(svg) saveDiagramFile(`${safeDiagramFilename(diagramTitle.textContent)}.svg`,
-    "image/svg+xml;charset=utf-8", new XMLSerializer().serializeToString(svg));
+  if(svg){
+    const copy = svg.cloneNode(true);
+    copy.setAttribute("xmlns","http://www.w3.org/2000/svg");
+    saveDiagramFile(`${safeDiagramFilename(diagramTitle.textContent)}.svg`,
+      "image/svg+xml;charset=utf-8", new XMLSerializer().serializeToString(copy));
+  }
 });
 document.getElementById("downloadDiagramSource").addEventListener("click", ()=>{
   saveDiagramFile(`${safeDiagramFilename(diagramTitle.textContent)}.mmd`, "text/plain;charset=utf-8", activeDiagramSource);
