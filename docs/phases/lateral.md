@@ -3,61 +3,38 @@ id: lateral
 type: phase
 label: "Lateral Movement"
 ---
-Use an identity or authentication artifact from one system to access another. Common mechanisms include remote management protocols, interactive remote sessions, or reusing an NTLM hash or Kerberos ticket. The target's authorization and network controls determine what the identity can do; successful authentication does not necessarily mean remote execution is possible.
 
-## Typical progression
+# Lateral movement: assess identity, host, and access boundaries
+
+Lateral movement describes the use of an identity or authentication artifact in a context different from its original one, commonly across systems in the same environment. Passwords, password-derived keys, and Kerberos tickets have different properties, and remote-management services impose their own authorization checks. Authentication on a destination does not automatically grant administrative access or the ability to perform a sensitive action.
+
+In an authorized assessment, study how identity reuse, session placement, network segmentation, and remote-management policy combine to shape risk. Keep the work to named systems and approved test identities. Do not perform broad discovery, credential replay, remote execution, or access checks against unapproved hosts.
+
+## Conceptual progression
 
 ```mermaid
 flowchart TD
-  A[Identity or ticket available] --> B[Target reachable over an allowed protocol]
-  B --> C{Identity authorized for the requested action?}
-  C -->|No| D[Access denied or limited]
-  C -->|Yes| E[Remote logon or service access]
-  E --> F[New host becomes a possible pivot]
+  A[Scoped identity or artifact] --> B[Approved destination and permitted channel]
+  B --> C{Destination authorization}
+  C -->|Not established| D[Stop and seek owner confirmation]
+  C -->|Established in approved test| E[Assess control and telemetry]
+  E --> F[Document scope, evidence, and remediation]
 ```
 
-Pass-the-hash, pass-the-ticket, overpass-the-hash, WMI / WinRM / SMB, RDP, and WMI event subscriptions represent different behaviors and leave different evidence. Treat fileless execution as a persistence or execution concern as well as a movement concern.
+This phase includes conceptual study of [pass-the-hash](../techniques/pth.md), [pass-the-ticket](../techniques/ptt.md), [overpass-the-hash](../techniques/opth.md), [WMI access](../techniques/wmi_exec.md), [RDP](../techniques/rdp_lateral.md), and [relay risks](../techniques/coerce_relay.md). These topics are not instructions to replay authentication material or execute actions remotely.
+
+## Safe assessment sequence
+
+First confirm the exact account, host, protocol, and action in scope. Review the owner's intended administrative paths and the destination's authorization policy. Evaluate exposure through configuration and documented evidence before proposing any live validation. If the test could create a session, execute code, alter data, or affect availability, require explicit written authorization and a coordinated test window. Prefer a synthetic account and isolated lab for practical demonstrations.
+
+Document the distinction between identity and transport: an artifact may enable a specific authentication flow, while the protocol may permit only a narrow function. Record observed controls, uncertainties, and whether the conclusion is theoretical or confirmed under an approved test. Never infer permission on every host from a successful authentication elsewhere.
 
 ## Defensive view
 
-Segment administrative tiers, restrict remote-management paths, use Windows Defender Firewall and just-in-time administration, and prevent privileged accounts from signing in to lower-trust hosts. Correlate logon type, source device, account, destination, and process / service creation. Use unique local administrator passwords and review cached or disconnected sessions on shared systems.
+Segment administrative tiers and limit remote-management routes to approved source systems and identities. Use just-in-time administration where appropriate, avoid privileged logons to lower-trust endpoints, maintain unique managed local administrator credentials, and reduce unnecessary cached or disconnected sessions. Apply host firewall and protocol protections in a way that preserves approved management workflows.
 
-## Objects and defensive configuration
+Correlate source and destination logons with account, logon type, endpoint, protocol, and subsequent process or service activity. Investigate unexpected host-to-host fan-out, privileged identities on lower-trust systems, and remote access outside known administrative patterns. During an incident, contain affected endpoints and sessions while preserving evidence and coordinating identity recovery.
 
-```text
-Object: Destination computer and local administrator groups
-Risky state: Broad membership or shared/reused local administrator credentials
-Defensive target: Named admin roles, unique managed local passwords, and tier boundaries
-Fix: Remove unjustified membership and rotate exposed local credentials
+## Learning objectives
 
-Object: WinRM, RDP, SMB, WMI, and host firewall policy
-Risky state: Remote management reachable from untrusted segments or identities
-Defensive target: Approved source hosts, least-privilege access, and required protocol protections
-Fix: Restrict inbound paths and test management workflows before enforcing policy
-
-Object: User sessions and cached authentication material
-Risky state: Privileged sessions persist on lower-trust or shared endpoints
-Defensive target: Tiered logon policy, reduced credential caching, and timely session revocation
-Fix: Contain the endpoint, revoke affected sessions, and investigate subsequent logons
-```
-
-## References
-
-- [MITRE ATT&CK: Lateral Movement](https://attack.mitre.org/tactics/TA0008/)
-- [MITRE ATT&CK: Remote Services](https://attack.mitre.org/techniques/T1021/)
-- [Microsoft: Windows LAPS overview](https://learn.microsoft.com/windows-server/identity/laps/laps-overview)
-
-## The identity and the transport are separate
-
-| Access material or method | What it establishes | What it does not establish |
-| --- | --- | --- |
-| Password-derived hash | An authentication method accepted by some NTLM services | Plaintext knowledge or authorization on every host |
-| Kerberos ticket | A ticket for a particular identity and service or realm | Universal access or a new privilege level |
-| Remote-management protocol | A channel to a configured service | Permission to perform every action through that service |
-| Interactive remote session | A user session on a destination host | Authorization to take over another user's session |
-
-Assess the account, host, protocol, and requested action together. For example, an account can authenticate successfully but be denied remote administration, or be allowed to connect to a service that exposes no sensitive operation. Keep tests limited to named hosts and approved accounts, and avoid broad discovery or execution loops.
-
-## Correlation for defenders
-
-Build a timeline linking source logon, destination logon, protocol, process or service activity, and any later authentication from the destination. Compare the source device and account with normal administrative workflows. Alert on privileged identities accessing lower-trust endpoints, unusual host-to-host fan-out, and remote execution outside approved management windows.
+Be able to explain why authentication and authorization are separate, identify the controls that govern cross-host access, describe useful defender telemetry, and propose safe evidence collection and segmentation improvements without carrying out unapproved movement.

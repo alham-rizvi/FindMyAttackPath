@@ -3,69 +3,44 @@ id: privesc
 type: phase
 label: "Domain Privilege Escalation"
 ---
-Move from an existing identity to greater control by taking advantage of excessive permissions, unsafe delegation, certificate-service misconfiguration, or an unpatched vulnerability. The path is often a chain: one right permits changing an object, the changed object enables another authentication flow, and that flow grants access to a more privileged identity.
 
-## How to reason about a path
+# Privilege escalation: reason about effective control paths
 
-Assess the effective permissions and configuration, not just group names. A finding is meaningful only when the current principal can reach the vulnerable object or service, the affected setting is active, and the resulting identity has privileges that matter. Misconfiguration-based paths and CVE-based paths have different remediation: least privilege and configuration correction versus patching, with defense-in-depth for both.
+In Active Directory, privilege escalation is a change in the level of authority available to an identity. A path may involve excessive permissions, unsafe delegation, certificate-service configuration, group policy, or a vulnerable system. Often several conditions combine: one permission influences an object or service, which then affects authentication or access elsewhere.
+
+The purpose of an authorized assessment is to establish whether a plausible path exists and what control would break it—not to exercise that path against a live environment by default. A directory graph, scanner result, or vulnerability label is a hypothesis until its prerequisites and scope are established. Prefer non-invasive review and owner confirmation; state-changing validation requires explicit authorization, isolation, reversibility, and coordination.
+
+## Reason about a path
 
 ```mermaid
 flowchart TD
-  A[Existing principal] --> B[Excessive right or vulnerable service]
-  B --> C[Change trust, policy, delegation, or certificate state]
-  C --> D[Authenticate as or act for a higher-privilege identity]
-  D --> E[Validate scope and contain the path]
+  A[Scoped starting identity] --> B[Potential excessive right or unsafe configuration]
+  B --> C[Assess prerequisites and affected object]
+  C --> D[Estimate resulting authority and impact]
+  D --> E[Recommend earliest effective control]
+  E --> F[Reassess after approved remediation]
 ```
 
-The graph includes ACL and GPO abuse, DNSAdmins, machine-account creation, delegation variants, Shadow Credentials, AD Sites & Services ACL abuse, AD CS ESC1–ESC17, and named vulnerabilities such as noPac and ResetNightmare.
+For each proposed edge, ask: Which exact principal is in scope? What effective right applies after inheritance and group nesting? Is the configuration actually present and active? What authority would result, and on which resources? Could validation change state, issue a credential, or affect service availability? Record what is observed separately from what is inferred.
 
-## Defensive view
+Topics in this phase include [ACL relationships](../techniques/acl_abuse.md), [GPO permissions](../techniques/gpo_abuse.md), [delegation](../techniques/constrained_deleg.md) and [resource-based delegation](../techniques/rbcd.md), [machine-account policy](../techniques/machineaccountquota.md), [Shadow Credentials](../techniques/shadow_creds.md), [AD CS configuration](../techniques/adcs_enum.md), and named vulnerability case studies such as [noPac](../techniques/nopac.md) and [ResetNightmare](../techniques/resetnightmare.md). These are learning references; no exploitation steps are provided here.
 
-Continuously review effective ACLs on privileged users, groups, computers, GPOs, and certificate templates. Minimize who can enroll in authentication-capable templates, remove unnecessary delegation, restrict machine-account creation where operationally appropriate, and patch supported systems. Alert on privilege-bearing directory changes and certificate issuance, and verify remediation by re-evaluating the complete path rather than just the original finding.
+## Safe progression for assessment and job preparation
 
-## Objects and defensive configuration
+Start by understanding the identity and assets explicitly included in the engagement. Review approved architecture, access-control, policy, and patch evidence. Form a specific hypothesis and identify the minimum evidence needed to evaluate it. If confirming a condition requires changing directory state, requesting a certificate, altering a policy, or interacting with a sensitive service, stop and obtain written approval for a controlled lab or owner-supervised test. Report prerequisites, uncertainty, potential impact, and a clear remediation path.
 
-```text
-Object: Privileged user/group, computer, GPO, CA, or certificate template
-Risky state: Unintended write/owner/enrollment rights or broadly delegated control
-Defensive target: Effective ACLs match a documented least-privilege owner and workflow
-Fix: Remove excess rights, review inheritance/nested groups, and verify after replication
+For interview and lab preparation, build a conceptual chain using fictional objects: explain how a delegated permission could affect a sensitive group, or how an enrollment policy could change identity assurance. Demonstrate reasoning and mitigation in an isolated lab with synthetic identities rather than reproducing a live-target procedure.
 
-Object: Delegation and computer-account configuration
-Risky state: Unneeded delegation or broad ability to create/change computer identities
-Defensive target: Only documented services and roles retain the required settings
-Fix: Remove unused delegation; review machine-account creation policy with service owners
+## Defensive review and remediation
 
-Object: CA policy, enrollment endpoint, and issued-certificate mapping
-Risky state: Weak identity binding, excessive enrollment, or unnecessary endpoint exposure
-Defensive target: Directory-derived identity, restricted enrollment, strong mapping, protected CA
-Fix: Correct the earliest shared control and validate the full path in an isolated lab
-```
+Regularly review effective permissions on privileged users, groups, computers, policies, and certificate templates. Ensure each right has a documented owner and business purpose. Restrict enrollment and identity mapping to intended workflows, remove unnecessary delegation, review machine-account creation policy with service owners, and maintain supported patch levels.
 
-## References
-
-- [MITRE ATT&CK: Privilege Escalation](https://attack.mitre.org/tactics/TA0004/)
-- [Microsoft: Active Directory Certificate Services overview](https://learn.microsoft.com/windows-server/identity/ad-cs/active-directory-certificate-services-overview)
-- [SpecterOps: Certified Pre-Owned](https://specterops.io/wp-content/uploads/sites/3/2022/06/Certified_Pre-Owned.pdf)
-
-## Practice labs
-
-- [Hack The Box: Certified](https://app.hackthebox.com/machines/Certified) is a retired AD certificate-services lab for selected template and certificate-mapping concepts; it is not a complete ESC taxonomy exercise.
-- [TryHackMe: Attacktive Directory](https://tryhackme.com/room/attacktivedirectory) offers a guided AD foundation before studying multi-step privilege paths.
-
-## Validate every edge
-
-| Check | Question |
-| --- | --- |
-| Starting identity | Which exact principal and current session are in scope? |
-| Effective permission | Does that principal have the required right after inheritance and nested-group membership are resolved? |
-| Target state | Is the affected ACL, policy, delegation setting, template, or software version actually present? |
-| Reachability | Can the approved test system reach the target service under the rules of engagement? |
-| Resulting authority | What identity or action would the path provide, and what can that identity actually access? |
-| Operational safety | Could validation alter directory state, issue a credential, disrupt a service, or affect users? |
+Monitor privilege-bearing directory changes, sensitive certificate issuance, replication-related permissions, and unexpected policy updates. Remediate shared root causes where possible: a single excessive right or overly broad enrollment rule may create several apparent paths. Verify the complete hypothesis is no longer valid after approved changes, while checking that legitimate services continue to operate.
 
 ## Findings versus confirmed impact
 
-Report the complete prerequisite chain and the evidence for each link. A static graph or template scanner may over-approximate reachable paths because it cannot always account for current group membership, CA policy, network restrictions, or service-side authorization. Use a non-destructive validation where possible; any state-changing proof should be explicitly approved, isolated, reversible, and coordinated with the system owner.
+A static relationship graph may overstate reachability because it cannot always account for current membership, service-side checks, network boundaries, or operational controls. Report evidence for every prerequisite and distinguish potential impact from observed impact. Avoid claiming domain-level compromise solely from a theoretical path. Where a non-destructive validation is unavailable, say so and provide the owner with the evidence needed to decide on a controlled test.
 
-Prioritize repairs at the earliest shared control in multiple paths: overly broad object write rights, weak enrollment policy, unnecessary delegation, unpatched domain controllers, or excessive administrative access. After remediation, recalculate the path and confirm dependent services still function.
+## Learning objectives
+
+Be able to explain effective permissions, describe how configuration weaknesses compose into a path, evaluate uncertainty and operational risk, and prioritize remediation at the earliest shared control—without attempting unapproved changes or exploitation.

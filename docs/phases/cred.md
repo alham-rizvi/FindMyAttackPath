@@ -3,64 +3,52 @@ id: cred
 type: phase
 label: "Credential Access"
 ---
-Obtain or recover authentication material that can be used to impersonate an identity or access another system. The material may be a password, password-derived hash, Kerberos ticket or key, DPAPI-protected secret, local account secret, directory database, or cloud synchronization credential. Possession of a hash or ticket is not the same as knowing a plaintext password, but it can still grant authentication capabilities.
 
-## How this phase works
+# Credential access: understand exposure and reduce its scope
 
-Credential exposure usually follows access to a place where secrets are stored or used: process memory, a registry hive, a backup or database, a user's profile, a service account, or an authentication exchange. Some techniques collect material for offline analysis; others require privileged access to a domain controller or endpoint. Password-derived material must be handled as a secret even when it is not directly readable.
+Credential access concerns the exposure or recovery of material that can authenticate an identity or protect sensitive data. Examples include passwords, password-derived keys, Kerberos tickets, application secrets, certificates, and recovery material. These artifacts are not interchangeable: some are time- or service-limited, while others may permit authentication without revealing a readable password.
+
+For authorized red-team assessment and job preparation, study where secrets may be stored or used, how exposure can affect connected systems, and how defenders can detect and contain it. Do not collect real credentials or secrets as proof. Prefer synthetic identities and isolated labs; when the engagement needs evidence, agree on a redacted, minimal, securely handled alternative with the owner.
+
+## Conceptual model
+
+Credential exposure often arises where authentication material is stored, processed, backed up, or transmitted. Risk depends on the material, the associated identity, its privileges, where it is accepted, and whether sessions or derived credentials remain valid.
 
 ```mermaid
 flowchart TD
-  A[Access to host, account, or directory data] --> B[Secret-bearing store or protocol]
-  B --> C[Credential, hash, key, or ticket exposed]
-  C --> D[Validate and scope the identity]
-  D --> E[Contain, rotate, and investigate reuse]
+  A[Approved assessment context] --> B[Identify secret-bearing control or process]
+  B --> C[Assess exposure risk without collecting secrets]
+  C --> D[Determine affected identity and potential scope]
+  D --> E[Coordinate containment, rotation, and monitoring]
 ```
 
-Techniques represented here include LSASS, SAM / LSA and NTDS extraction, ticket collection, DPAPI, roasting, Timeroasting, and dMSA-related credential exposure.
+Topics represented in this repository include [Kerberos service-account ticket exposure](../techniques/kerberoast.md), [accounts without Kerberos pre-authentication](../techniques/asreproast.md), [LSASS](../techniques/lsass_dump.md), [SAM and LSA stores](../techniques/sam_lsa.md), [DPAPI](../techniques/dpapi.md), [legacy Group Policy Preferences secrets](../techniques/gpp_cpassword.md), [directory database exposure](../techniques/ntds_dump.md), and [managed service accounts](../techniques/laps_gmsa.md). These links are conceptual study references, not authorization to extract or use secret material.
 
-## Defensive view
+## Safe learning progression
 
-Reduce local administrator rights, enable Credential Guard and LSASS protections where compatible, protect domain-controller backups and database files, use managed service accounts, and prefer long randomly generated secrets. Monitor access to sensitive processes and stores, unexpected replication activity, and unusual Kerberos request patterns. After suspected exposure, revoke sessions where possible and rotate credentials in dependency-aware order; changing one password does not invalidate every ticket or derived secret.
+1. **Classify the material.** Understand whether the concern is a password, derived key, ticket, certificate, protected user data, or broad directory secret store.
+2. **Map its scope conceptually.** Identify which identity, services, systems, and trust relationships could depend on it without testing it against live systems.
+3. **Assess exposure controls.** Review least privilege, secret storage, endpoint protections, service-account design, backup access, and monitoring with the system owner.
+4. **Use a lab for demonstrations.** Practice only with synthetic accounts and deliberately vulnerable, isolated environments that cannot reach production.
+5. **Report and remediate.** Describe the risk and evidence without disclosing secrets; coordinate credential/session containment with identity and service owners.
 
-## Objects and defensive configuration
+## Material and response considerations
 
-```text
-Object: Endpoint LSASS process and local SAM/LSA stores
-Risky state: Broad local admin access or unprotected credential material
-Defensive target: Credential Guard and supported LSASS protections; least privilege
-Fix: Reduce local administrators, enable compatible protections, and investigate access
-
-Object: Service identity and Group Policy Preferences files in SYSVOL
-Risky state: Reusable password in a legacy preference or unmanaged service account
-Defensive target: gMSA or another approved secret-management system; no stored preference password
-Fix: Remove the legacy secret, rotate it, and check for reuse and dependent services
-
-Object: Domain-controller database and backup stores
-Risky state: Backup or database access exceeds authorized roles
-Defensive target: Tier-0 access controls, protected backups, and monitored recovery paths
-Fix: Restrict access and assess credential rotation/recovery scope with identity owners
-```
-
-## References
-
-- [MITRE ATT&CK: Credential Access](https://attack.mitre.org/tactics/TA0006/)
-- [MITRE ATT&CK: OS Credential Dumping](https://attack.mitre.org/techniques/T1003/)
-- [Microsoft: Credential Guard overview](https://learn.microsoft.com/windows/security/identity-protection/credential-guard/)
-
-## Credential material is not all equivalent
-
-| Material | Typical scope | Response consideration |
+| Material class | Potential concern | Response consideration |
 | --- | --- | --- |
-| Plaintext password | Account authentication wherever that password is accepted | Change it and identify reuse; invalidate sessions and dependent secrets as needed |
-| NTLM or other password-derived key | May support protocol authentication without revealing plaintext | Rotate the underlying secret; review local and remote logons that used it |
-| Kerberos TGT or service ticket | Time- and service-scoped authentication artifact | Revoke or expire affected sessions and investigate ticket use on other hosts |
-| DPAPI-protected data | Protected application or user data tied to key material | Protect both the data and the user's or domain's recovery keys |
-| Directory database or replication data | Potentially broad set of domain credential material | Treat as domain-wide exposure and use a coordinated recovery plan |
-| Cloud sync or refresh-token material | Cloud identities and applications reachable through the linked account | Contain cloud sessions and the on-premises source together |
+| Password or application secret | Reuse or access to dependent services | Rotate at the source, identify reuse and dependencies, and review sessions |
+| Password-derived key | Authentication capability may exist without plaintext disclosure | Treat as sensitive; rotate the underlying secret and investigate relevant logons |
+| Kerberos ticket | Authentication may be limited by identity, service, realm, and lifetime | Assess ticket use and related sessions; password change alone may not end existing sessions |
+| Protected user data | Access may depend on profile, recovery, or key material | Protect both the data and its recovery keys; scope affected users carefully |
+| Directory or backup data | Broad exposure of identities and credential material | Treat as potentially domain-wide; use a coordinated recovery plan |
+| Certificate or synchronized cloud secret | May bridge on-premises, application, or cloud access | Include certificate revocation and cloud-session containment where applicable |
 
-## Handling and response
+## Detection and remediation context
 
-Minimize collection and storage of credential material during testing. Use synthetic accounts where possible, encrypt any explicitly approved evidence, limit access, and delete it according to the engagement's retention plan. In an incident, identify the material and its scope before rotating secrets: changing an account password may not immediately invalidate an already-issued ticket, cached session, application secret, or synchronized cloud token.
+Reduce local administrator access, enable compatible protections for credential-bearing processes, protect domain-controller databases and backups, and replace unmanaged service secrets with approved managed identity patterns. Monitor access to sensitive processes and stores, unusual replication-related activity, and authentication patterns that diverge from known service behavior. Investigate the source identity and host alongside subsequent authentication events.
 
-Build an exposure timeline from the source process or account, the accessed store, the time of collection, and subsequent authentication events. This helps distinguish a single endpoint incident from domain-wide exposure and guides which identities, sessions, services, and trust keys need remediation.
+Containment is dependency-aware. A password reset may not invalidate an already issued ticket, certificate, application token, synchronized cloud credential, or active session. Preserve relevant evidence, identify the exposed material and its scope, coordinate rotation or revocation with service owners, and verify that the old access path is no longer trusted. Minimize retention of assessment evidence and follow the engagement's handling and deletion requirements.
+
+## Learning objectives
+
+Be able to distinguish credential-material classes, explain why exposure can outlast a password change, describe safe evidence handling, and outline a coordinated detection and recovery approach without collecting or replaying secrets.

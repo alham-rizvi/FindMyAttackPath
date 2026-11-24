@@ -3,63 +3,47 @@ id: persist
 type: phase
 label: "Domain Persistence & Dominance"
 ---
-Maintain access after the original foothold is removed, often by changing directory state, retaining privileged authentication material, or establishing an alternate trust or credential path. Persistence mechanisms differ in durability and detectability. Some changes are visible in directory or certificate records; others depend on secrets that can survive password changes until sessions, keys, or trust material are also invalidated.
 
-## Why recovery is more than a password reset
+# Persistence: understand durable access and recovery
 
-An incident response must identify what was changed and which secrets may have been exposed. Ticket-forging material, service keys, certificates, SID history, replication rights, rogue directory registrations, and modified authentication components call for different containment steps. Rebuilding trust in a domain can require coordinated key rotation and staged validation, not a single account reset.
+Persistence is the retention of access after an initial account, session, or foothold is removed. In an Active Directory environment, durability can come from altered directory state, exposed signing or authentication keys, certificates, trust relationships, active sessions, or changes on a host. The consequences range from a single service to a forest-wide recovery problem.
+
+This is a high-impact topic. For red-team learning, focus on recognizing artifact classes, explaining why routine password changes may be insufficient, and evaluating detection and recovery controls. Do not create persistence in production or follow execution recipes. Practical demonstrations belong in an isolated lab with synthetic identities and explicit authorization.
+
+## Conceptual lifecycle
 
 ```mermaid
 flowchart TD
-  A[Privileged access or secret] --> B[Create alternate trust or authentication path]
-  B --> C[Access survives ordinary credential change]
-  C --> D[Detect directory, certificate, or host change]
-  D --> E[Remove persistence and rotate affected secrets]
-  E --> F[Validate domain recovery]
+  A[Privileged access or exposed secret] --> B[Potential durable trust or state change]
+  B --> C[Ordinary account change may not remove all access]
+  C --> D[Identify artifact class and affected scope]
+  D --> E[Preserve evidence and coordinate containment]
+  E --> F[Restore known-good state and verify recovery]
 ```
 
-The graph covers DCSync, forged or modified Kerberos tickets, Skeleton Key, Golden Certificate, DCShadow, SID history, and cross-forest trust tickets. These are high-impact scenarios; the listed prerequisites are intentionally strong.
+Topics represented in this repository include [replication-right exposure](../techniques/dcsync.md), [Kerberos ticket abuse](../techniques/golden.md), [service-ticket forgery concepts](../techniques/silver.md), [certificate trust risks](../techniques/golden_cert.md), [directory replication change scenarios](../techniques/dcshadow.md), [SID history](../techniques/sidhistory.md), [protected-object permissions](../techniques/adminsdholder.md), and [cross-trust ticket risks](../techniques/trust_ticket.md). These references support conceptual study, not instructions for establishing persistence.
 
-## Defensive view
-
-Protect and monitor replication permissions, domain-controller memory and configuration, certificate-authority private keys, privileged group membership, and trust settings. Maintain secure backups and a tested recovery plan. During response, preserve evidence and coordinate containment with identity administrators to avoid disrupting replication or invalidating dependencies prematurely.
-
-## Objects and defensive configuration
-
-```text
-Object: AdminSDHolder, protected accounts, privileged groups, and directory ACLs
-Risky state: Unapproved owner, DACL, membership, delegation, or SID-history changes
-Defensive target: Known-good baselines and narrowly controlled Tier-0 administration
-Fix: Restore verified state and confirm protected-object processing has completed
-
-Object: krbtgt/service-account keys, CA private keys, and forest-trust secrets
-Risky state: Suspected exposure, unmanaged copies, or stale trust credentials
-Defensive target: Protected key storage and vendor-approved, dependency-aware rotation
-Fix: Preserve evidence and use the relevant forest/PKI recovery procedure
-
-Object: Certificates, tickets, cloud sessions, and host persistence
-Risky state: Active artifacts or unauthorized state survives a password reset
-Defensive target: Revocation/session containment plus a clean host and directory baseline
-Fix: Revoke or expire affected artifacts and verify that old paths no longer work
-```
-
-## References
-
-- [MITRE ATT&CK: Persistence](https://attack.mitre.org/tactics/TA0003/)
-- [MITRE ATT&CK: Steal or Forge Kerberos Tickets](https://attack.mitre.org/techniques/T1558/)
-- [Microsoft: AD forest recovery guide](https://learn.microsoft.com/windows-server/identity/ad-ds/manage/forest-recovery-guide/ad-forest-recovery-guide)
-
-## Persistence artifact classes
+## Artifact classes and recovery focus
 
 | Artifact class | Examples | Recovery focus |
 | --- | --- | --- |
-| Directory state | Group membership, ACLs, SID history, delegation, rogue directory registrations | Compare with approved baselines and audit records; remove unauthorized changes |
-| Authentication keys | krbtgt or service-account secrets, CA private keys, trust secrets | Rotate or revoke using a dependency-aware vendor procedure |
-| Host state | Modified authentication components, services, WMI subscriptions, scheduled policy | Preserve evidence, rebuild or restore trusted systems where needed |
-| Issued credentials | Certificates, Kerberos tickets, cloud sessions | Revoke or expire artifacts and review relying systems |
+| Directory state | Privileged membership, ACLs, SID history, delegation, directory registrations | Compare against approved baselines and audit records; restore verified state |
+| Authentication keys | Domain, service, certificate-authority, or trust secrets | Protect evidence and follow dependency-aware vendor recovery guidance |
+| Issued credentials | Certificates, tickets, cloud sessions | Revoke or expire affected artifacts and investigate relying systems |
+| Host state | Authentication components, services, subscriptions, or policy effects | Preserve evidence; determine whether trusted rebuild or restoration is required |
 
-## Recovery sequence
+## Detection and remediation context
 
-Contain the affected identity and systems, preserve forensic evidence, identify all persistence paths, and coordinate key or credential rotation with service owners. Remove only confirmed unauthorized changes; careless deletion of replication, CA, or policy state can interrupt legitimate operations. Verify recovery from a known-good baseline and continue monitoring for reappearance or use of old credentials.
+Protect and monitor replication permissions, domain-controller configuration, certificate-authority private keys, privileged groups, trust settings, and administrative host state. Maintain secure backups, known-good configuration baselines, and a tested forest recovery plan. Investigate unexpected privileged directory changes, certificate issuance, replication-related activity, or unusual authentication patterns using correlated identity, host, and service evidence.
 
-For domain-wide key exposure, follow Microsoft's forest-recovery and key-reset guidance exactly. Do not assume that one password reset invalidates all existing sessions, certificates, or tickets. Document which secrets were rotated, which systems received the change, and what evidence demonstrates that the old path is no longer usable.
+Recovery is broader than resetting one account. First contain affected identities and systems while preserving forensic evidence. Identify all potentially affected artifact classes and coordinate with identity, PKI, cloud, and service owners. Remove only confirmed unauthorized changes; careless alteration of replication, certificate, or policy configuration can disrupt legitimate operations. Rotate or revoke affected material according to a tested, dependency-aware recovery plan, then verify that old trust paths are no longer accepted and continue monitoring for recurrence.
+
+For suspected domain-wide key exposure, follow current Microsoft forest-recovery and key-reset guidance through the responsible administrators. Record what was rotated, where changes were applied, what dependencies were validated, and what evidence supports recovery. A single password change does not establish that existing tickets, certificates, sessions, cloud tokens, or host changes are gone.
+
+## Safe learning progression
+
+Use fictional scenarios to compare the durability and blast radius of directory-state changes, keys, issued credentials, and host-level artifacts. In a lab, focus on defender-side baselines, audit signals, and recovery validation rather than creating real-world persistence. In a job interview, explain the recovery dependencies and why evidence preservation and coordination matter before making changes.
+
+## Learning objectives
+
+Be able to classify persistence artifacts, describe how they can survive ordinary credential changes, outline a safe investigation and coordinated recovery, and recommend controls that protect Tier-0 identities and trust material—without establishing persistence on live systems.

@@ -10,70 +10,35 @@ mitre: "T1558"
 tag: null
 ---
 
-# Unconstrained delegation abuse
+# Unconstrained delegation
 
-Unconstrained delegation lets a configured host cache TGTs for users who authenticate to it, creating a sensitive host trust boundary.
+## Concept
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+Kerberos delegation allows a service to access another service on behalf of a user. With unconstrained delegation, a service host trusted for delegation can receive reusable Kerberos credentials when a user authenticates to it using Kerberos, rather than being limited to a specified backend service. This creates a substantial exposure if the host is compromised and privileged users can authenticate to it.
 
-## Beginner-friendly walkthrough
-
-**In plain terms:** a host configured for unconstrained delegation is allowed to hold onto a full copy of any user's Kerberos ticket (TGT) the moment that user authenticates to it — not just a limited token for one service, but the user's *entire* ticket, reusable anywhere. If an attacker controls that host, they can wait (or actively trick a high-value account into connecting) and then simply take the cached ticket.
-
-**Objects abused / affected**
-
-| Object | Normal purpose | What this technique touches |
-| --- | --- | --- |
-| Computer account with `TRUSTED_FOR_DELEGATION` flag | Lets a legitimate multi-hop service (e.g. a file server impersonating users to a backend) work | Means any TGT cached on that host can be lifted by whoever controls the host |
-| Cached TGTs of users/computers who authenticate to that host | Normal delegation working memory | Become directly reusable by the attacker |
-| Domain controller computer accounts | DCs authenticate to each other routinely | A classic high-value target if an attacker can coerce a DC to authenticate to their unconstrained-delegation host |
+The risk depends on protocol, authentication path, account settings, and operating-system protections. It is inaccurate to assume every authentication delivers a full reusable TGT in every circumstance. The assessment should distinguish configured trust from evidence that sensitive credentials were actually present or accessed.
 
 ```mermaid
-flowchart TD
-  A["Attacker controls a host with unconstrained delegation"] --> B["Wait for, or coerce, a high-value account to authenticate to it"]
-  B --> C["That account's full TGT is cached on the host"]
-  C --> D["Extract the cached TGT"]
-  D --> E["Reuse the TGT as that account anywhere in the domain"]
+flowchart LR
+  A[Host configured for unconstrained delegation] --> B[User authenticates using a relevant Kerberos path]
+  B --> C[Delegation may expose reusable credential material to host]
+  C --> D[Host compromise can increase credential-theft impact]
 ```
 
-**Stages, and which tool typically covers each one**
+## Prerequisites and affected assets
 
-1. **Find delegation-enabled hosts** — surfaced during [LDAP enumeration](ldap_enum.md) by checking the relevant `userAccountControl` flag on computer objects.
-2. **Coerce authentication (if not waiting naturally)** — `PetitPotam` and similar coercion techniques can trigger a privileged computer account (sometimes a DC) to authenticate to the attacker-controlled host.
-3. **Capture and reuse the ticket** — `Rubeus`'s ticket-monitoring/extraction features pull the cached TGT once it lands; `krbrelayx` can also relay the coerced authentication directly rather than only capturing it.
+Review computer and service accounts with the unconstrained-delegation trust setting, excluding or separately evaluating domain controllers and documented exceptions. Identify host owners, services, privileged-user access patterns, inbound authentication protocols, and protections for credentials on the host. A compromised delegation host is a prerequisite for credential access; configuration alone is a risk indicator, not proof of compromise.
 
-The fix is structural, not detective: move affected hosts to constrained (or resource-based constrained) delegation, which limits exactly which service the cached ticket can be used for instead of handing over the whole TGT.
+Do not induce privileged authentication or use coercion techniques as part of routine validation. Such actions can disrupt services and may exceed an engagement’s authorization.
 
+## Detection
 
-## Relevant objects and normal purpose
+Inventory delegation settings and alert on unauthorized changes to trust-for-delegation flags. On hosts where delegation is justified, monitor credential-access telemetry, suspicious access to authentication processes, unexpected ticket activity, and privileged logons from unusual sources. Correlate domain-controller events (including relevant 4624 and 4768 records) with endpoint evidence. Event patterns alone cannot reliably prove ticket extraction; audit and platform capabilities vary.
 
-Computer account `TRUSTED_FOR_DELEGATION` flag, host TGT cache, SPNs, authentication protocol/source, krbtgt/KDC, account “sensitive/not delegatable” state and Protected Users are central.
+## Remediation
 
-## Prerequisite chain
+Remove unconstrained delegation where it is not required and migrate to constrained delegation or RBCD only after reviewing the service’s actual needs and target policy. Protect sensitive accounts from delegation, reduce privileged interactive logons to servers, apply tiered administration, and harden hosts that must retain delegation. Coordinate changes with service owners to avoid authentication outages.
 
-The host must be unconstrained-delegation configured and receive authentication from an account whose ticket is cached. Host control and the ticket remaining usable are required.
+## Limits and related topics
 
-
-## Impact limits and failure cases
-
-Protected Users/not-delegated/sensitive accounts, ticket lifetime, authentication flags and host control limit impact. User TGT scope is not automatically privileged.
-
-## Detection and validation
-
-Monitor delegation flag/SPN changes, privileged 4624/4768 to delegated hosts and LSA/cache access. Correlate account, source host and ticket lifetime.
-
-Validate an impact hypothesis by correlating the relevant identity, directory, authentication, endpoint, network or cloud telemetry for the exact host, account and time. One event ID or tool label is not proof of success.
-
-## Mitigation and recovery
-
-**Mitigation:** Remove unconstrained delegation, use constrained/resource-based patterns, mark sensitive accounts not delegatable and isolate delegated hosts.
-
-**Recovery:** Preserve evidence, isolate affected systems and identities, remove unauthorized state through approved procedures, review relevant credentials/sessions and retest in a clean lab.
-
-## References
-
-- [Microsoft: Kerberos authentication overview](https://learn.microsoft.com/windows-server/security/kerberos/kerberos-authentication-overview)
-- [Microsoft: Credential protection](https://learn.microsoft.com/windows-server/security/credentials-protection-and-management/credential-protection-and-management)
-- [Microsoft: Active Directory Domain Services](https://learn.microsoft.com/windows-server/identity/ad-ds/)
-- [Microsoft: Security auditing](https://learn.microsoft.com/windows/security/threat-protection/auditing/security-auditing-overview)
-- [MITRE ATT&CK: T1558](https://attack.mitre.org/techniques/T1558/)
+This page describes exposure and defensive review, not credential capture or coercion procedures. See [constrained delegation](constrained_deleg.md), [RBCD](rbcd.md), and [coercion and relay](coerce_relay.md).
