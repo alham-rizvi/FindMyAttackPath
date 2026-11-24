@@ -80,6 +80,12 @@ a{color:var(--accent)}
 }
 #menuBtn svg{width:18px; height:18px}
 #menuBtn circle{fill:var(--fg)}
+#docsBtn{
+  position:fixed; top:max(16px, env(safe-area-inset-top,0px)); right:max(68px, calc(env(safe-area-inset-right,0px) + 68px));
+  height:44px; border-radius:22px; z-index:30; cursor:pointer; border:none;
+  display:flex; align-items:center; gap:7px; padding:0 13px; color:var(--fg); font-size:12px; font-weight:700;
+}
+#docsBtn svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 
 #menuPanel{
   position:fixed; top:calc(max(16px, env(safe-area-inset-top,0px)) + 54px); right:max(16px, env(safe-area-inset-right,0px));
@@ -267,6 +273,11 @@ tr[hidden]{display:none}
 
 <button id="menuBtn" class="glass" aria-label="Open menu" aria-expanded="false">
   <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+</button>
+
+<button id="docsBtn" class="glass" type="button" aria-label="Open Markdown documentation viewer" title="Markdown, TXT and JSON viewers">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h7l3 3V20.5H7z"/><path d="M14 3.5v4h4M9.5 12h5M9.5 15h5M9.5 18h3"/></svg>
+  <span>Docs</span>
 </button>
 
 <div id="menuPanel" class="glass">
@@ -1069,8 +1080,8 @@ function showDetail(d){
     html += extraSectionsHtml(t.extra);
   } else if(d.type==="technique"){
     html += `<div class="phase-of">Phase: <em class="accent">${escapeHtml(phaseLabel(t.phase))}</em></div>`;
-    html += `<div class="field"><label>What it does</label><p>${mdInline(t.desc)}</p></div>`;
-    html += `<div class="field"><label>Prerequisite</label><p>${mdInline(t.prereq)}</p></div>`;
+    html += `<div class="field"><label>What it does</label>${renderMarkdownBlock(t.desc).html}</div>`;
+    html += `<div class="field"><label>Prerequisite</label>${renderMarkdownBlock(t.prereq).html}</div>`;
     if(t.tools && t.tools.length){
       html += `<div class="field"><label>Tool(s)</label><div class="toollist">${t.tools.map(x=>`<span class="tool-pill" data-jump="${x}">${escapeHtml(toolLabel(x))}</span>`).join("")}</div></div>`;
     }
@@ -1324,6 +1335,11 @@ document.getElementById("openJsonDocs").addEventListener("click", ev=>{
   indexOverlay.classList.add("open");
   menuPanel.classList.remove("open");
   document.getElementById("jsonTab").click();
+});
+document.getElementById("docsBtn").addEventListener("click", ()=>{
+  indexOverlay.classList.add("open");
+  menuPanel.classList.remove("open");
+  document.getElementById("markdownTab").click();
 });
 let commitsLoaded = false;
 async function loadRecentCommits(){
