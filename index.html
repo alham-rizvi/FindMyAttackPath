@@ -143,6 +143,21 @@ a{color:var(--accent)}
 #aboutModal{width:min(760px, 100%); max-height:min(82vh, 760px); padding:22px; overflow-y:auto}
 #aboutModal code{font-family:"JetBrains Mono",monospace; font-size:.92em; background:var(--code-bg); border:1px solid var(--glass-border); border-radius:4px; padding:0 4px}
 .mermaid-wrap{margin:10px 0; padding:10px; background:var(--code-bg); border:1px solid var(--glass-border); border-radius:10px; overflow:auto}
+.mermaid-actions{display:flex; flex-wrap:wrap; justify-content:flex-end; gap:6px; margin-bottom:8px}
+.mermaid-action{background:var(--glass-bg-solid); border:1px solid var(--glass-border); color:var(--fg); padding:6px 9px;
+  border-radius:7px; font-size:11px; font-weight:600; cursor:pointer}
+.mermaid-action:hover{border-color:var(--accent)}
+#diagramOverlay{position:fixed; inset:0; z-index:60; display:none; align-items:center; justify-content:center; padding:2vh 2vw;
+  background:rgba(10,14,15,0.72); backdrop-filter:blur(4px)}
+#diagramOverlay.open{display:flex}
+#diagramModal{width:min(1400px, 100%); height:min(94vh, 100%); padding:16px; display:flex; flex-direction:column; min-height:0}
+#diagramModal .modal-head{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px}
+#diagramModal h2{font-size:16px; margin:0; font-weight:700}
+#diagramModal .diagram-modal-actions{display:flex; align-items:center; gap:7px}
+#diagramModal .closeBtn{width:30px; height:30px; border-radius:50%; border:none; background:var(--code-bg); color:var(--muted); cursor:pointer; font-size:15px}
+#diagramStage{flex:1; min-height:0; overflow:auto; display:flex; align-items:center; justify-content:center; padding:12px;
+  border:1px solid var(--glass-border); border-radius:12px; background:var(--code-bg)}
+#diagramStage svg{max-width:100%; height:auto}
 #indexModal .modal-head{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:4px}
 #indexModal h2{font-size:19px; margin:0; font-weight:700}
 #indexModal p.sub{font-size:13px; color:var(--muted); margin:6px 0 14px; max-width:68ch}
@@ -285,6 +300,20 @@ tr[hidden]{display:none}
         <tbody></tbody>
       </table>
     </div>
+  </div>
+
+  <div id="diagramOverlay" aria-hidden="true">
+    <section id="diagramModal" class="glass-solid" role="dialog" aria-modal="true" aria-labelledby="diagramTitle">
+      <div class="modal-head">
+        <h2 id="diagramTitle">Attack-path diagram</h2>
+        <div class="diagram-modal-actions">
+          <button class="mermaid-action" id="downloadDiagramSvg" type="button">Download SVG</button>
+          <button class="mermaid-action" id="downloadDiagramSource" type="button">Download Mermaid</button>
+          <button class="closeBtn" id="closeDiagram" type="button" aria-label="Close diagram">✕</button>
+        </div>
+      </div>
+      <div id="diagramStage"></div>
+    </section>
   </div>
 </div>
 
@@ -528,6 +557,89 @@ function highlightWiresFor(id){
 
 /* ---------- node detail panel ---------- */
 const detailEl = document.getElementById("detail");
+const diagramOverlay = document.getElementById("diagramOverlay");
+const diagramStage = document.getElementById("diagramStage");
+const diagramTitle = document.getElementById("diagramTitle");
+let activeDiagramSource = "";
+let diagramReturnFocus = null;
+let detailRenderToken = 0;
+function safeDiagramFilename(name){
+  return String(name || "attack-path").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"") || "attack-path";
+}
+function saveDiagramFile(filename, type, content){
+  const url = URL.createObjectURL(new Blob([content], {type}));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(()=> URL.revokeObjectURL(url), 0);
+}
+function closeDiagram(){
+  diagramOverlay.classList.remove("open");
+  diagramOverlay.setAttribute("aria-hidden","true");
+  diagramStage.replaceChildren();
+  if(diagramReturnFocus && typeof diagramReturnFocus.focus === "function") diagramReturnFocus.focus();
+}
+function openDiagram(wrap, source, title){
+  const svg = wrap.querySelector("svg");
+  if(!svg) return;
+  diagramReturnFocus = document.activeElement;
+  activeDiagramSource = source;
+  diagramTitle.textContent = title;
+  diagramStage.replaceChildren(svg.cloneNode(true));
+  diagramOverlay.classList.add("open");
+  diagramOverlay.setAttribute("aria-hidden","false");
+  document.getElementById("closeDiagram").focus();
+}
+function downloadDiagramSvg(wrap, title){
+  const svg = wrap.querySelector("svg");
+  if(!svg) return;
+  const copy = svg.cloneNode(true);
+  copy.setAttribute("xmlns","http://www.w3.org/2000/svg");
+  saveDiagramFile(`${safeDiagramFilename(title)}.svg`, "image/svg+xml;charset=utf-8",
+    new XMLSerializer().serializeToString(copy));
+}
+function enhanceMermaidDiagrams(sources, label){
+  detailEl.querySelectorAll(".mermaid-wrap").forEach((wrap, index)=>{
+    if(!wrap.querySelector("svg")) return;
+    const title = `${label} diagram ${index+1}`;
+    const actions = document.createElement("div");
+    actions.className = "mermaid-actions";
+    const viewButton = document.createElement("button");
+    viewButton.className = "mermaid-action";
+    viewButton.type = "button";
+    viewButton.textContent = "View full size";
+    viewButton.addEventListener("click", ()=> openDiagram(wrap, sources[index] || "", title));
+    const svgButton = document.createElement("button");
+    svgButton.className = "mermaid-action";
+    svgButton.type = "button";
+    svgButton.textContent = "Download SVG";
+    svgButton.addEventListener("click", ()=> downloadDiagramSvg(wrap, title));
+    const sourceButton = document.createElement("button");
+    sourceButton.className = "mermaid-action";
+    sourceButton.type = "button";
+    sourceButton.textContent = "Download Mermaid";
+    sourceButton.addEventListener("click", ()=> saveDiagramFile(`${safeDiagramFilename(title)}.mmd`,
+      "text/plain;charset=utf-8", sources[index] || ""));
+    actions.append(viewButton, svgButton, sourceButton);
+    wrap.insertBefore(actions, wrap.firstChild);
+  });
+}
+document.getElementById("closeDiagram").addEventListener("click", closeDiagram);
+diagramOverlay.addEventListener("click", ev=>{ if(ev.target === diagramOverlay) closeDiagram(); });
+document.getElementById("downloadDiagramSvg").addEventListener("click", ()=>{
+  const svg = diagramStage.querySelector("svg");
+  if(svg) saveDiagramFile(`${safeDiagramFilename(diagramTitle.textContent)}.svg`,
+    "image/svg+xml;charset=utf-8", new XMLSerializer().serializeToString(svg));
+});
+document.getElementById("downloadDiagramSource").addEventListener("click", ()=>{
+  saveDiagramFile(`${safeDiagramFilename(diagramTitle.textContent)}.mmd`, "text/plain;charset=utf-8", activeDiagramSource);
+});
+document.addEventListener("keydown", ev=>{
+  if(ev.key === "Escape" && diagramOverlay.classList.contains("open")) closeDiagram();
+});
 function toolLabel(id){ const n=nodeIndex.get(id); return n ? (n.data.repo || n.label) : id; }
 function focusNode(id){ const n = graphNodes.find(x=>x.id===id); if(n) showDetail(n); }
 
@@ -543,6 +655,7 @@ function extraSectionsHtml(extra){
 }
 
 function showDetail(d){
+  const renderToken = ++detailRenderToken;
   const t = d.data;
   let html = `<button class="closeBtn" id="closeDetail">✕</button>`;
   html += `<h3>${escapeHtml(d.label)}${d.tag==='new'?'<span class="tag-new">new</span>':''}</h3><div class="type-badge">${d.type}</div>`;
@@ -579,8 +692,12 @@ function showDetail(d){
     try{
       mermaid.initialize({startOnLoad:false, securityLevel:"strict",
         theme: matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "default"});
-      if(mermaid.run) mermaid.run({nodes: detailEl.querySelectorAll(".mermaid")});
-      else mermaid.init(undefined, detailEl.querySelectorAll(".mermaid"));
+      const mermaidNodes = [...detailEl.querySelectorAll(".mermaid")];
+      const sources = mermaidNodes.map(node=> node.textContent);
+      const rendered = mermaid.run ? mermaid.run({nodes:mermaidNodes}) : mermaid.init(undefined, mermaidNodes);
+      Promise.resolve(rendered).then(()=>{
+        if(renderToken === detailRenderToken) enhanceMermaidDiagrams(sources, d.label);
+      }).catch(e=> console.warn("mermaid render failed", e));
     }catch(e){ console.warn("mermaid render failed", e); }
   }
   highlightWiresFor(d.id);

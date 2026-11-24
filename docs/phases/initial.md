@@ -32,6 +32,11 @@ Require strong, unique credentials and modern authentication protections; disabl
 - [MITRE ATT&CK: Valid Accounts](https://attack.mitre.org/techniques/T1078/)
 - [Microsoft: Security guidance for NTLM](https://learn.microsoft.com/windows-server/security/kerberos/ntlm-overview)
 
+## Practice labs
+
+- [TryHackMe: Attacktive Directory](https://tryhackme.com/room/attacktivedirectory) is a guided, isolated introduction to common AD assessment concepts.
+- [Hack The Box: Forest](https://app.hackthebox.com/machines/Forest) is a retired Windows/AD machine for practicing foundational domain assessment in a platform-provided lab.
+
 ## Common entry conditions
 
 | Entry condition | What it means | Important limitation |

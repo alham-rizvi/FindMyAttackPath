@@ -54,6 +54,8 @@ You can embed a Mermaid diagram anywhere in the body:
     ```
 
 The site renders fenced ```mermaid blocks automatically — no need to generate an image.
+Rendered diagrams include controls to open a large viewer and download either SVG or
+Mermaid source (.mmd).
 ```
 
 ### Tool

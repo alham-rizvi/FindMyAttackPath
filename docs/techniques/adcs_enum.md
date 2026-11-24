@@ -95,6 +95,11 @@ On suspicion, preserve CA and directory evidence, revoke only certificates with 
 - Relying-party trust and certificate acceptance evidence.
 - Remediation owner, rollback/recovery plan and verification criteria.
 
+## Practice lab
+
+- [Hack The Box: Certified](https://app.hackthebox.com/machines/Certified) is a retired Windows/AD lab commonly used to study certificate-template and certificate-mapping weaknesses. Treat it as a bounded exercise, follow the platform rules, and do not transfer the workflow to systems outside the lab.
+- The [AD CS ESC overview](adcs_esc_matrix.md) summarizes the commonly numbered ESC1–ESC16 categories and the defensive questions to ask for each. The labels describe different configuration and trust failures; they are not proof that a path is exploitable.
+
 ## References
 
 - [Microsoft: Active Directory Certificate Services overview](https://learn.microsoft.com/windows-server/identity/ad-cs/active-directory-certificate-services-overview)

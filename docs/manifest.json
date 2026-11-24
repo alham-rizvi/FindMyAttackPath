@@ -470,6 +470,11 @@
     "path": "docs/techniques/adcs_esc1.md"
   },
   {
+    "id": "adcs_esc_matrix",
+    "type": "technique",
+    "path": "docs/techniques/adcs_esc_matrix.md"
+  },
+  {
     "id": "adcs_esc8",
     "type": "technique",
     "path": "docs/techniques/adcs_esc8.md"

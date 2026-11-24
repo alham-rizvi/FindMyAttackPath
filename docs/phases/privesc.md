@@ -29,6 +29,11 @@ Continuously review effective ACLs on privileged users, groups, computers, GPOs,
 - [Microsoft: Active Directory Certificate Services overview](https://learn.microsoft.com/windows-server/identity/ad-cs/active-directory-certificate-services-overview)
 - [SpecterOps: Certified Pre-Owned](https://specterops.io/wp-content/uploads/sites/3/2022/06/Certified_Pre-Owned.pdf)
 
+## Practice labs
+
+- [Hack The Box: Certified](https://app.hackthebox.com/machines/Certified) is a retired AD certificate-services lab for selected template and certificate-mapping concepts; it is not a complete ESC taxonomy exercise.
+- [TryHackMe: Attacktive Directory](https://tryhackme.com/room/attacktivedirectory) offers a guided AD foundation before studying multi-step privilege paths.
+
 ## Validate every edge
 
 | Check | Question |
