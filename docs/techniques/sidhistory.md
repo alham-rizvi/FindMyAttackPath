@@ -21,11 +21,3 @@ tag: null
 
 ### Commands
 ```bash
-# ── PowerView ────────────────────────────────────────────────────────
-Set-DomainObject -Identity lowpriv -Set @{sidHistory='S-1-5-21-X-500'}
-```
-
-### Detection
-**5136** on `sIDHistory`; **4765/4766**; alert on any `sIDHistory` write.
-
----

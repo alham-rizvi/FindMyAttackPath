@@ -21,16 +21,3 @@ Who is logged on where → where privileged credentials live. NetExec sessions/u
 
 ### Commands
 ```bash
-# ── NetExec sessions ────────────────────────────────────────────────
-nxc smb 10.10.10.0/24 -u lowpriv -p 'Password123!' --sessions
-nxc smb 10.10.10.0/24 -u lowpriv -p 'Password123!' --loggedon-users
-
-# ── On host ──────────────────────────────────────────────────────────
-qwinsta
-net session
-```
-
-### Detection
-**4624 type 3** enumeration; SAMR/LSA queries; restrict local admin footprint.
-
----

@@ -21,11 +21,3 @@ Weak ACLs on PKI objects allow the attacker to **alter trust** or enrol as anyon
 
 ### Commands
 ```bash
-# Enumerate ACLs on the PKI container
-Get-DomainObjectAcl -SearchBase "CN=Public Key Services,CN=Services,CN=Configuration,DC=corp,DC=local" -ResolveGUIDs
-```
-
-### Detection
-**5136** on `CN=Public Key Services` subtree; restrict write rights to Tier-0.
-
----

