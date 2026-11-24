@@ -1,0 +1,694 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>AD Attack Path Graph</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<style>
+/*
+  Layout: the graph IS the page — svg fills the full viewport. Every other
+  surface (legend, filters, search, resource index, node detail) lives in
+  floating glass panels that open from a single corner control, so nothing
+  but the graph is ever on screen at rest.
+*/
+:root{
+  --bg:#f2f4f2; --fg:#141a1d; --muted:#5c6b70;
+  --edge:#a7b6b1; --edge-dim:#dde3e0;
+  --phase:#3d6b66; --tech:#0f8a8a; --tool:#b4790f; --cve:#b2402f; --new:#b4790f;
+  --accent:#0f8a8a; --code-bg:#ffffffb3;
+  --glass-bg:rgba(255,255,255,0.62); --glass-bg-solid:rgba(255,255,255,0.92);
+  --glass-border:rgba(20,26,29,0.10); --glass-shadow:0 8px 32px rgba(20,26,29,0.14);
+  font-family: Inter, system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0b1012; --fg:#eef3f1; --muted:#90a3a0;
+    --edge:#45544f; --edge-dim:#232c2a;
+    --phase:#6fb3ab; --tech:#5fe6db; --tool:#ecb968; --cve:#f0735f; --new:#ecb968;
+    --accent:#5fe6db; --code-bg:#ffffff0d;
+    --glass-bg:rgba(20,28,31,0.58); --glass-bg-solid:rgba(16,23,26,0.94);
+    --glass-border:rgba(255,255,255,0.10); --glass-shadow:0 8px 36px rgba(0,0,0,0.5);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0b1012; --fg:#eef3f1; --muted:#90a3a0;
+  --edge:#45544f; --edge-dim:#232c2a;
+  --phase:#6fb3ab; --tech:#5fe6db; --tool:#ecb968; --cve:#f0735f; --new:#ecb968;
+  --accent:#5fe6db; --code-bg:#ffffff0d;
+  --glass-bg:rgba(20,28,31,0.58); --glass-bg-solid:rgba(16,23,26,0.94);
+  --glass-border:rgba(255,255,255,0.10); --glass-shadow:0 8px 36px rgba(0,0,0,0.5);
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0; background:var(--bg); color:var(--fg); overflow:hidden;
+  padding-left:max(0px, env(safe-area-inset-left,0px));
+  padding-right:max(0px, env(safe-area-inset-right,0px));
+}
+code,.mono{font-family:"JetBrains Mono", ui-monospace, monospace}
+em.accent{font-family:"Instrument Serif", Georgia, serif; font-style:italic; font-weight:400}
+a{color:var(--accent)}
+
+#stage{position:fixed; inset:0}
+#graph{width:100%; height:100%; display:block; cursor:grab}
+#graph:active{cursor:grabbing}
+
+/* glass primitives */
+.glass{
+  background:var(--glass-bg); backdrop-filter:blur(18px) saturate(160%); -webkit-backdrop-filter:blur(18px) saturate(160%);
+  border:1px solid var(--glass-border); box-shadow:var(--glass-shadow); border-radius:16px;
+}
+.glass-solid{background:var(--glass-bg-solid); backdrop-filter:blur(18px) saturate(160%); -webkit-backdrop-filter:blur(18px) saturate(160%);
+  border:1px solid var(--glass-border); box-shadow:var(--glass-shadow);}
+
+/* title badge, top-left */
+#titleBadge{
+  position:fixed; top:max(16px, env(safe-area-inset-top,0px)); left:max(16px, env(safe-area-inset-left,0px));
+  padding:9px 16px; z-index:20; pointer-events:none;
+}
+#titleBadge .k{font-size:13.5px; font-weight:700; letter-spacing:-0.01em}
+#titleBadge .k em.accent{font-size:16px}
+#titleBadge .s{font-size:10.5px; color:var(--muted); margin-top:1px}
+
+/* the single corner control */
+#menuBtn{
+  position:fixed; top:max(16px, env(safe-area-inset-top,0px)); right:max(16px, env(safe-area-inset-right,0px));
+  width:44px; height:44px; border-radius:50%; z-index:30; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; border:none;
+}
+#menuBtn svg{width:18px; height:18px}
+#menuBtn circle{fill:var(--fg)}
+
+#menuPanel{
+  position:fixed; top:calc(max(16px, env(safe-area-inset-top,0px)) + 54px); right:max(16px, env(safe-area-inset-right,0px));
+  width:300px; max-width:calc(100vw - 32px); z-index:29; padding:16px; display:none; max-height:calc(100vh - 100px); overflow-y:auto;
+}
+#menuPanel.open{display:block}
+#menuPanel h4{margin:0 0 10px; font-size:13px; font-weight:700}
+#menuPanel .row{margin-bottom:14px}
+#menuPanel input{
+  width:100%; background:var(--code-bg); border:1px solid var(--glass-border); color:var(--fg);
+  padding:9px 11px; border-radius:9px; font-size:13.5px;
+}
+#menuPanel input:focus{outline:2px solid var(--accent); outline-offset:1px}
+.legend-row{display:flex; gap:10px; flex-wrap:wrap; font-size:11.5px; color:var(--muted)}
+.dot{width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:4px; vertical-align:-1px}
+.chip-row{display:flex; gap:6px; flex-wrap:wrap}
+.chip{font-size:11px; background:var(--code-bg); border:1px solid var(--glass-border); color:var(--muted);
+  padding:5px 10px; border-radius:999px; cursor:pointer}
+.chip.active{color:var(--fg); border-color:var(--accent)}
+.menu-action{
+  width:100%; text-align:left; background:var(--code-bg); border:1px solid var(--glass-border); color:var(--fg);
+  padding:10px 12px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer; margin-bottom:8px;
+}
+.menu-action:hover, .chip:hover{border-color:var(--accent)}
+.menu-foot{font-size:10.5px; color:var(--muted); line-height:1.5; margin-top:4px}
+
+/* node detail — floating card, bottom-right on desktop, bottom sheet on phone */
+#detail{
+  position:fixed; z-index:28; width:330px; max-width:calc(100vw - 32px);
+  bottom:max(16px, env(safe-area-inset-bottom,0px)); right:max(16px, env(safe-area-inset-right,0px));
+  padding:18px; display:none; max-height:min(70vh,560px); overflow-y:auto;
+}
+#detail.open{display:block}
+#detail .closeBtn{position:absolute; top:10px; right:10px; width:26px; height:26px; border-radius:50%; border:none;
+  background:var(--code-bg); color:var(--muted); cursor:pointer; font-size:14px; line-height:1}
+#detail h3{font-size:16px; margin:0 0 4px; padding-right:28px; font-weight:700}
+#detail .type-badge{
+  font-family:"JetBrains Mono",monospace; font-size:10px; text-transform:uppercase; letter-spacing:.06em;
+  border:1px solid var(--glass-border); border-radius:5px; padding:1px 6px; color:var(--muted); display:inline-block; margin-bottom:12px;
+}
+#detail .phase-of{font-size:11.5px; color:var(--muted); margin-bottom:10px}
+#detail .field{margin-bottom:11px}
+#detail .field label{display:block; font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:3px; font-weight:600}
+#detail .field p{font-size:13.5px; line-height:1.55; margin:0}
+#detail .toollist{display:flex; flex-wrap:wrap; gap:6px}
+#detail .tool-pill{font-family:"JetBrains Mono",monospace; font-size:11px; background:var(--code-bg); border:1px solid var(--glass-border);
+  border-radius:6px; padding:3px 8px; cursor:pointer}
+#detail .tool-pill:hover{border-color:var(--accent)}
+#detail .empty{font-size:13.5px; color:var(--muted); line-height:1.6}
+.tag-new{font-family:"JetBrains Mono",monospace; font-size:10px; color:var(--new); border:1px solid var(--new);
+  border-radius:5px; padding:1px 6px; margin-left:7px; vertical-align:2px}
+
+/* resource index modal */
+#indexOverlay{position:fixed; inset:0; z-index:40; display:none; align-items:center; justify-content:center; padding:20px;
+  background:rgba(10,14,15,0.35); backdrop-filter:blur(2px);}
+#indexOverlay.open{display:flex}
+#indexModal{width:min(880px, 100%); max-height:min(82vh, 760px); padding:22px; display:flex; flex-direction:column; min-height:0}
+#aboutOverlay{position:fixed; inset:0; z-index:40; display:none; align-items:center; justify-content:center; padding:20px;
+  background:rgba(10,14,15,0.35); backdrop-filter:blur(2px);}
+#aboutOverlay.open{display:flex}
+#aboutModal{width:min(760px, 100%); max-height:min(82vh, 760px); padding:22px; overflow-y:auto}
+#aboutModal code{font-family:"JetBrains Mono",monospace; font-size:.92em; background:var(--code-bg); border:1px solid var(--glass-border); border-radius:4px; padding:0 4px}
+.mermaid-wrap{margin:10px 0; padding:10px; background:var(--code-bg); border:1px solid var(--glass-border); border-radius:10px; overflow:auto}
+#indexModal .modal-head{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:4px}
+#indexModal h2{font-size:19px; margin:0; font-weight:700}
+#indexModal p.sub{font-size:13px; color:var(--muted); margin:6px 0 14px; max-width:68ch}
+#indexModal .closeBtn{width:28px; height:28px; border-radius:50%; border:none; background:var(--code-bg); color:var(--muted); cursor:pointer; font-size:15px; flex:none}
+#tableSearch{width:100%; background:var(--code-bg); border:1px solid var(--glass-border); color:var(--fg);
+  padding:9px 11px; border-radius:9px; font-size:13.5px; margin-bottom:12px}
+#tableSearch:focus{outline:2px solid var(--accent); outline-offset:1px}
+.table-wrap{overflow:auto; border:1px solid var(--glass-border); border-radius:12px; min-height:0}
+table{width:100%; border-collapse:collapse; font-size:13px}
+th,td{text-align:left; padding:9px 11px; border-bottom:1px solid var(--glass-border); vertical-align:top}
+th{font-family:"JetBrains Mono",monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); font-weight:600;
+  position:sticky; top:0; background:var(--glass-bg-solid)}
+td.repo{font-family:"JetBrains Mono",monospace; white-space:nowrap}
+tr[hidden]{display:none}
+.cat-pill{font-family:"JetBrains Mono",monospace; font-size:10.5px; background:var(--code-bg); border:1px solid var(--glass-border); border-radius:5px; padding:1px 7px; white-space:nowrap}
+
+.hint-overlay{position:fixed; bottom:max(14px, env(safe-area-inset-bottom,0px)); left:max(16px, env(safe-area-inset-left,0px));
+  font-size:11px; color:var(--muted); pointer-events:none; z-index:5;}
+
+@media (max-width: 640px){
+  #detail{left:max(16px, env(safe-area-inset-left,0px)); right:max(16px, env(safe-area-inset-right,0px)); width:auto}
+  #titleBadge .s{display:none}
+}
+</style>
+
+<div id="stage">
+  <svg id="graph" role="img" aria-label="Force-directed graph of Active Directory attack phases, techniques, tools and CVEs"></svg>
+</div>
+
+<div id="titleBadge" class="glass">
+  <div class="k">AD Attack Path <em class="accent">Graph</em></div>
+  <div class="s">recon → domain dominance → hybrid pivot</div>
+</div>
+
+<button id="menuBtn" class="glass" aria-label="Open menu" aria-expanded="false">
+  <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+</button>
+
+<div id="menuPanel" class="glass">
+  <div class="row">
+    <h4>Find a node</h4>
+    <input id="search" type="text" placeholder="certipy, rbcd, zerologon…" autocomplete="off">
+  </div>
+  <div class="row">
+    <h4>Show</h4>
+    <div class="chip-row" id="typeFilters"></div>
+  </div>
+  <div class="row">
+    <h4>Legend</h4>
+    <div class="legend-row">
+      <span><span class="dot" style="background:var(--phase)"></span>phase</span>
+      <span><span class="dot" style="background:var(--tech)"></span>technique</span>
+      <span><span class="dot" style="background:var(--tool)"></span>tool</span>
+      <span><span class="dot" style="background:var(--cve)"></span>CVE</span>
+    </div>
+    <div class="menu-foot" style="margin-top:6px">amber ring = new since 2025</div>
+  </div>
+  <div class="row">
+    <button class="menu-action" id="resetZoom">Reset view</button>
+    <button class="menu-action" id="openIndex">Tool &amp; resource index</button>
+    <button class="menu-action" id="openAbout">About &amp; how to contribute</button>
+  </div>
+  <p class="menu-foot">Compiled for authorized testing and study (OSCP/CRTO-style prep). Reverify current patch status before relying on any "new since 2025" item.</p>
+</div>
+
+<aside id="detail" class="glass">
+  <button class="closeBtn" id="closeDetail">✕</button>
+  <p class="empty" id="detailEmpty">Click any node — a phase, a technique, a tool or a CVE — for its prerequisite, the detection artifact a blue team would actually see, and the tool used to run it.</p>
+</aside>
+
+<div class="hint-overlay" id="hintOverlay">loading attack graph…</div>
+
+<div id="aboutOverlay">
+  <div id="aboutModal" class="glass-solid">
+    <div class="modal-head">
+      <div>
+        <h2>Find My Attack Path</h2>
+        <p class="sub">An open-source, click-through map of the Active Directory attack chain — recon to domain dominance to hybrid/cloud pivot — built for learning and for red-team hackathon prep.</p>
+      </div>
+      <button class="closeBtn" id="closeAbout">✕</button>
+    </div>
+    <div class="table-wrap" style="padding:2px 4px">
+      <div style="padding:14px 10px">
+        <div class="field" style="margin-bottom:16px">
+          <label style="display:block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px;font-weight:600">How to read the graph</label>
+          <p style="font-size:13.5px;line-height:1.6;margin:0 0 6px">
+            The dark chain across the middle is the kill-chain: <em class="accent">phases</em> run left to right.
+            Each phase branches into the <em class="accent">techniques</em> that belong to it. A technique connects
+            to the <em class="accent">tool(s)</em> used to run it and, where one applies, the <em class="accent">CVE</em> it exploits.
+          </p>
+          <p style="font-size:13.5px;line-height:1.6;margin:0">
+            Click any node — its connections light up ("wires" to every technique in a phase, or to the tool/CVE
+            a technique uses) and the detail panel shows what it does, its prerequisite, and the detection artifact
+            a blue team would actually see.
+          </p>
+        </div>
+        <div class="field" style="margin-bottom:16px">
+          <label style="display:block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px;font-weight:600">Using the view</label>
+          <p style="font-size:13.5px;line-height:1.6;margin:0">
+            Drag to pan, scroll/pinch to zoom, drag a node to pin it. Use the search box to jump to a technique or
+            tool by name, or the <em>Show</em> chips to hide a whole node type. <em>Tool &amp; resource index</em>
+            lists every repo behind the graph's tool nodes in one searchable table.
+          </p>
+        </div>
+        <div class="field">
+          <label style="display:block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px;font-weight:600">This is open source — contribute a new attack vector</label>
+          <p style="font-size:13.5px;line-height:1.6;margin:0 0 6px">
+            Every node is a markdown file under <code>docs/</code> — the graph fetches
+            <code>docs/manifest.json</code> and the files it lists on load, so nobody edits this HTML to add or
+            update a phase, technique, tool or CVE.
+          </p>
+          <p style="font-size:13.5px;line-height:1.6;margin:0 0 6px">
+            To add one: fork the repo, drop a new <code>.md</code> file (frontmatter + description) in the right
+            <code>docs/&lt;type&gt;/</code> folder, list it in <code>manifest.json</code>, and open a PR — include a
+            Mermaid diagram in the body (a fenced <code>```mermaid</code> block) if a custom flow helps explain it.
+            Merge it and it's live on the graph.
+          </p>
+          <p style="font-size:13.5px;line-height:1.6;margin:0">
+            Full format and examples: <a href="CONTRIBUTING.md" target="_blank" rel="noopener">CONTRIBUTING.md</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="indexOverlay">
+  <div id="indexModal" class="glass-solid">
+    <div class="modal-head">
+      <div>
+        <h2>Tool &amp; resource index</h2>
+        <p class="sub">52 repositories behind the graph's tool nodes, plus reference material. Repo locations and maintenance shift — verify before cloning into anything but a lab.</p>
+      </div>
+      <button class="closeBtn" id="closeIndex">✕</button>
+    </div>
+    <input id="tableSearch" type="text" placeholder="Filter by name, category or purpose…" autocomplete="off">
+    <div class="table-wrap">
+      <table id="resTable">
+        <thead><tr><th>Repository</th><th>Category</th><th>Purpose</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="embedded-docs">{"manifest": [{"id": "recon", "type": "phase", "path": "docs/phases/recon.md"}, {"id": "initial", "type": "phase", "path": "docs/phases/initial.md"}, {"id": "cred", "type": "phase", "path": "docs/phases/cred.md"}, {"id": "privesc", "type": "phase", "path": "docs/phases/privesc.md"}, {"id": "lateral", "type": "phase", "path": "docs/phases/lateral.md"}, {"id": "persist", "type": "phase", "path": "docs/phases/persist.md"}, {"id": "hybrid", "type": "phase", "path": "docs/phases/hybrid.md"}, {"id": "bloodhound", "type": "tool", "path": "docs/tools/bloodhound.md"}, {"id": "sharphound", "type": "tool", "path": "docs/tools/sharphound.md"}, {"id": "bloodhoundpy", "type": "tool", "path": "docs/tools/bloodhoundpy.md"}, {"id": "rusthound", "type": "tool", "path": "docs/tools/rusthound.md"}, {"id": "goodhound", "type": "tool", "path": "docs/tools/goodhound.md"}, {"id": "improhound", "type": "tool", "path": "docs/tools/improhound.md"}, {"id": "powerview", "type": "tool", "path": "docs/tools/powerview.md"}, {"id": "adrecon", "type": "tool", "path": "docs/tools/adrecon.md"}, {"id": "adpeas", "type": "tool", "path": "docs/tools/adpeas.md"}, {"id": "adcollector", "type": "tool", "path": "docs/tools/adcollector.md"}, {"id": "sauroneye", "type": "tool", "path": "docs/tools/sauroneye.md"}, {"id": "snaffler", "type": "tool", "path": "docs/tools/snaffler.md"}, {"id": "lapstoolkit", "type": "tool", "path": "docs/tools/lapstoolkit.md"}, {"id": "certipy", "type": "tool", "path": "docs/tools/certipy.md"}, {"id": "certify", "type": "tool", "path": "docs/tools/certify.md"}, {"id": "forgecert", "type": "tool", "path": "docs/tools/forgecert.md"}, {"id": "pkinittools", "type": "tool", "path": "docs/tools/pkinittools.md"}, {"id": "certsync", "type": "tool", "path": "docs/tools/certsync.md"}, {"id": "rubeus", "type": "tool", "path": "docs/tools/rubeus.md"}, {"id": "kekeo", "type": "tool", "path": "docs/tools/kekeo.md"}, {"id": "minikerberos", "type": "tool", "path": "docs/tools/minikerberos.md"}, {"id": "krbrelayx", "type": "tool", "path": "docs/tools/krbrelayx.md"}, {"id": "mimikatz", "type": "tool", "path": "docs/tools/mimikatz.md"}, {"id": "impacket", "type": "tool", "path": "docs/tools/impacket.md"}, {"id": "netexec", "type": "tool", "path": "docs/tools/netexec.md"}, {"id": "crackmapexec", "type": "tool", "path": "docs/tools/crackmapexec.md"}, {"id": "evilwinrm", "type": "tool", "path": "docs/tools/evilwinrm.md"}, {"id": "kerbrute", "type": "tool", "path": "docs/tools/kerbrute.md"}, {"id": "responder", "type": "tool", "path": "docs/tools/responder.md"}, {"id": "inveigh", "type": "tool", "path": "docs/tools/inveigh.md"}, {"id": "hashcat", "type": "tool", "path": "docs/tools/hashcat.md"}, {"id": "petitpotam", "type": "tool", "path": "docs/tools/petitpotam.md"}, {"id": "coercer", "type": "tool", "path": "docs/tools/coercer.md"}, {"id": "mitm6", "type": "tool", "path": "docs/tools/mitm6.md"}, {"id": "bloodyad", "type": "tool", "path": "docs/tools/bloodyad.md"}, {"id": "whisker", "type": "tool", "path": "docs/tools/whisker.md"}, {"id": "pywhisker", "type": "tool", "path": "docs/tools/pywhisker.md"}, {"id": "aadinternals", "type": "tool", "path": "docs/tools/aadinternals.md"}, {"id": "roadtools", "type": "tool", "path": "docs/tools/roadtools.md"}, {"id": "adcheatsheet", "type": "tool", "path": "docs/tools/adcheatsheet.md"}, {"id": "addefense", "type": "tool", "path": "docs/tools/addefense.md"}, {"id": "patt", "type": "tool", "path": "docs/tools/patt.md"}, {"id": "powermad", "type": "tool", "path": "docs/tools/powermad.md"}, {"id": "rbcdpy", "type": "tool", "path": "docs/tools/rbcdpy.md"}, {"id": "dploot", "type": "tool", "path": "docs/tools/dploot.md"}, {"id": "donpapi", "type": "tool", "path": "docs/tools/donpapi.md"}, {"id": "ldapsearch-ad", "type": "tool", "path": "docs/tools/ldapsearch-ad.md"}, {"id": "windapsearch", "type": "tool", "path": "docs/tools/windapsearch.md"}, {"id": "gpoddity", "type": "tool", "path": "docs/tools/gpoddity.md"}, {"id": "sharpgpoabuse", "type": "tool", "path": "docs/tools/sharpgpoabuse.md"}, {"id": "adsearch", "type": "tool", "path": "docs/tools/adsearch.md"}, {"id": "semperis-purple-knight", "type": "tool", "path": "docs/tools/semperis-purple-knight.md"}, {"id": "timeroast", "type": "tool", "path": "docs/tools/timeroast.md"}, {"id": "shadowcoerce", "type": "tool", "path": "docs/tools/shadowcoerce.md"}, {"id": "dfscoerce", "type": "tool", "path": "docs/tools/dfscoerce.md"}, {"id": "cve-2026-54121", "type": "cve", "path": "docs/cves/cve-2026-54121.md"}, {"id": "cve-2026-27912", "type": "cve", "path": "docs/cves/cve-2026-27912.md"}, {"id": "cve-2025-33073", "type": "cve", "path": "docs/cves/cve-2025-33073.md"}, {"id": "cve-2021-42287", "type": "cve", "path": "docs/cves/cve-2021-42287.md"}, {"id": "cve-2020-1472", "type": "cve", "path": "docs/cves/cve-2020-1472.md"}, {"id": "ldap_enum", "type": "technique", "path": "docs/techniques/ldap_enum.md"}, {"id": "bloodhound_collect", "type": "technique", "path": "docs/techniques/bloodhound_collect.md"}, {"id": "session_recon", "type": "technique", "path": "docs/techniques/session_recon.md"}, {"id": "laps_gmsa", "type": "technique", "path": "docs/techniques/laps_gmsa.md"}, {"id": "adcs_enum", "type": "technique", "path": "docs/techniques/adcs_enum.md"}, {"id": "trust_enum", "type": "technique", "path": "docs/techniques/trust_enum.md"}, {"id": "pwspray", "type": "technique", "path": "docs/techniques/pwspray.md"}, {"id": "asreproast", "type": "technique", "path": "docs/techniques/asreproast.md"}, {"id": "kerberoast", "type": "technique", "path": "docs/techniques/kerberoast.md"}, {"id": "coerce_relay", "type": "technique", "path": "docs/techniques/coerce_relay.md"}, {"id": "ntlm_reflection", "type": "technique", "path": "docs/techniques/ntlm_reflection.md"}, {"id": "cname_relay", "type": "technique", "path": "docs/techniques/cname_relay.md"}, {"id": "lsass_dump", "type": "technique", "path": "docs/techniques/lsass_dump.md"}, {"id": "sam_lsa", "type": "technique", "path": "docs/techniques/sam_lsa.md"}, {"id": "ntds_dump", "type": "technique", "path": "docs/techniques/ntds_dump.md"}, {"id": "ticket_dump", "type": "technique", "path": "docs/techniques/ticket_dump.md"}, {"id": "dpapi", "type": "technique", "path": "docs/techniques/dpapi.md"}, {"id": "dmsa_ouroboros", "type": "technique", "path": "docs/techniques/dmsa_ouroboros.md"}, {"id": "timeroasting", "type": "technique", "path": "docs/techniques/timeroasting.md"}, {"id": "acl_abuse", "type": "technique", "path": "docs/techniques/acl_abuse.md"}, {"id": "gpo_abuse", "type": "technique", "path": "docs/techniques/gpo_abuse.md"}, {"id": "machineaccountquota", "type": "technique", "path": "docs/techniques/machineaccountquota.md"}, {"id": "unconstrained_deleg", "type": "technique", "path": "docs/techniques/unconstrained_deleg.md"}, {"id": "constrained_deleg", "type": "technique", "path": "docs/techniques/constrained_deleg.md"}, {"id": "rbcd", "type": "technique", "path": "docs/techniques/rbcd.md"}, {"id": "shadow_creds", "type": "technique", "path": "docs/techniques/shadow_creds.md"}, {"id": "adcs_esc1", "type": "technique", "path": "docs/techniques/adcs_esc1.md"}, {"id": "adcs_esc8", "type": "technique", "path": "docs/techniques/adcs_esc8.md"}, {"id": "certighost", "type": "technique", "path": "docs/techniques/certighost.md"}, {"id": "resetnightmare", "type": "technique", "path": "docs/techniques/resetnightmare.md"}, {"id": "nopac", "type": "technique", "path": "docs/techniques/nopac.md"}, {"id": "pth", "type": "technique", "path": "docs/techniques/pth.md"}, {"id": "ptt", "type": "technique", "path": "docs/techniques/ptt.md"}, {"id": "opth", "type": "technique", "path": "docs/techniques/opth.md"}, {"id": "wmi_exec", "type": "technique", "path": "docs/techniques/wmi_exec.md"}, {"id": "rdp_lateral", "type": "technique", "path": "docs/techniques/rdp_lateral.md"}, {"id": "wmi_fileless", "type": "technique", "path": "docs/techniques/wmi_fileless.md"}, {"id": "dcsync", "type": "technique", "path": "docs/techniques/dcsync.md"}, {"id": "golden", "type": "technique", "path": "docs/techniques/golden.md"}, {"id": "diamond", "type": "technique", "path": "docs/techniques/diamond.md"}, {"id": "silver", "type": "technique", "path": "docs/techniques/silver.md"}, {"id": "skeleton_key", "type": "technique", "path": "docs/techniques/skeleton_key.md"}, {"id": "golden_cert", "type": "technique", "path": "docs/techniques/golden_cert.md"}, {"id": "dcshadow", "type": "technique", "path": "docs/techniques/dcshadow.md"}, {"id": "sidhistory", "type": "technique", "path": "docs/techniques/sidhistory.md"}, {"id": "trust_ticket", "type": "technique", "path": "docs/techniques/trust_ticket.md"}, {"id": "aadconnect", "type": "technique", "path": "docs/techniques/aadconnect.md"}, {"id": "prt_pivot", "type": "technique", "path": "docs/techniques/prt_pivot.md"}, {"id": "passkey_replay", "type": "technique", "path": "docs/techniques/passkey_replay.md"}], "files": {"docs/phases/recon.md": "---\nid: recon\ntype: phase\nlabel: \"Reconnaissance & Enumeration\"\n---\nMap users, computers, groups, trusts, ACLs, sessions and certificate templates without yet touching anything privileged.\n", "docs/phases/initial.md": "---\nid: initial\ntype: phase\nlabel: \"Initial Access & Foothold\"\n---\nTurn external reach into a first valid credential, session or code execution inside the perimeter.\n", "docs/phases/cred.md": "---\nid: cred\ntype: phase\nlabel: \"Credential Access\"\n---\nHarvest password hashes, cleartext secrets and Kerberos tickets from the host you've landed on.\n", "docs/phases/privesc.md": "---\nid: privesc\ntype: phase\nlabel: \"Domain Privilege Escalation\"\n---\nTurn a foothold credential into Domain Admin via ACL, delegation or AD CS misconfiguration.\n", "docs/phases/lateral.md": "---\nid: lateral\ntype: phase\nlabel: \"Lateral Movement\"\n---\nTurn a hash or ticket into code execution on the next host, with a protocol-to-OPSEC tradeoff each time.\n", "docs/phases/persist.md": "---\nid: persist\ntype: phase\nlabel: \"Domain Persistence & Dominance\"\n---\nStay Domain Admin through password rotations, reboots, and even a krbtgt reset.\n", "docs/phases/hybrid.md": "---\nid: hybrid\ntype: phase\nlabel: \"Cross-Forest / Hybrid / Cloud Pivot\"\n---\nCarry the on-prem compromise across a forest trust or into Entra ID / Microsoft 365.\n", "docs/tools/bloodhound.md": "---\nid: bloodhound\ntype: tool\nlabel: \"BloodHound\"\nrepo: \"SpecterOps/BloodHound\"\ncategory: \"Graph\"\n---\nAttack-path graph analysis engine (BloodHound CE).\n", "docs/tools/sharphound.md": "---\nid: sharphound\ntype: tool\nlabel: \"SharpHound\"\nrepo: \"SpecterOps/SharpHound\"\ncategory: \"Graph\"\n---\nC# BloodHound data collector.\n", "docs/tools/bloodhoundpy.md": "---\nid: bloodhoundpy\ntype: tool\nlabel: \"BloodHound.py\"\nrepo: \"dirkjanm/BloodHound.py\"\ncategory: \"Graph\"\n---\nPython BloodHound collector, no .NET required.\n", "docs/tools/rusthound.md": "---\nid: rusthound\ntype: tool\nlabel: \"RustHound-CE\"\nrepo: \"OPENCYBER-FR/RustHound-CE\"\ncategory: \"Graph\"\n---\nRust BloodHound CE collector.\n", "docs/tools/goodhound.md": "---\nid: goodhound\ntype: tool\nlabel: \"GoodHound\"\nrepo: \"idnahacks/GoodHound\"\ncategory: \"Graph\"\n---\nRanks BloodHound attack paths by actionable remediation value.\n", "docs/tools/improhound.md": "---\nid: improhound\ntype: tool\nlabel: \"ImproHound\"\nrepo: \"improsec/ImproHound\"\ncategory: \"Graph\"\n---\nFlags tier-0 boundary violations in a BloodHound dataset.\n", "docs/tools/powerview.md": "---\nid: powerview\ntype: tool\nlabel: \"PowerSploit\"\nrepo: \"PowerShellMafia/PowerSploit\"\ncategory: \"Recon\"\n---\nPowerView module: AD enumeration and ACL discovery.\n", "docs/tools/adrecon.md": "---\nid: adrecon\ntype: tool\nlabel: \"ADRecon\"\nrepo: \"adrecon/ADRecon\"\ncategory: \"Recon\"\n---\nExtracts AD artifacts into a structured report.\n", "docs/tools/adpeas.md": "---\nid: adpeas\ntype: tool\nlabel: \"adPEAS\"\nrepo: \"61106960/adPEAS\"\ncategory: \"Recon\"\n---\nAutomated PowerShell AD enumeration.\n", "docs/tools/adcollector.md": "---\nid: adcollector\ntype: tool\nlabel: \"ADCollector\"\nrepo: \"dev-2null/ADCollector\"\ncategory: \"Recon\"\n---\nLightweight AD misconfiguration spotter.\n", "docs/tools/sauroneye.md": "---\nid: sauroneye\ntype: tool\nlabel: \"SauronEye\"\nrepo: \"vivami/SauronEye\"\ncategory: \"Recon\"\n---\nSearches shares/servers for sensitive file content.\n", "docs/tools/snaffler.md": "---\nid: snaffler\ntype: tool\nlabel: \"Snaffler\"\nrepo: \"SnaffCon/Snaffler\"\ncategory: \"Recon\"\n---\nFinds credentials and sensitive files across reachable shares.\n", "docs/tools/lapstoolkit.md": "---\nid: lapstoolkit\ntype: tool\nlabel: \"LAPSToolkit\"\nrepo: \"leoloobeek/LAPSToolkit\"\ncategory: \"Recon\"\n---\nFinds and reads LAPS local-admin passwords.\n", "docs/tools/certipy.md": "---\nid: certipy\ntype: tool\nlabel: \"Certipy\"\nrepo: \"ly4k/Certipy\"\ncategory: \"ADCS\"\n---\nADCS enumeration and ESC1–ESC16 exploitation.\n", "docs/tools/certify.md": "---\nid: certify\ntype: tool\nlabel: \"Certify\"\nrepo: \"GhostPack/Certify\"\ncategory: \"ADCS\"\n---\nC# ADCS enumeration and abuse.\n", "docs/tools/forgecert.md": "---\nid: forgecert\ntype: tool\nlabel: \"ForgeCert\"\nrepo: \"GhostPack/ForgeCert\"\ncategory: \"ADCS\"\n---\nForges CA-signed ('golden') certificates for persistence.\n", "docs/tools/pkinittools.md": "---\nid: pkinittools\ntype: tool\nlabel: \"PKINITtools\"\nrepo: \"dirkjanm/PKINITtools\"\ncategory: \"ADCS\"\n---\nRequests Kerberos tickets from a certificate via PKINIT.\n", "docs/tools/certsync.md": "---\nid: certsync\ntype: tool\nlabel: \"certsync\"\nrepo: \"zer1t0/certsync\"\ncategory: \"ADCS\"\n---\nDumps NTDS via a stolen CA certificate, no DRSUAPI needed.\n", "docs/tools/rubeus.md": "---\nid: rubeus\ntype: tool\nlabel: \"Rubeus\"\nrepo: \"GhostPack/Rubeus\"\ncategory: \"Kerberos\"\n---\nKerberos ticket abuse suite: roast, S4U, ptt, golden/diamond.\n", "docs/tools/kekeo.md": "---\nid: kekeo\ntype: tool\nlabel: \"kekeo\"\nrepo: \"gentilkiwi/kekeo\"\ncategory: \"Kerberos\"\n---\nMimikatz's companion toolkit for Kerberos ticket manipulation.\n", "docs/tools/minikerberos.md": "---\nid: minikerberos\ntype: tool\nlabel: \"minikerberos\"\nrepo: \"skelsec/minikerberos\"\ncategory: \"Kerberos\"\n---\nPython library for low-level Kerberos protocol work.\n", "docs/tools/krbrelayx.md": "---\nid: krbrelayx\ntype: tool\nlabel: \"krbrelayx\"\nrepo: \"dirkjanm/krbrelayx\"\ncategory: \"Kerberos\"\n---\nKerberos relay toolkit and unconstrained-delegation abuse.\n", "docs/tools/mimikatz.md": "---\nid: mimikatz\ntype: tool\nlabel: \"mimikatz\"\nrepo: \"gentilkiwi/mimikatz\"\ncategory: \"Credential Access\"\n---\nCredential extraction, ticket forgery, DCSync, skeleton key.\n", "docs/tools/impacket.md": "---\nid: impacket\ntype: tool\nlabel: \"impacket\"\nrepo: \"fortra/impacket\"\ncategory: \"Credential Access\"\n---\nPython protocol toolkit: secretsdump, GetUserSPNs, getST, psexec, ntlmrelayx, dacledit.\n", "docs/tools/netexec.md": "---\nid: netexec\ntype: tool\nlabel: \"NetExec\"\nrepo: \"Pennyw0rth/NetExec\"\ncategory: \"Lateral Movement\"\n---\nNetwork execution, enumeration and BloodHound ingestion.\n", "docs/tools/crackmapexec.md": "---\nid: crackmapexec\ntype: tool\nlabel: \"CrackMapExec\"\nrepo: \"byt3bl33d3r/CrackMapExec\"\ncategory: \"Lateral Movement\"\n---\nNetExec's archived predecessor, still widely referenced.\n", "docs/tools/evilwinrm.md": "---\nid: evilwinrm\ntype: tool\nlabel: \"evil-winrm\"\nrepo: \"Hackplayers/evil-winrm\"\ncategory: \"Lateral Movement\"\n---\nWinRM remote-shell client.\n", "docs/tools/kerbrute.md": "---\nid: kerbrute\ntype: tool\nlabel: \"kerbrute\"\nrepo: \"ropnop/kerbrute\"\ncategory: \"Initial Access\"\n---\nKerberos pre-auth username enumeration and password spraying.\n", "docs/tools/responder.md": "---\nid: responder\ntype: tool\nlabel: \"Responder\"\nrepo: \"lgandx/Responder\"\ncategory: \"Initial Access\"\n---\nLLMNR/NBT-NS/mDNS poisoner and credential capture.\n", "docs/tools/inveigh.md": "---\nid: inveigh\ntype: tool\nlabel: \"Inveigh\"\nrepo: \"Kevin-Robertson/Inveigh\"\ncategory: \"Initial Access\"\n---\n.NET LLMNR/NBNS/mDNS spoofer and relay.\n", "docs/tools/hashcat.md": "---\nid: hashcat\ntype: tool\nlabel: \"hashcat\"\nrepo: \"hashcat/hashcat\"\ncategory: \"Cracking\"\n---\nGPU-accelerated offline hash cracking.\n", "docs/tools/petitpotam.md": "---\nid: petitpotam\ntype: tool\nlabel: \"PetitPotam\"\nrepo: \"topotam/PetitPotam\"\ncategory: \"Coercion\"\n---\nMS-EFSR coercion forcing a machine to authenticate outward.\n", "docs/tools/coercer.md": "---\nid: coercer\ntype: tool\nlabel: \"Coercer\"\nrepo: \"p0dalirius/Coercer\"\ncategory: \"Coercion\"\n---\nAutomated multi-protocol authentication coercion.\n", "docs/tools/mitm6.md": "---\nid: mitm6\ntype: tool\nlabel: \"mitm6\"\nrepo: \"dirkjanm/mitm6\"\ncategory: \"Coercion\"\n---\nIPv6 DNS takeover that sets up coercion/relay chains.\n", "docs/tools/bloodyad.md": "---\nid: bloodyad\ntype: tool\nlabel: \"bloodyAD\"\nrepo: \"CravateRouge/bloodyAD\"\ncategory: \"Privilege Escalation\"\n---\nAD object and ACL manipulation CLI.\n", "docs/tools/whisker.md": "---\nid: whisker\ntype: tool\nlabel: \"Whisker\"\nrepo: \"eladshamir/Whisker\"\ncategory: \"Privilege Escalation\"\n---\nShadow Credentials attack (C#).\n", "docs/tools/pywhisker.md": "---\nid: pywhisker\ntype: tool\nlabel: \"pywhisker\"\nrepo: \"ShutdownRepo/pywhisker\"\ncategory: \"Privilege Escalation\"\n---\nShadow Credentials attack (Python).\n", "docs/tools/aadinternals.md": "---\nid: aadinternals\ntype: tool\nlabel: \"AADInternals\"\nrepo: \"Gerenios/AADInternals\"\ncategory: \"Hybrid / Cloud\"\n---\nEntra ID / hybrid-identity attack and admin toolkit.\n", "docs/tools/roadtools.md": "---\nid: roadtools\ntype: tool\nlabel: \"ROADtools\"\nrepo: \"dirkjanm/ROADtools\"\ncategory: \"Hybrid / Cloud\"\n---\nEntra ID (Azure AD) recon and token framework.\n", "docs/tools/adcheatsheet.md": "---\nid: adcheatsheet\ntype: tool\nlabel: \"Active-Directory-Exploitation-Cheat-Sheet\"\nrepo: \"S1ckB0y1337/Active-Directory-Exploitation-Cheat-Sheet\"\ncategory: \"Reference\"\n---\nEnd-to-end AD attack cheat sheet.\n", "docs/tools/addefense.md": "---\nid: addefense\ntype: tool\nlabel: \"AD-Attack-Defense\"\nrepo: \"infosecn1nja/AD-Attack-Defense\"\ncategory: \"Reference\"\n---\nAttack-and-defense kill-chain reference.\n", "docs/tools/patt.md": "---\nid: patt\ntype: tool\nlabel: \"PayloadsAllTheThings\"\nrepo: \"swisskyrepo/PayloadsAllTheThings\"\ncategory: \"Reference\"\n---\nBroad payload/technique reference, including an AD section.\n", "docs/tools/powermad.md": "---\nid: powermad\ntype: tool\nlabel: \"Powermad\"\nrepo: \"Kevin-Robertson/Powermad\"\ncategory: \"Privilege Escalation\"\n---\nMachineAccountQuota abuse and computer-object creation.\n", "docs/tools/rbcdpy.md": "---\nid: rbcdpy\ntype: tool\nlabel: \"rbcd-attack\"\nrepo: \"tothi/rbcd-attack\"\ncategory: \"Privilege Escalation\"\n---\nEnd-to-end RBCD exploitation helper script.\n", "docs/tools/dploot.md": "---\nid: dploot\ntype: tool\nlabel: \"dploot\"\nrepo: \"zblurx/dploot\"\ncategory: \"Credential Access\"\n---\nRemote DPAPI secret extraction over the network.\n", "docs/tools/donpapi.md": "---\nid: donpapi\ntype: tool\nlabel: \"DonPAPI\"\nrepo: \"login-securite/DonPAPI\"\ncategory: \"Credential Access\"\n---\nMass remote DPAPI credential harvesting.\n", "docs/tools/ldapsearch-ad.md": "---\nid: ldapsearch-ad\ntype: tool\nlabel: \"ldapsearch-ad\"\nrepo: \"yaap7/ldapsearch-ad\"\ncategory: \"Recon\"\n---\nLDAP enumeration wrapper tuned for AD objects.\n", "docs/tools/windapsearch.md": "---\nid: windapsearch\ntype: tool\nlabel: \"windapsearch\"\nrepo: \"ropnop/windapsearch\"\ncategory: \"Recon\"\n---\nLDAP enumeration via a compromised domain account.\n", "docs/tools/gpoddity.md": "---\nid: gpoddity\ntype: tool\nlabel: \"GPOddity\"\nrepo: \"Mr-Un1k0d3r/GPOddity\"\ncategory: \"Privilege Escalation\"\n---\nGPO abuse toolkit for pushing scheduled tasks via a writable policy.\n", "docs/tools/sharpgpoabuse.md": "---\nid: sharpgpoabuse\ntype: tool\nlabel: \"SharpGPOAbuse\"\nrepo: \"FSecureLABS/SharpGPOAbuse\"\ncategory: \"Privilege Escalation\"\n---\nAbuses GPO edit rights to add a malicious scheduled task.\n", "docs/tools/adsearch.md": "---\nid: adsearch\ntype: tool\nlabel: \"ADSearch\"\nrepo: \"AlmondOffSec/ADSearch\"\ncategory: \"Recon\"\n---\nFast, offline-friendly LDAP query tool for AD objects.\n", "docs/tools/semperis-purple-knight.md": "---\nid: semperis-purple-knight\ntype: tool\nlabel: \"PurpleKnight\"\nrepo: \"SemperisResearch/PurpleKnight\"\ncategory: \"Reference\"\n---\nFree AD/Entra security-assessment indicator set.\n", "docs/tools/timeroast.md": "---\nid: timeroast\ntype: tool\nlabel: \"Timeroast\"\nrepo: \"SecuraBV/Timeroast\"\ncategory: \"Credential Access\"\n---\nCracks machine-account hashes via the Windows Time Service (MS-SNTP).\n", "docs/tools/shadowcoerce.md": "---\nid: shadowcoerce\ntype: tool\nlabel: \"ShadowCoerce\"\nrepo: \"ShutdownRepo/ShadowCoerce\"\ncategory: \"Coercion\"\n---\nCoercion via the File Server VSS Agent Service (MS-FSRVP).\n", "docs/tools/dfscoerce.md": "---\nid: dfscoerce\ntype: tool\nlabel: \"DFSCoerce\"\nrepo: \"Wh0amI123/DFSCoerce\"\ncategory: \"Coercion\"\n---\nCoercion via the Distributed File System Namespace protocol (MS-DFSNM).\n", "docs/cves/cve-2026-54121.md": "---\nid: cve-2026-54121\ntype: cve\nlabel: \"Certighost\"\nyear: 2026\nsource: \"https://www.helpnetsecurity.com/2026/07/27/certighost-cve-2026-54121-poc-exploit-released/\"\n---\nAbuses an AD CS enrollment fallback mechanism that coerces the CA into authenticating back to attacker infrastructure, then issues a certificate impersonating a domain controller.\n", "docs/cves/cve-2026-27912.md": "---\nid: cve-2026-27912\ntype: cve\nlabel: \"ResetNightmare\"\nyear: 2026\nsource: \"https://nvd.nist.gov/vuln/detail/CVE-2026-27912\"\n---\nA validation flaw in the Kerberos change-password (kpasswd) exchange allows resetting another account's password, including a Domain Admin's, without knowing the current one.\n", "docs/cves/cve-2025-33073.md": "---\nid: cve-2025-33073\ntype: cve\nlabel: \"NTLM Reflection\"\nyear: 2025\nsource: \"\"\n---\nBypasses NTLM reflection protections to relay a host's own authentication back to itself, reaching SYSTEM on hosts that don't enforce SMB signing.\n", "docs/cves/cve-2021-42287.md": "---\nid: cve-2021-42287\ntype: cve\nlabel: \"noPac (sAMAccountName spoofing)\"\nyear: 2021\nsource: \"\"\n---\nRenaming a controlled machine account to collide with a domain controller lets S4U2Self be abused for a Domain-Admin-equivalent ticket.\n", "docs/cves/cve-2020-1472.md": "---\nid: cve-2020-1472\ntype: cve\nlabel: \"Zerologon\"\nyear: 2020\nsource: \"\"\n---\nA cryptographic flaw in Netlogon lets an attacker reset a domain controller's machine-account password with no credentials at all.\n", "docs/techniques/ldap_enum.md": "---\nid: ldap_enum\ntype: technique\nlabel: \"LDAP / ADSI enumeration\"\nphase: \"recon\"\ntools: [\"powerview\", \"adrecon\", \"adpeas\", \"adcollector\", \"ldapsearch-ad\", \"windapsearch\", \"adsearch\"]\ncve: null\ndetect: \"Directory Service Access (4662); elevated LDAP query volume.\"\nmitre: \"T1087.002\"\ntag: null\n---\nEnumerate users, groups, ACLs, GPOs and trust data directly over LDAP.\n\n## Prerequisite\nAny authenticated domain user.\n", "docs/techniques/bloodhound_collect.md": "---\nid: bloodhound_collect\ntype: technique\nlabel: \"BloodHound graph collection\"\nphase: \"recon\"\ntools: [\"bloodhound\", \"sharphound\", \"bloodhoundpy\", \"rusthound\", \"netexec\", \"goodhound\", \"improhound\"]\ncve: null\ndetect: \"Collector execution; large LDAP/SMB session bursts; ZIP creation.\"\nmitre: \"T1087 / T1482\"\ntag: null\n---\nBuild the full privilege-relationship graph and compute shortest paths to Tier-0 targets.\n\n## Prerequisite\nDomain credentials — often a standard user is enough.\n", "docs/techniques/session_recon.md": "---\nid: session_recon\ntype: technique\nlabel: \"Session & share reconnaissance\"\nphase: \"recon\"\ntools: [\"sauroneye\", \"snaffler\", \"netexec\"]\ncve: null\ndetect: \"NetSessionEnum calls; 5140/5145 share-access events.\"\nmitre: \"T1135 / T1049\"\ntag: null\n---\nFind where privileged users are logged on and which shares hold sensitive files.\n\n## Prerequisite\nA foothold or valid credentials.\n", "docs/techniques/laps_gmsa.md": "---\nid: laps_gmsa\ntype: technique\nlabel: \"LAPS / gMSA readable-password discovery\"\nphase: \"recon\"\ntools: [\"lapstoolkit\", \"powerview\"]\ncve: null\ndetect: \"LDAP reads of ms-Mcs-AdmPwd or msDS-ManagedPassword.\"\nmitre: \"T1552\"\ntag: null\n---\nFind computers or service accounts whose managed password you already have read rights to.\n\n## Prerequisite\nReadLAPSPassword or ReadGMSAPassword rights on the object.\n", "docs/techniques/adcs_enum.md": "---\nid: adcs_enum\ntype: technique\nlabel: \"ADCS template & CA enumeration\"\nphase: \"recon\"\ntools: [\"certipy\", \"certify\"]\ncve: null\ndetect: \"LDAP reads of pKICertificateTemplate objects.\"\nmitre: \"T1649 (precursor)\"\ntag: null\n---\nMap certificate templates and CA permissions for ESC-class misconfigurations.\n\n## Prerequisite\nAny domain user.\n", "docs/techniques/trust_enum.md": "---\nid: trust_enum\ntype: technique\nlabel: \"Domain & forest trust mapping\"\nphase: \"recon\"\ntools: [\"powerview\", \"netexec\"]\ncve: null\ndetect: \"Trust-object LDAP queries.\"\nmitre: \"T1482\"\ntag: null\n---\nEnumerate trust direction, transitivity and SID filtering to reveal cross-domain paths.\n\n## Prerequisite\nAny domain user.\n", "docs/techniques/pwspray.md": "---\nid: pwspray\ntype: technique\nlabel: \"Password spraying\"\nphase: \"initial\"\ntools: [\"kerbrute\", \"netexec\"]\ncve: null\ndetect: \"4625 bursts across many accounts from one source.\"\nmitre: \"T1110.003\"\ntag: null\n---\nTry one or two common passwords across many accounts to stay under lockout thresholds.\n\n## Prerequisite\nA valid username list.\n", "docs/techniques/asreproast.md": "---\nid: asreproast\ntype: technique\nlabel: \"AS-REP roasting\"\nphase: \"initial\"\ntools: [\"rubeus\", \"impacket\", \"hashcat\"]\ncve: null\ndetect: \"4768 with pre-authentication disabled.\"\nmitre: \"T1558.004\"\ntag: null\n---\nRequest an AS-REP for accounts with Kerberos pre-auth disabled and crack it offline.\n\n## Prerequisite\nAt least one account with pre-auth disabled.\n", "docs/techniques/kerberoast.md": "---\nid: kerberoast\ntype: technique\nlabel: \"Kerberoasting\"\nphase: \"initial\"\ntools: [\"rubeus\", \"impacket\", \"hashcat\"]\ncve: null\ndetect: \"4769 requesting RC4 (etype 0x17) for an unusual SPN.\"\nmitre: \"T1558.003\"\ntag: null\n---\nRequest TGS tickets for SPN-bearing accounts and crack the service-account password offline.\n\n## Prerequisite\nAny domain user; target has an SPN.\n", "docs/techniques/coerce_relay.md": "---\nid: coerce_relay\ntype: technique\nlabel: \"Coerced authentication → NTLM relay\"\nphase: \"initial\"\ntools: [\"petitpotam\", \"coercer\", \"shadowcoerce\", \"dfscoerce\", \"impacket\", \"responder\", \"mitm6\"]\ncve: null\ndetect: \"4624 type 3 from a machine account; unexpected outbound auth from a server.\"\nmitre: \"T1187 / T1557.001\"\ntag: null\n---\nForce a machine account to authenticate to an attacker listener, then relay it to SMB, LDAP or ADCS.\n\n## Prerequisite\nNetwork path to a coercion primitive (spooler, EFSR, FSRVP, DFSNM).\n", "docs/techniques/ntlm_reflection.md": "---\nid: ntlm_reflection\ntype: technique\nlabel: \"NTLM reflection\"\nphase: \"initial\"\ntools: [\"impacket\", \"petitpotam\"]\ncve: \"cve-2025-33073\"\ndetect: \"Loopback-pattern 4624 type 3; anomalous local relay traffic.\"\nmitre: \"T1557.001\"\ntag: \"new\"\n---\nBypass reflection mitigations to relay a host's own authentication back to itself for SYSTEM execution.\n\n## Prerequisite\nTarget does not enforce SMB signing.\n", "docs/techniques/cname_relay.md": "---\nid: cname_relay\ntype: technique\nlabel: \"Kerberos CNAME-abuse relay to ADCS (ESC8)\"\nphase: \"initial\"\ntools: [\"impacket\"]\ncve: null\ndetect: \"Unexpected DNS CNAME changes; certificate issuance outside normal workflow.\"\nmitre: \"T1649\"\ntag: \"new\"\n---\nPlant a DNS CNAME to redirect ticket requests, relaying the resulting authentication into AD CS web enrollment.\n\n## Prerequisite\nDNS write access and a reachable ESC8-vulnerable CA.\n", "docs/techniques/lsass_dump.md": "---\nid: lsass_dump\ntype: technique\nlabel: \"LSASS memory dumping\"\nphase: \"cred\"\ntools: [\"mimikatz\"]\ncve: null\ndetect: \"Sysmon EID 10 — process access to lsass.exe.\"\nmitre: \"T1003.001\"\ntag: null\n---\nPull plaintext passwords, NTLM hashes and Kerberos keys out of the LSASS process.\n\n## Prerequisite\nLocal admin or SeDebugPrivilege.\n", "docs/techniques/sam_lsa.md": "---\nid: sam_lsa\ntype: technique\nlabel: \"SAM / LSA secrets dump\"\nphase: \"cred\"\ntools: [\"impacket\"]\ncve: null\ndetect: \"Registry hive save/read events; VSS shadow-copy creation.\"\nmitre: \"T1003.002\"\ntag: null\n---\nExtract local account hashes and cached domain credentials from the registry hives.\n\n## Prerequisite\nLocal admin.\n", "docs/techniques/ntds_dump.md": "---\nid: ntds_dump\ntype: technique\nlabel: \"NTDS.dit extraction\"\nphase: \"cred\"\ntools: [\"impacket\", \"certsync\"]\ncve: null\ndetect: \"4662 on the NTDS object; VSS shadow-copy events on a DC.\"\nmitre: \"T1003.003\"\ntag: null\n---\nDump the full AD database, yielding every domain account's password hash in one pull.\n\n## Prerequisite\nDomain controller access, or DCSync-equivalent rights.\n", "docs/techniques/ticket_dump.md": "---\nid: ticket_dump\ntype: technique\nlabel: \"Kerberos ticket extraction\"\nphase: \"cred\"\ntools: [\"rubeus\", \"mimikatz\", \"kekeo\"]\ncve: null\ndetect: \"LSA cache access; unusual 4769 patterns.\"\nmitre: \"T1558\"\ntag: null\n---\nHarvest cached TGT/TGS tickets from the LSA cache for reuse elsewhere.\n\n## Prerequisite\nLocal admin, or the owning user's own session.\n", "docs/techniques/dpapi.md": "---\nid: dpapi\ntype: technique\nlabel: \"DPAPI / credential-vault decryption\"\nphase: \"cred\"\ntools: [\"mimikatz\", \"dploot\", \"donpapi\"]\ncve: null\ndetect: \"DPAPI master-key access events.\"\nmitre: \"T1555\"\ntag: null\n---\nDecrypt saved browser passwords, Wi-Fi keys and Windows Vault entries.\n\n## Prerequisite\nUser or admin context (locally or remotely over SMB/RPC).\n", "docs/techniques/dmsa_ouroboros.md": "---\nid: dmsa_ouroboros\ntype: technique\nlabel: \"dMSA Ouroboros credential extraction\"\nphase: \"cred\"\ntools: []\ncve: null\ndetect: \"Directory-service access to dMSA attributes.\"\nmitre: \"T1003 (variant)\"\ntag: \"new\"\n---\nAbuse a delegated Managed Service Account's self-rotating design on Windows Server 2025 to repeatedly pull its current credential.\n\n## Prerequisite\nRights over a dMSA object on a Server 2025 domain.\n", "docs/techniques/timeroasting.md": "---\nid: timeroasting\ntype: technique\nlabel: \"Timeroasting\"\nphase: \"cred\"\ntools: [\"timeroast\", \"hashcat\"]\ncve: null\ndetect: \"Anomalous NTP/MS-SNTP query volume against a DC.\"\nmitre: \"T1110\"\ntag: \"new\"\n---\nRequest MS-SNTP time responses to recover crackable machine-account hashes without any domain authentication at all.\n\n## Prerequisite\nNetwork reachability to a domain controller.\n", "docs/techniques/acl_abuse.md": "---\nid: acl_abuse\ntype: technique\nlabel: \"ACL abuse (GenericAll / WriteDACL / ForceChangePassword)\"\nphase: \"privesc\"\ntools: [\"bloodyad\", \"powerview\", \"impacket\"]\ncve: null\ndetect: \"5136 — directory object modified.\"\nmitre: \"T1222 / T1098\"\ntag: null\n---\nUse an over-permissioned ACE to reset a password, add group membership, or grant further rights.\n\n## Prerequisite\nControl over an AD object via a weak ACE.\n", "docs/techniques/gpo_abuse.md": "---\nid: gpo_abuse\ntype: technique\nlabel: \"GPO abuse (writable linked policy)\"\nphase: \"privesc\"\ntools: [\"sharpgpoabuse\", \"gpoddity\"]\ncve: null\ndetect: \"GPO edit events; new scheduled-task GPO content.\"\nmitre: \"T1484.001\"\ntag: null\n---\nEdit a Group Policy Object you control write access to, pushing a malicious scheduled task to its linked OU.\n\n## Prerequisite\nWrite access to a GPO linked to a target OU.\n", "docs/techniques/machineaccountquota.md": "---\nid: machineaccountquota\ntype: technique\nlabel: \"MachineAccountQuota abuse\"\nphase: \"privesc\"\ntools: [\"powermad\", \"impacket\"]\ncve: null\ndetect: \"Unusual volume of computer-object creation from one user.\"\nmitre: \"T1136.002\"\ntag: null\n---\nUse the default right every domain user has to create computer accounts, producing a controlled machine identity for delegation or noPac-style attacks.\n\n## Prerequisite\nDefault MachineAccountQuota (10) still in effect.\n", "docs/techniques/unconstrained_deleg.md": "---\nid: unconstrained_deleg\ntype: technique\nlabel: \"Unconstrained delegation abuse\"\nphase: \"privesc\"\ntools: [\"petitpotam\", \"krbrelayx\", \"rubeus\"]\ncve: null\ndetect: \"Rubeus-style TGT caching; correlated 4624/4768 events.\"\nmitre: \"T1558\"\ntag: null\n---\nCoerce a privileged account to authenticate to a server trusted for unconstrained delegation, then lift its cached TGT.\n\n## Prerequisite\nA host configured for unconstrained delegation, plus a coercion primitive.\n", "docs/techniques/constrained_deleg.md": "---\nid: constrained_deleg\ntype: technique\nlabel: \"Constrained delegation abuse (S4U2Self/S4U2Proxy)\"\nphase: \"privesc\"\ntools: [\"rubeus\", \"impacket\"]\ncve: null\ndetect: \"4769 showing S4U flags set.\"\nmitre: \"T1558\"\ntag: null\n---\nUse an account's allowed delegation to impersonate any user to one specific service.\n\n## Prerequisite\nControl of an account with constrained delegation configured.\n", "docs/techniques/rbcd.md": "---\nid: rbcd\ntype: technique\nlabel: \"Resource-Based Constrained Delegation (RBCD)\"\nphase: \"privesc\"\ntools: [\"impacket\", \"rubeus\", \"rbcdpy\", \"powermad\"]\ncve: null\ndetect: \"Attribute write on msDS-AllowedToActOnBehalfOfOtherIdentity.\"\nmitre: \"T1558\"\ntag: \"new\"\n---\nWrite delegation rights onto a computer object you control, then impersonate any user through it.\n\n## Prerequisite\nWrite access to msDS-AllowedToActOnBehalfOfOtherIdentity on a target computer.\n", "docs/techniques/shadow_creds.md": "---\nid: shadow_creds\ntype: technique\nlabel: \"Shadow Credentials attack\"\nphase: \"privesc\"\ntools: [\"whisker\", \"pywhisker\", \"certipy\", \"pkinittools\"]\ncve: null\ndetect: \"5136 on msDS-KeyCredentialLink.\"\nmitre: \"T1556\"\ntag: \"new\"\n---\nAdd an attacker-controlled key to msDS-KeyCredentialLink on a target object, then authenticate as it via PKINIT.\n\n## Prerequisite\nWrite access to the target's msDS-KeyCredentialLink attribute.\n", "docs/techniques/adcs_esc1.md": "---\nid: adcs_esc1\ntype: technique\nlabel: \"ADCS ESC1\"\nphase: \"privesc\"\ntools: [\"certipy\", \"certify\"]\ncve: null\ndetect: \"Certificate issuance (4886/4887) for an unexpected UPN.\"\nmitre: \"T1649\"\ntag: null\n---\nA template lets the enrollee set an arbitrary SAN with client-auth EKU, so you request a certificate as any user — Domain Admin included.\n\n## Prerequisite\nEnrollment rights on a vulnerable template.\n", "docs/techniques/adcs_esc8.md": "---\nid: adcs_esc8\ntype: technique\nlabel: \"ADCS ESC8 (NTLM relay to CA web enrollment)\"\nphase: \"privesc\"\ntools: [\"impacket\", \"petitpotam\", \"coercer\", \"certipy\"]\ncve: null\ndetect: \"Certificate issuance outside normal workflow; relay traffic to /certsrv/.\"\nmitre: \"T1649\"\ntag: null\n---\nCoerce a DC to authenticate, then relay that authentication into the AD CS HTTP enrollment endpoint to issue a DC-identity certificate.\n\n## Prerequisite\nWeb enrollment reachable without Extended Protection; a coercion primitive.\n", "docs/techniques/certighost.md": "---\nid: certighost\ntype: technique\nlabel: \"Certighost\"\nphase: \"privesc\"\ntools: [\"certipy\"]\ncve: \"cve-2026-54121\"\ndetect: \"Certificate request carrying a DC identity from a low-privileged requester.\"\nmitre: \"T1649\"\ntag: \"new\"\n---\nAbuses an AD CS enrollment fallback that coerces the CA into authenticating back to attacker infrastructure, then issues a certificate impersonating a domain controller.\n\n## Prerequisite\nA standard domain account and a reachable enterprise CA.\n", "docs/techniques/resetnightmare.md": "---\nid: resetnightmare\ntype: technique\nlabel: \"ResetNightmare\"\nphase: \"privesc\"\ntools: []\ncve: \"cve-2026-27912\"\ndetect: \"4724 password-reset events correlated with anomalous kpasswd traffic.\"\nmitre: \"T1098\"\ntag: \"new\"\n---\nA validation flaw in the Kerberos change-password protocol lets you reset another account's password — Domain Admin included — without knowing the current one.\n\n## Prerequisite\nNetwork access to a domain controller and a controlled account to initiate the exchange.\n", "docs/techniques/nopac.md": "---\nid: nopac\ntype: technique\nlabel: \"noPac (sAMAccountName spoofing)\"\nphase: \"privesc\"\ntools: [\"impacket\", \"rubeus\", \"powermad\"]\ncve: \"cve-2021-42287\"\ndetect: \"4769 showing sAMAccountName/dNSHostName spoofing.\"\nmitre: \"T1558\"\ntag: \"new\"\n---\nRename a controlled machine account to collide with a domain controller's name, then exploit S4U2Self for a Domain-Admin-equivalent ticket.\n\n## Prerequisite\nAbility to create or control a computer account.\n", "docs/techniques/pth.md": "---\nid: pth\ntype: technique\nlabel: \"Pass-the-hash\"\nphase: \"lateral\"\ntools: [\"impacket\", \"netexec\", \"crackmapexec\"]\ncve: null\ndetect: \"4624 type 3 with NTLMSSP and no matching interactive logon.\"\nmitre: \"T1550.002\"\ntag: null\n---\nAuthenticate using an NTLM hash in place of the plaintext password.\n\n## Prerequisite\nA captured NTLM hash with rights on the target.\n", "docs/techniques/ptt.md": "---\nid: ptt\ntype: technique\nlabel: \"Pass-the-ticket\"\nphase: \"lateral\"\ntools: [\"rubeus\", \"mimikatz\"]\ncve: null\ndetect: \"A 4769 with no preceding 4768 from that host.\"\nmitre: \"T1550.003\"\ntag: null\n---\nInject a stolen Kerberos ticket into the current session to access remote services as its owner.\n\n## Prerequisite\nA captured TGT or TGS.\n", "docs/techniques/opth.md": "---\nid: opth\ntype: technique\nlabel: \"Overpass-the-hash\"\nphase: \"lateral\"\ntools: [\"rubeus\", \"mimikatz\"]\ncve: null\ndetect: \"4768 issued immediately from a non-interactive context.\"\nmitre: \"T1550.003\"\ntag: null\n---\nConvert a stolen NTLM hash into a full Kerberos TGT, moving an NTLM-only foothold onto the Kerberos path.\n\n## Prerequisite\nAn NTLM hash or AES key.\n", "docs/techniques/wmi_exec.md": "---\nid: wmi_exec\ntype: technique\nlabel: \"WMI / WinRM / SMB remote execution\"\nphase: \"lateral\"\ntools: [\"impacket\", \"netexec\", \"evilwinrm\"]\ncve: null\ndetect: \"WMI-Activity operational log; 4688; 7045 service creation.\"\nmitre: \"T1021.002 / T1021.006\"\ntag: null\n---\nRun commands on a remote host over WMI, WinRM or SMB using a valid credential or hash.\n\n## Prerequisite\nLocal admin (or WinRM access) on the target.\n", "docs/techniques/rdp_lateral.md": "---\nid: rdp_lateral\ntype: technique\nlabel: \"RDP lateral movement & session hijacking\"\nphase: \"lateral\"\ntools: []\ncve: null\ndetect: \"4624 type 10; tscon.exe invocation.\"\nmitre: \"T1021.001 / T1563.002\"\ntag: null\n---\nMove interactively via RDP, including taking over another user's disconnected session on a shared host.\n\n## Prerequisite\nRDP access, or local admin on a host with a cached session.\n", "docs/techniques/wmi_fileless.md": "---\nid: wmi_fileless\ntype: technique\nlabel: \"Fileless WMI event-subscription execution\"\nphase: \"lateral\"\ntools: []\ncve: null\ndetect: \"WMI permanent-subscription creation events.\"\nmitre: \"T1546.003\"\ntag: null\n---\nExecute code through a WMI permanent event subscription, without dropping a payload to disk.\n\n## Prerequisite\nWMI write access on the target.\n", "docs/techniques/dcsync.md": "---\nid: dcsync\ntype: technique\nlabel: \"DCSync\"\nphase: \"persist\"\ntools: [\"mimikatz\", \"impacket\"]\ncve: null\ndetect: \"4662 with the replication-GUID access mask, from a non-DC source.\"\nmitre: \"T1003.006\"\ntag: null\n---\nAbuse directory-replication rights (MS-DRSR) to pull password hashes for any account — krbtgt included — straight from a DC.\n\n## Prerequisite\nReplicating Directory Changes (+ All) rights.\n", "docs/techniques/golden.md": "---\nid: golden\ntype: technique\nlabel: \"Golden ticket\"\nphase: \"persist\"\ntools: [\"mimikatz\", \"rubeus\"]\ncve: null\ndetect: \"A 4769 with no matching 4768; a TGT lifetime outside domain policy.\"\nmitre: \"T1558.001\"\ntag: null\n---\nForge a TGT for any user using the domain's krbtgt hash, valid until krbtgt is rotated twice.\n\n## Prerequisite\nThe krbtgt account's hash, via DCSync or an NTDS dump.\n", "docs/techniques/diamond.md": "---\nid: diamond\ntype: technique\nlabel: \"Diamond ticket\"\nphase: \"persist\"\ntools: [\"rubeus\"]\ncve: null\ndetect: \"Subtle, hard-to-spot field inconsistencies on an otherwise valid TGT.\"\nmitre: \"T1558.001\"\ntag: \"new\"\n---\nModify the fields of a legitimately-issued TGT in place rather than forging one from scratch, evading golden-ticket anomaly detection.\n\n## Prerequisite\nThe krbtgt hash plus a genuine TGT to modify.\n", "docs/techniques/silver.md": "---\nid: silver\ntype: technique\nlabel: \"Silver ticket\"\nphase: \"persist\"\ntools: [\"mimikatz\"]\ncve: null\ndetect: \"A 4769 for that service with no prior 4768.\"\nmitre: \"T1558.002\"\ntag: null\n---\nForge a TGS for one specific service using that service account's own hash, bypassing the DC entirely for that ticket.\n\n## Prerequisite\nA service account's NTLM hash.\n", "docs/techniques/skeleton_key.md": "---\nid: skeleton_key\ntype: technique\nlabel: \"Skeleton key\"\nphase: \"persist\"\ntools: [\"mimikatz\"]\ncve: null\ndetect: \"LSASS memory modification on a DC — rare, very high-signal.\"\nmitre: \"T1556.001\"\ntag: null\n---\nPatch a live domain controller's LSASS so one master password authenticates as any domain account, alongside each account's real password.\n\n## Prerequisite\nLocal admin on a domain controller.\n", "docs/techniques/golden_cert.md": "---\nid: golden_cert\ntype: technique\nlabel: \"Golden certificate (CA key theft)\"\nphase: \"persist\"\ntools: [\"forgecert\", \"certipy\"]\ncve: null\ndetect: \"Certificate issuance that bypasses the normal CA request workflow.\"\nmitre: \"T1649\"\ntag: null\n---\nSteal or forge the enterprise CA's signing key to mint a trusted certificate for any user, surviving password resets.\n\n## Prerequisite\nCompromise of the CA server or its private key.\n", "docs/techniques/dcshadow.md": "---\nid: dcshadow\ntype: technique\nlabel: \"DCShadow\"\nphase: \"persist\"\ntools: [\"mimikatz\"]\ncve: null\ndetect: \"Unexpected new DC registration; replication from an unrecognized server.\"\nmitre: \"T1207\"\ntag: null\n---\nTemporarily register a rogue domain controller to push an attacker-chosen change into replication, bypassing normal AD audit logging.\n\n## Prerequisite\nDomain Admin-equivalent rights, plus rights to register a server as a DC.\n", "docs/techniques/sidhistory.md": "---\nid: sidhistory\ntype: technique\nlabel: \"SID history injection\"\nphase: \"persist\"\ntools: [\"mimikatz\"]\ncve: null\ndetect: \"4765/4766 SID-history change events.\"\nmitre: \"T1134.005\"\ntag: null\n---\nGrant membership in a privileged group across a trust by writing to an account's SID history.\n\n## Prerequisite\nSeEnableDelegationPrivilege or Domain Admin-equivalent rights.\n", "docs/techniques/trust_ticket.md": "---\nid: trust_ticket\ntype: technique\nlabel: \"Inter-forest trust-ticket abuse\"\nphase: \"hybrid\"\ntools: [\"mimikatz\", \"impacket\"]\ncve: null\ndetect: \"4769 for a cross-realm TGS.\"\nmitre: \"T1482 / T1558\"\ntag: null\n---\nForge an inter-realm TGT using a trust key to reach resources in a trusting forest.\n\n## Prerequisite\nThe trust account's NTLM hash.\n", "docs/techniques/aadconnect.md": "---\nid: aadconnect\ntype: technique\nlabel: \"Entra Connect credential extraction\"\nphase: \"hybrid\"\ntools: [\"aadinternals\"]\ncve: null\ndetect: \"Access to the ADSync/Entra Connect database.\"\nmitre: \"T1552.001\"\ntag: null\n---\nExtract the sync service account's credentials from the Entra/Azure AD Connect server, enabling a pivot into the cloud tenant.\n\n## Prerequisite\nAdmin access to the Connect server.\n", "docs/techniques/prt_pivot.md": "---\nid: prt_pivot\ntype: technique\nlabel: \"Entra ID PRT pivoting\"\nphase: \"hybrid\"\ntools: [\"roadtools\", \"aadinternals\"]\ncve: null\ndetect: \"Entra ID sign-in log anomalies; unusual PRT token requests.\"\nmitre: \"T1550\"\ntag: null\n---\nUse Primary Refresh Token artifacts from a hybrid-joined device to move from on-prem access into Entra ID and Microsoft 365.\n\n## Prerequisite\nAdmin access to a hybrid-joined device.\n", "docs/techniques/passkey_replay.md": "---\nid: passkey_replay\ntype: technique\nlabel: \"Pass-the-passkey\"\nphase: \"hybrid\"\ntools: []\ncve: null\ndetect: \"FIDO2 authentication anomalies.\"\nmitre: \"T1550\"\ntag: \"new\"\n---\nReplay captured FIDO2/passkey authentication material for lateral or cloud access.\n\n## Prerequisite\nCaptured passkey authentication material.\n"}}</script>
+<script>
+/* ---------- tiny frontmatter + markdown helpers (no deps) ---------- */
+function parseFrontmatter(raw){
+  const m = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
+  if(!m) return {meta:{}, body: raw};
+  const meta = {};
+  m[1].split(/\r?\n/).forEach(line=>{
+    const idx = line.indexOf(":");
+    if(idx < 0) return;
+    const key = line.slice(0, idx).trim();
+    let val = line.slice(idx+1).trim();
+    if(val === "" || val === "null"){ meta[key] = null; return; }
+    if(val.startsWith("[")){
+      const inner = val.slice(1, val.lastIndexOf("]")).trim();
+      meta[key] = inner ? inner.split(",").map(s=> s.trim().replace(/^"|"$/g,"")) : [];
+      return;
+    }
+    if(/^".*"$/.test(val)){ meta[key] = val.slice(1,-1).replace(/\\"/g,'"'); return; }
+    if(/^-?\d+(\.\d+)?$/.test(val)){ meta[key] = Number(val); return; }
+    meta[key] = val;
+  });
+  return {meta, body: m[2].replace(/^\n+/, "")};
+}
+function splitSections(body){
+  const lines = body.split(/\r?\n/);
+  const sections = [];
+  let cur = {title:null, lines:[]};
+  lines.forEach(line=>{
+    const h = line.match(/^##\s+(.+)$/);
+    if(h){ sections.push(cur); cur = {title:h[1].trim(), lines:[]}; }
+    else cur.lines.push(line);
+  });
+  sections.push(cur);
+  return sections.map(s=>({title:s.title, text:s.lines.join("\n").trim()})).filter(s=> s.title || s.text);
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"]/g, c=> ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+}
+function mdInline(s){
+  if(!s) return "";
+  let out = escapeHtml(s);
+  out = out.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  out = out.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  return out;
+}
+function renderMarkdownBlock(md){
+  if(!md) return {html:"", hasMermaid:false};
+  const mermaidBlocks = [];
+  let work = md.replace(/```mermaid\s*\n([\s\S]*?)```/g, (_, code)=>{
+    mermaidBlocks.push(code.trim());
+    return "\u0000MERMAID" + (mermaidBlocks.length-1) + "\u0000";
+  });
+  const codeBlocks = [];
+  work = work.replace(/```([\s\S]*?)```/g, (_, code)=>{
+    codeBlocks.push(code.replace(/^\w*\n/, ""));
+    return "\u0000CODE" + (codeBlocks.length-1) + "\u0000";
+  });
+  let html = escapeHtml(work);
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  const paras = html.split(/\n\s*\n/).map(p=>p.trim()).filter(Boolean)
+    .map(p=> `<p>${p.replace(/\n/g,"<br>")}</p>`).join("");
+  let out = paras;
+  out = out.replace(/\u0000CODE(\d+)\u0000/g, (_, i)=> `<pre class="mono" style="white-space:pre-wrap;font-size:12px">${escapeHtml(codeBlocks[i])}</pre>`);
+  out = out.replace(/\u0000MERMAID(\d+)\u0000/g, (_, i)=> `<div class="mermaid-wrap"><pre class="mermaid">${escapeHtml(mermaidBlocks[i])}</pre></div>`);
+  return {html: out, hasMermaid: mermaidBlocks.length>0};
+}
+
+/* ---------- data (populated at runtime from docs/) — edit docs/, not this file ---------- */
+let PHASES = [], TOOLS = [], CVES = [], TECH = [];
+function phaseLabel(id){ return (PHASES.find(p=>p.id===id)||{}).label || id; }
+
+async function fetchText(url){
+  const r = await fetch(url);
+  if(!r.ok) throw new Error(url + ": HTTP " + r.status);
+  return r.text();
+}
+
+async function loadLiveDocs(){
+  const manifest = JSON.parse(await fetchText("docs/manifest.json"));
+  const raws = await Promise.all(manifest.map(entry=> fetchText(entry.path)));
+  return {manifest, raws};
+}
+
+function loadEmbeddedDocs(){
+  const el = document.getElementById("embedded-docs");
+  if(!el) throw new Error("no embedded docs/ snapshot found either");
+  const embedded = JSON.parse(el.textContent);
+  const raws = embedded.manifest.map(entry => embedded.files[entry.path]);
+  return {manifest: embedded.manifest, raws};
+}
+
+let usingEmbeddedFallback = false;
+
+async function loadData(){
+  let manifest, raws;
+  try{
+    ({manifest, raws} = await loadLiveDocs());
+  }catch(liveErr){
+    console.warn("Live docs/ fetch failed (" + liveErr.message + ") — using the docs snapshot bundled in this HTML file instead. " +
+      "If you deployed docs/manifest.json alongside index.html and still see this, check the path/CORS.");
+    usingEmbeddedFallback = true;
+    ({manifest, raws} = loadEmbeddedDocs());
+  }
+  const files = manifest.map((entry, i)=>{
+    const {meta, body} = parseFrontmatter(raws[i]);
+    return {entry, meta, sections: splitSections(body)};
+  });
+  files.forEach(({entry, meta, sections})=>{
+    const intro = sections[0] && !sections[0].title ? sections[0].text : "";
+    const rest = sections[0] && !sections[0].title ? sections.slice(1) : sections;
+    const id = meta.id || entry.id;
+    if(entry.type === "phase"){
+      PHASES.push({id, label: meta.label, desc: intro, extra: rest});
+    } else if(entry.type === "tool"){
+      TOOLS.push({id, repo: meta.repo, cat: meta.category, purpose: intro, extra: rest});
+    } else if(entry.type === "cve"){
+      CVES.push({id, label: meta.label, year: meta.year, source: meta.source || "", desc: intro, extra: rest});
+    } else if(entry.type === "technique"){
+      const prereqSection = rest.find(s=> (s.title||"").trim().toLowerCase() === "prerequisite");
+      const extra = rest.filter(s=> s !== prereqSection);
+      TECH.push({
+        id, label: meta.label, phase: meta.phase, tools: meta.tools || [], cve: meta.cve || null,
+        detect: meta.detect || "", mitre: meta.mitre || "", tag: meta.tag || null,
+        desc: intro, prereq: prereqSection ? prereqSection.text : "", extra
+      });
+    }
+  });
+}
+
+/* ---------- everything below only runs once docs/ has loaded ---------- */
+function buildApp(){
+
+/* ---------- build node/link set ---------- */
+const nodes = [];
+const links = [];
+const nodeIndex = new Map();
+function addNode(n){ nodeIndex.set(n.id, n); nodes.push(n); }
+
+PHASES.forEach(p => addNode({id:p.id, type:"phase", label:p.label, data:p}));
+TECH.forEach(t => addNode({id:t.id, type:"technique", label:t.label, data:t, tag:t.tag}));
+TOOLS.forEach(tl => { if(!nodeIndex.has(tl.id)) addNode({id:tl.id, type:"tool", label:tl.repo.split("/")[1]||tl.repo, data:tl}); });
+CVES.forEach(c => addNode({id:c.id, type:"cve", label:c.label, data:c, tag:"new"}));
+
+for(let i=0;i<PHASES.length-1;i++) links.push({source:PHASES[i].id, target:PHASES[i+1].id, kind:"chain"});
+TECH.forEach(t=>{
+  links.push({source:t.phase, target:t.id, kind:"belongs"});
+  (t.tools||[]).forEach(tid=>{ if(nodeIndex.has(tid)) links.push({source:t.id, target:tid, kind:"uses"}); });
+  if(t.cve && nodeIndex.has(t.cve)) links.push({source:t.id, target:t.cve, kind:"exploits"});
+});
+const usedToolIds = new Set();
+links.forEach(l=>{ if(nodeIndex.get(l.target)?.type==="tool") usedToolIds.add(l.target); });
+const graphNodes = nodes.filter(n=> n.type!=="tool" || usedToolIds.has(n.id));
+const graphIds = new Set(graphNodes.map(n=>n.id));
+const graphLinks = links.filter(l=> graphIds.has(l.source) && graphIds.has(l.target));
+
+/* ---------- render: force graph, full viewport ---------- */
+const svg = d3.select("#graph");
+const svgEl = document.getElementById("graph");
+let W = window.innerWidth, H = window.innerHeight;
+svg.attr("viewBox", [0,0,W,H]);
+
+const g = svg.append("g");
+const linkSel = g.append("g").attr("class","links").selectAll("line")
+  .data(graphLinks).join("line")
+  .attr("stroke","var(--edge)").attr("stroke-width", d=> d.kind==="chain"?2:1)
+  .attr("stroke-dasharray", d=> d.kind==="uses" ? "2,3" : null)
+  .attr("opacity", 0.7);
+
+const radius = d => d.type==="phase" ? 16 : d.type==="cve" ? 9 : d.type==="tool" ? 6.5 : 11;
+const color = d => d.type==="phase" ? "var(--phase)" : d.type==="technique" ? "var(--tech)" : d.type==="tool" ? "var(--tool)" : "var(--cve)";
+
+const nodeSel = g.append("g").attr("class","nodes").selectAll("g.node")
+  .data(graphNodes, d=>d.id).join("g").attr("class","node")
+  .style("cursor","pointer")
+  .call(d3.drag()
+    .on("start", (ev,d)=>{ if(!ev.active) sim.alphaTarget(0.25).restart(); d.fx=d.x; d.fy=d.y; })
+    .on("drag", (ev,d)=>{ d.fx=ev.x; d.fy=ev.y; })
+    .on("end", (ev,d)=>{ if(!ev.active) sim.alphaTarget(0); d.fx=null; d.fy=null; }));
+
+nodeSel.append("circle")
+  .attr("r", radius)
+  .attr("fill", color)
+  .attr("fill-opacity", d=> d.type==="phase" ? 0.92 : 0.85)
+  .attr("stroke", d=> d.tag==="new" ? "var(--new)" : "var(--bg)")
+  .attr("stroke-width", d=> d.tag==="new" ? 2.6 : 1.4);
+
+nodeSel.append("text")
+  .text(d=> d.label.length>24 ? d.label.slice(0,22)+"…" : d.label)
+  .attr("x", d=> radius(d)+5).attr("y", 4)
+  .attr("font-size", d=> d.type==="phase" ? 12 : 10)
+  .attr("font-family", "Inter, system-ui, sans-serif")
+  .attr("font-weight", d=> d.type==="phase" ? 700 : 500)
+  .attr("fill","var(--fg)")
+  .style("paint-order","stroke").style("stroke","var(--bg)").style("stroke-width","3px").style("stroke-opacity",0.85);
+
+nodeSel.append("title").text(d=>d.label);
+nodeSel.on("click", (ev,d)=>{ ev.stopPropagation(); showDetail(d); });
+
+const sim = d3.forceSimulation(graphNodes)
+  .force("link", d3.forceLink(graphLinks).id(d=>d.id).distance(d=> d.kind==="chain" ? 150 : d.kind==="belongs" ? 62 : 52).strength(0.5))
+  .force("charge", d3.forceManyBody().strength(-240))
+  .force("center", d3.forceCenter(W/2, H/2))
+  .force("collide", d3.forceCollide().radius(d=>radius(d)+15))
+  .on("tick", ()=>{
+    linkSel.attr("x1",d=>d.source.x).attr("y1",d=>d.source.y).attr("x2",d=>d.target.x).attr("y2",d=>d.target.y);
+    nodeSel.attr("transform", d=>`translate(${d.x},${d.y})`);
+  });
+
+const zoom = d3.zoom().scaleExtent([0.25,3]).on("zoom", ev=> g.attr("transform", ev.transform));
+svg.call(zoom);
+document.getElementById("resetZoom").addEventListener("click", ()=>{
+  svg.transition().duration(400).call(zoom.transform, d3.zoomIdentity);
+});
+
+window.addEventListener("resize", ()=>{
+  W = window.innerWidth; H = window.innerHeight;
+  svg.attr("viewBox", [0,0,W,H]);
+  sim.force("center", d3.forceCenter(W/2,H/2));
+  sim.alpha(0.1).restart();
+});
+
+/* ---------- wires: highlight the links touching the selected node ---------- */
+function clearHighlight(){
+  linkSel
+    .attr("stroke","var(--edge)")
+    .attr("stroke-width", d=> d.kind==="chain"?2:1)
+    .attr("opacity", 0.7);
+}
+function highlightWiresFor(id){
+  const touches = d=> d.source.id===id || d.target.id===id;
+  linkSel
+    .attr("stroke", d=> touches(d) ? "var(--accent)" : "var(--edge-dim)")
+    .attr("stroke-width", d=> touches(d) ? (d.kind==="chain"?3:2.2) : (d.kind==="chain"?2:1))
+    .attr("opacity", d=> touches(d) ? 1 : 0.25);
+}
+
+/* ---------- node detail panel ---------- */
+const detailEl = document.getElementById("detail");
+function toolLabel(id){ const n=nodeIndex.get(id); return n ? (n.data.repo || n.label) : id; }
+function focusNode(id){ const n = graphNodes.find(x=>x.id===id); if(n) showDetail(n); }
+
+function extraSectionsHtml(extra){
+  if(!extra || !extra.length) return "";
+  let any = false;
+  const out = extra.map(s=>{
+    const {html, hasMermaid} = renderMarkdownBlock(s.text);
+    if(hasMermaid) any = true;
+    return `<div class="field"><label>${escapeHtml(s.title || "More")}</label>${html}</div>`;
+  }).join("");
+  return out;
+}
+
+function showDetail(d){
+  const t = d.data;
+  let html = `<button class="closeBtn" id="closeDetail">✕</button>`;
+  html += `<h3>${escapeHtml(d.label)}${d.tag==='new'?'<span class="tag-new">new</span>':''}</h3><div class="type-badge">${d.type}</div>`;
+  if(d.type==="phase"){
+    html += `<div class="field"><label>What happens here</label><p>${mdInline(t.desc)}</p></div>`;
+    html += extraSectionsHtml(t.extra);
+  } else if(d.type==="technique"){
+    html += `<div class="phase-of">Phase: <em class="accent">${escapeHtml(phaseLabel(t.phase))}</em></div>`;
+    html += `<div class="field"><label>What it does</label><p>${mdInline(t.desc)}</p></div>`;
+    html += `<div class="field"><label>Prerequisite</label><p>${mdInline(t.prereq)}</p></div>`;
+    if(t.tools && t.tools.length){
+      html += `<div class="field"><label>Tool(s)</label><div class="toollist">${t.tools.map(x=>`<span class="tool-pill" data-jump="${x}">${escapeHtml(toolLabel(x))}</span>`).join("")}</div></div>`;
+    }
+    if(t.cve){ html += `<div class="field"><label>CVE</label><div class="toollist"><span class="tool-pill" data-jump="${t.cve}">${escapeHtml(t.cve)}</span></div></div>`; }
+    html += `<div class="field"><label>Detection artifact</label><p>${mdInline(t.detect)}</p></div>`;
+    if(t.mitre) html += `<div class="field"><label>ATT&amp;CK (approx.)</label><p>${mdInline(t.mitre)}</p></div>`;
+    html += extraSectionsHtml(t.extra);
+  } else if(d.type==="tool"){
+    html += `<div class="field"><label>Repository</label><p><a href="https://github.com/${t.repo}" target="_blank" rel="noopener">${escapeHtml(t.repo)}</a></p></div>`;
+    html += `<div class="field"><label>Category</label><p>${mdInline(t.cat)}</p></div>`;
+    html += `<div class="field"><label>Purpose</label><p>${mdInline(t.purpose)}</p></div>`;
+    html += extraSectionsHtml(t.extra);
+  } else if(d.type==="cve"){
+    html += `<div class="field"><label>Disclosed</label><p>${t.year}</p></div>`;
+    html += `<div class="field"><label>What it does</label><p>${mdInline(t.desc)}</p></div>`;
+    if(t.source) html += `<div class="field"><label>Source</label><p><a href="${t.source}" target="_blank" rel="noopener">verification link</a></p></div>`;
+    html += extraSectionsHtml(t.extra);
+  }
+  detailEl.innerHTML = html;
+  detailEl.classList.add("open");
+  detailEl.querySelectorAll(".tool-pill").forEach(p=> p.addEventListener("click", ()=> focusNode(p.dataset.jump)));
+  document.getElementById("closeDetail").addEventListener("click", ()=>{ detailEl.classList.remove("open"); clearHighlight(); });
+  if(window.mermaid && detailEl.querySelector(".mermaid")){
+    try{
+      mermaid.initialize({startOnLoad:false, securityLevel:"strict",
+        theme: matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "default"});
+      if(mermaid.run) mermaid.run({nodes: detailEl.querySelectorAll(".mermaid")});
+      else mermaid.init(undefined, detailEl.querySelectorAll(".mermaid"));
+    }catch(e){ console.warn("mermaid render failed", e); }
+  }
+  highlightWiresFor(d.id);
+}
+svg.on("click", ()=>{ detailEl.classList.remove("open"); clearHighlight(); });
+
+/* ---------- menu (search, legend, filters, actions) ---------- */
+const menuBtn = document.getElementById("menuBtn");
+const menuPanel = document.getElementById("menuPanel");
+menuBtn.addEventListener("click", (ev)=>{
+  ev.stopPropagation();
+  const open = menuPanel.classList.toggle("open");
+  menuBtn.setAttribute("aria-expanded", open);
+});
+document.addEventListener("click", (ev)=>{
+  if(!menuPanel.contains(ev.target) && !menuBtn.contains(ev.target)) menuPanel.classList.remove("open");
+});
+
+const searchInput = document.getElementById("search");
+searchInput.addEventListener("input", ()=>{
+  const q = searchInput.value.trim().toLowerCase();
+  nodeSel.select("circle").attr("opacity", d=>{
+    if(!q) return 1;
+    const hay = (d.label+" "+JSON.stringify(d.data||{})).toLowerCase();
+    return hay.includes(q) ? 1 : 0.1;
+  });
+  nodeSel.select("text").attr("opacity", d=>{
+    if(!q) return 1;
+    const hay = (d.label+" "+JSON.stringify(d.data||{})).toLowerCase();
+    return hay.includes(q) ? 1 : 0.1;
+  });
+  linkSel.attr("opacity", 0.7 * (q?0.2:1));
+});
+
+const TYPES = [["phase","phases"],["technique","techniques"],["tool","tools"],["cve","CVEs"]];
+const activeTypes = new Set(TYPES.map(t=>t[0]));
+const filterBar = document.getElementById("typeFilters");
+TYPES.forEach(([key,label])=>{
+  const btn = document.createElement("button");
+  btn.textContent = label; btn.className="chip active"; btn.dataset.key=key;
+  btn.addEventListener("click", (ev)=>{
+    ev.stopPropagation();
+    if(activeTypes.has(key)) activeTypes.delete(key); else activeTypes.add(key);
+    btn.classList.toggle("active");
+    applyTypeFilter();
+  });
+  filterBar.appendChild(btn);
+});
+function applyTypeFilter(){
+  nodeSel.style("display", d=> activeTypes.has(d.type) ? null : "none");
+  linkSel.style("display", d=> (activeTypes.has(d.source.type)&&activeTypes.has(d.target.type)) ? null : "none");
+}
+
+/* ---------- resource index modal ---------- */
+const indexOverlay = document.getElementById("indexOverlay");
+document.getElementById("openIndex").addEventListener("click", (ev)=>{
+  ev.stopPropagation();
+  indexOverlay.classList.add("open");
+  menuPanel.classList.remove("open");
+});
+document.getElementById("closeIndex").addEventListener("click", ()=> indexOverlay.classList.remove("open"));
+indexOverlay.addEventListener("click", (ev)=>{ if(ev.target===indexOverlay) indexOverlay.classList.remove("open"); });
+
+const aboutOverlay = document.getElementById("aboutOverlay");
+document.getElementById("openAbout").addEventListener("click", (ev)=>{
+  ev.stopPropagation();
+  aboutOverlay.classList.add("open");
+  menuPanel.classList.remove("open");
+});
+document.getElementById("closeAbout").addEventListener("click", ()=> aboutOverlay.classList.remove("open"));
+aboutOverlay.addEventListener("click", (ev)=>{ if(ev.target===aboutOverlay) aboutOverlay.classList.remove("open"); });
+
+document.querySelector("#indexModal .sub").textContent =
+  `${TOOLS.length} repositories behind the graph's tool nodes, plus reference material — sourced from docs/tools/. Repo locations and maintenance shift, verify before cloning into anything but a lab.`;
+
+const tbody = document.querySelector("#resTable tbody");
+TOOLS.forEach(t=>{
+  const tr = document.createElement("tr");
+  tr.dataset.search = (t.repo+" "+t.cat+" "+t.purpose).toLowerCase();
+  tr.innerHTML = `<td class="repo"><a href="https://github.com/${t.repo}" target="_blank" rel="noopener">${escapeHtml(t.repo)}</a></td><td><span class="cat-pill">${escapeHtml(t.cat)}</span></td><td>${mdInline(t.purpose)}</td>`;
+  tbody.appendChild(tr);
+});
+document.getElementById("tableSearch").addEventListener("input", (e)=>{
+  const q = e.target.value.trim().toLowerCase();
+  document.querySelectorAll("#resTable tbody tr").forEach(tr=>{
+    tr.hidden = q && !tr.dataset.search.includes(q);
+  });
+});
+
+} /* end buildApp */
+
+loadData().then(()=>{
+  document.getElementById("hintOverlay").textContent = "drag · scroll to zoom · click a node";
+  if(usingEmbeddedFallback){
+    const foot = document.querySelector("#menuPanel .menu-foot");
+    if(foot) foot.insertAdjacentHTML("beforebegin",
+      '<p class="menu-foot">Running from the snapshot bundled in this file (live docs/ wasn\u2019t reachable) — edits merged to docs/ since this file was built won\u2019t show until it\u2019s rebuilt.</p>');
+  }
+  buildApp();
+}).catch(err=>{
+  console.error(err);
+  document.getElementById("hintOverlay").textContent = "couldn't load the attack graph — see console";
+  document.getElementById("detailEmpty").innerHTML =
+    'Couldn\u2019t load the attack-path data from <code>docs/</code> or from the snapshot bundled in this file. ' +
+    'If you edited this HTML, check that the <code>#embedded-docs</code> script tag is still intact, or serve ' +
+    'this folder over http(s) (e.g. <code>npx serve</code> or <code>python3 -m http.server</code>) with the ' +
+    '<code>docs/</code> folder alongside <code>index.html</code>.';
+});
+</script>
+
+</body></html>
