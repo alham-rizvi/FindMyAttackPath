@@ -198,8 +198,20 @@ a{color:var(--accent)}
 .markdown-viewer p{font-size:13px; line-height:1.65; margin:8px 0}
 .markdown-viewer ul,.markdown-viewer ol{font-size:13px; line-height:1.65; padding-left:22px}
 .markdown-viewer code{font-family:"JetBrains Mono",monospace; font-size:.92em}
+.text-browser{display:grid; grid-template-columns:minmax(180px, 260px) 1fr; gap:12px; min-height:0; flex:1}
+.text-list{overflow:auto; border:1px solid var(--glass-border); border-radius:12px; padding:6px}
+.text-file{display:block; width:100%; text-align:left; border:0; border-bottom:1px solid var(--glass-border);
+  background:transparent; color:var(--fg); padding:9px 8px; cursor:pointer; font-size:12px}
+.text-file:last-child{border-bottom:0}
+.text-file:hover,.text-file.active{background:var(--code-bg); color:var(--accent)}
+.text-viewer{overflow:auto; border:1px solid var(--glass-border); border-radius:12px; padding:16px;
+  min-height:0; background:var(--code-bg)}
+.text-viewer pre{margin:0; white-space:pre-wrap; overflow-wrap:anywhere; font:12px/1.6 "JetBrains Mono",monospace}
+.text-path{width:100%; background:var(--code-bg); border:1px solid var(--glass-border); color:var(--fg);
+  padding:8px 10px; border-radius:8px; font-size:12px; margin-bottom:8px}
 @media (max-width: 700px){
   .markdown-browser{grid-template-columns:1fr; grid-template-rows:minmax(120px, 180px) minmax(220px, 1fr)}
+  .text-browser{grid-template-columns:1fr; grid-template-rows:minmax(120px, 180px) minmax(220px, 1fr)}
 }
 .commit-list{overflow:auto; border:1px solid var(--glass-border); border-radius:12px; padding:8px 12px}
 .commit-item{padding:10px 2px; border-bottom:1px solid var(--glass-border)}
@@ -280,6 +292,8 @@ tr[hidden]{display:none}
     <button class="menu-action" id="resetZoom">Reset view</button>
     <button class="menu-action" id="openIndex">Tool &amp; resource index</button>
     <button class="menu-action" id="openMarkdownDocs">Markdown documentation</button>
+    <button class="menu-action" id="openTxtDocs">TXT file viewer</button>
+    <button class="menu-action" id="openJsonDocs">JSON file viewer</button>
     <button class="menu-action" id="openToolbox">Graph viewer &amp; export</button>
     <button class="menu-action" id="openAbout">About &amp; how to contribute</button>
   </div>
@@ -386,6 +400,8 @@ tr[hidden]{display:none}
       <button class="resource-tab active" id="toolsTab" type="button" role="tab" aria-selected="true" data-panel="toolsPanel">Tools</button>
       <button class="resource-tab" id="referencesTab" type="button" role="tab" aria-selected="false" data-panel="referencesPanel">References</button>
       <button class="resource-tab" id="markdownTab" type="button" role="tab" aria-selected="false" data-panel="markdownPanel">Markdown docs</button>
+      <button class="resource-tab" id="txtTab" type="button" role="tab" aria-selected="false" data-panel="txtPanel">TXT viewer</button>
+      <button class="resource-tab" id="jsonTab" type="button" role="tab" aria-selected="false" data-panel="jsonPanel">JSON viewer</button>
       <button class="resource-tab" id="commitsTab" type="button" role="tab" aria-selected="false" data-panel="commitsPanel">Recent commits</button>
     </div>
     <input id="tableSearch" type="text" placeholder="Filter by name, category or purpose…" autocomplete="off">
@@ -416,6 +432,26 @@ tr[hidden]{display:none}
         <article class="markdown-viewer" id="markdownViewer" aria-live="polite">
           <p class="resource-note">Select a Markdown file to view it.</p>
         </article>
+      </div>
+    </div>
+    <div class="resource-panel" id="txtPanel" role="tabpanel" aria-labelledby="txtTab">
+      <p class="resource-note">View a repository TXT file or enter a same-origin file path.</p>
+      <div class="text-browser">
+        <div>
+          <input class="text-path" id="txtPath" type="text" placeholder="path/to/file.txt" autocomplete="off">
+          <div class="text-list" id="txtList"></div>
+        </div>
+        <article class="text-viewer" id="txtViewer"><p class="resource-note">No TXT files are registered.</p></article>
+      </div>
+    </div>
+    <div class="resource-panel" id="jsonPanel" role="tabpanel" aria-labelledby="jsonTab">
+      <p class="resource-note">Browse JSON files and view formatted, syntax-readable output.</p>
+      <div class="text-browser">
+        <div>
+          <input class="text-path" id="jsonPath" type="text" placeholder="path/to/file.json" autocomplete="off">
+          <div class="text-list" id="jsonList"></div>
+        </div>
+        <article class="text-viewer" id="jsonViewer"><p class="resource-note">Select a JSON file to view it.</p></article>
       </div>
     </div>
     <div class="resource-panel" id="commitsPanel" role="tabpanel" aria-labelledby="commitsTab">
@@ -1228,6 +1264,67 @@ document.getElementById("openMarkdownDocs").addEventListener("click", ev=>{
   menuPanel.classList.remove("open");
   document.getElementById("markdownTab").click();
 });
+
+async function openTextFile(path, viewer, type){
+  const cleanPath = path.trim().replace(/^\/+/, "");
+  if(!cleanPath) return;
+  viewer.innerHTML = '<p class="resource-note">Loading…</p>';
+  try{
+    const response = await fetch(cleanPath);
+    if(!response.ok) throw new Error(`HTTP ${response.status}`);
+    const text = await response.text();
+    let output = text;
+    if(type === "json"){
+      try{ output = JSON.stringify(JSON.parse(text), null, 2); }
+      catch(error){ output = `JSON parse error: ${error.message}\n\n${text}`; }
+    }
+    viewer.innerHTML = `<pre>${escapeHtml(output)}</pre>`;
+  }catch(error){
+    viewer.innerHTML = `<p class="resource-note">Could not load ${escapeHtml(cleanPath)} (${escapeHtml(error.message)}).</p>`;
+  }
+}
+function addFileViewerButtons(list, viewer, input, type, paths){
+  list.replaceChildren();
+  paths.forEach(path=>{
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "text-file";
+    button.dataset.path = path;
+    button.textContent = path;
+    button.addEventListener("click", ()=>{
+      list.querySelectorAll(".text-file").forEach(item=>item.classList.remove("active"));
+      button.classList.add("active");
+      input.value = path;
+      openTextFile(path, viewer, type);
+    });
+    list.appendChild(button);
+  });
+  input.addEventListener("keydown", event=>{
+    if(event.key === "Enter"){
+      openTextFile(input.value, viewer, type);
+    }
+  });
+}
+const txtList = document.getElementById("txtList");
+const txtViewer = document.getElementById("txtViewer");
+const txtPath = document.getElementById("txtPath");
+addFileViewerButtons(txtList, txtViewer, txtPath, "text", []);
+const jsonList = document.getElementById("jsonList");
+const jsonViewer = document.getElementById("jsonViewer");
+const jsonPath = document.getElementById("jsonPath");
+addFileViewerButtons(jsonList, jsonViewer, jsonPath, "json", ["docs/manifest.json","vercel.json"]);
+document.getElementById("openTxtDocs").addEventListener("click", ev=>{
+  ev.stopPropagation();
+  indexOverlay.classList.add("open");
+  menuPanel.classList.remove("open");
+  document.getElementById("txtTab").click();
+});
+document.getElementById("openJsonDocs").addEventListener("click", ev=>{
+  ev.stopPropagation();
+  indexOverlay.classList.add("open");
+  menuPanel.classList.remove("open");
+  document.getElementById("jsonTab").click();
+});
 let commitsLoaded = false;
 async function loadRecentCommits(){
   if(commitsLoaded) return;
@@ -1281,7 +1378,7 @@ document.querySelectorAll(".resource-tab").forEach(tab=>{
     document.querySelectorAll(".resource-panel").forEach(panel=>
       panel.classList.toggle("active", panel.id===tab.dataset.panel));
     const search = document.getElementById("tableSearch");
-    search.hidden = tab.dataset.panel==="commitsPanel" || tab.dataset.panel==="markdownPanel";
+    search.hidden = ["commitsPanel","markdownPanel","txtPanel","jsonPanel"].includes(tab.dataset.panel);
     search.placeholder = tab.dataset.panel==="referencesPanel"
       ? "Filter by reference, topic or URL…" : "Filter by name, category or purpose…";
     if(tab.dataset.panel==="commitsPanel") loadRecentCommits();
