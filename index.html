@@ -113,6 +113,10 @@ a{color:var(--accent)}
   padding:18px; display:none; max-height:min(70vh,560px); overflow-y:auto;
 }
 #detail.open{display:block}
+#detail.detail-expanded{inset:5vh 5vw; width:auto; max-width:none; max-height:90vh; z-index:50}
+#detail .detail-toolbar{display:flex; justify-content:flex-end; gap:6px; margin:-5px 28px 10px 0}
+#detail .detail-toolbar button{background:var(--code-bg); border:1px solid var(--glass-border); color:var(--fg);
+  border-radius:7px; padding:5px 8px; cursor:pointer; font-size:11px}
 #detail .closeBtn{position:absolute; top:10px; right:10px; width:26px; height:26px; border-radius:50%; border:none;
   background:var(--code-bg); color:var(--muted); cursor:pointer; font-size:14px; line-height:1}
 #detail h3{font-size:16px; margin:0 0 4px; padding-right:28px; font-weight:700}
@@ -168,7 +172,19 @@ a{color:var(--accent)}
 #tableSearch{width:100%; background:var(--code-bg); border:1px solid var(--glass-border); color:var(--fg);
   padding:9px 11px; border-radius:9px; font-size:13.5px; margin-bottom:12px}
 #tableSearch:focus{outline:2px solid var(--accent); outline-offset:1px}
-.table-wrap{overflow:auto; border:1px solid var(--glass-border); border-radius:12px; min-height:0}
+.resource-tabs{display:flex; gap:7px; margin:4px 0 12px; border-bottom:1px solid var(--glass-border)}
+.resource-tab{padding:8px 11px; border:0; border-bottom:2px solid transparent; background:transparent;
+  color:var(--muted); cursor:pointer; font:600 12px Inter, sans-serif}
+.resource-tab.active{color:var(--fg); border-color:var(--accent)}
+.resource-panel{display:none; min-height:0; flex:1}
+.resource-panel.active{display:flex; flex-direction:column}
+.resource-note{font-size:12px; color:var(--muted); line-height:1.5; margin:0 0 10px}
+.commit-list{overflow:auto; border:1px solid var(--glass-border); border-radius:12px; padding:8px 12px}
+.commit-item{padding:10px 2px; border-bottom:1px solid var(--glass-border)}
+.commit-item:last-child{border-bottom:0}
+.commit-item p{margin:0 0 4px; font-size:13px; line-height:1.45}
+.commit-item small{color:var(--muted); font:10px "JetBrains Mono",monospace}
+.table-wrap{overflow:auto; border:1px solid var(--glass-border); border-radius:12px; min-height:0; flex:1}
 table{width:100%; border-collapse:collapse; font-size:13px}
 th,td{text-align:left; padding:9px 11px; border-bottom:1px solid var(--glass-border); vertical-align:top}
 th{font-family:"JetBrains Mono",monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); font-weight:600;
@@ -179,9 +195,29 @@ tr[hidden]{display:none}
 
 .hint-overlay{position:fixed; bottom:max(14px, env(safe-area-inset-bottom,0px)); left:max(16px, env(safe-area-inset-left,0px));
   font-size:11px; color:var(--muted); pointer-events:none; z-index:5;}
+#watermark{position:fixed; bottom:max(5px, env(safe-area-inset-bottom,0px)); left:50%; transform:translateX(-50%);
+  z-index:5; color:var(--muted); font-size:9px; letter-spacing:.03em; opacity:.72; pointer-events:none; white-space:nowrap}
+#toolboxBtn{position:fixed; right:max(16px, env(safe-area-inset-right,0px)); bottom:max(48px, env(safe-area-inset-bottom,0px));
+  z-index:31; width:46px; height:46px; border-radius:50%; display:grid; place-items:center; cursor:pointer; color:var(--fg)}
+#toolboxBtn svg{width:21px; height:21px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+#toolboxPanel{position:fixed; right:max(16px, env(safe-area-inset-right,0px)); bottom:max(102px, calc(env(safe-area-inset-bottom,0px) + 54px));
+  width:310px; max-width:calc(100vw - 32px); max-height:min(75vh,620px); overflow:auto; z-index:30; display:none; padding:16px}
+#toolboxPanel.open{display:block}
+#toolboxPanel h3{margin:0 0 12px; font-size:15px}
+#toolboxPanel label{display:block; font-size:11px; color:var(--muted); font-weight:600; margin:10px 0 5px}
+#toolboxPanel select,#toolboxPanel input[type=color]{width:100%; min-height:34px; background:var(--code-bg); color:var(--fg);
+  border:1px solid var(--glass-border); border-radius:8px; padding:6px 8px}
+#toolboxPanel input[type=color]{padding:3px; cursor:pointer}
+#phaseChoices{display:grid; grid-template-columns:1fr 1fr; gap:5px; max-height:140px; overflow:auto;
+  border:1px solid var(--glass-border); border-radius:8px; padding:8px}
+#phaseChoices label{display:flex; align-items:center; gap:6px; margin:0; font-size:11px; font-weight:400; color:var(--fg)}
+#phaseChoices input{accent-color:var(--accent)}
+#toolboxPanel .menu-action{margin-top:11px; margin-bottom:0; text-align:center}
+#toolboxPanel .toolbox-note{font-size:10px; line-height:1.45; color:var(--muted); margin:8px 0 0}
 
 @media (max-width: 640px){
   #detail{left:max(16px, env(safe-area-inset-left,0px)); right:max(16px, env(safe-area-inset-right,0px)); width:auto}
+  #detail.detail-expanded{inset:2vh 2vw; max-height:96vh}
   #titleBadge .s{display:none}
 }
 </style>
@@ -221,6 +257,7 @@ tr[hidden]{display:none}
   <div class="row">
     <button class="menu-action" id="resetZoom">Reset view</button>
     <button class="menu-action" id="openIndex">Tool &amp; resource index</button>
+    <button class="menu-action" id="openToolbox">Graph viewer &amp; export</button>
     <button class="menu-action" id="openAbout">About &amp; how to contribute</button>
   </div>
   <p class="menu-foot">Compiled for authorized testing and study (OSCP/CRTO-style prep). Reverify current patch status before relying on any "new since 2025" item.</p>
@@ -232,6 +269,31 @@ tr[hidden]{display:none}
 </aside>
 
 <div class="hint-overlay" id="hintOverlay">loading attack graph…</div>
+<div id="watermark">Created by Alham Rizvi</div>
+<button id="toolboxBtn" class="glass" type="button" aria-label="Open graph toolbox" aria-expanded="false" title="Graph toolbox">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5h16M4 12h16M4 16.5h16"/><circle cx="8" cy="7.5" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="10" cy="16.5" r="2"/></svg>
+</button>
+<section id="toolboxPanel" class="glass" aria-label="Graph toolbox">
+  <h3>Graph toolbox</h3>
+  <label for="exportPhases">Include phases</label>
+  <div id="phaseChoices"></div>
+  <label for="exportFormat">Download selection as</label>
+  <select id="exportFormat">
+    <option value="json">JSON data</option>
+    <option value="csv">CSV node list</option>
+    <option value="css">CSS color theme</option>
+    <option value="svg">SVG graph</option>
+  </select>
+  <button class="menu-action" id="downloadSelection" type="button">Download selected phases</button>
+  <label for="colorTarget">Customize colors for</label>
+  <select id="colorTarget"></select>
+  <label for="nodeColor">Node color</label>
+  <input id="nodeColor" type="color" value="#0f8a8a">
+  <label for="backgroundColor">Graph background</label>
+  <input id="backgroundColor" type="color" value="#f2f4f2">
+  <button class="menu-action" id="resetColors" type="button">Reset colors</button>
+  <p class="toolbox-note">Color choices are saved in this browser. Select one or more phases to export just that part of the graph.</p>
+</section>
 
 <div id="aboutOverlay">
   <div id="aboutModal" class="glass-solid">
@@ -297,12 +359,34 @@ tr[hidden]{display:none}
       </div>
       <button class="closeBtn" id="closeIndex">✕</button>
     </div>
+    <div class="resource-tabs" role="tablist" aria-label="Resource sections">
+      <button class="resource-tab active" id="toolsTab" type="button" role="tab" aria-selected="true" data-panel="toolsPanel">Tools</button>
+      <button class="resource-tab" id="referencesTab" type="button" role="tab" aria-selected="false" data-panel="referencesPanel">References</button>
+      <button class="resource-tab" id="commitsTab" type="button" role="tab" aria-selected="false" data-panel="commitsPanel">Recent commits</button>
+    </div>
     <input id="tableSearch" type="text" placeholder="Filter by name, category or purpose…" autocomplete="off">
-    <div class="table-wrap">
-      <table id="resTable">
-        <thead><tr><th>Repository</th><th>Category</th><th>Purpose</th></tr></thead>
-        <tbody></tbody>
-      </table>
+    <div class="resource-panel active" id="toolsPanel" role="tabpanel" aria-labelledby="toolsTab">
+      <div class="table-wrap">
+        <table id="resTable">
+          <thead><tr><th>Repository</th><th>Category</th><th>Purpose</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="resource-panel" id="referencesPanel" role="tabpanel" aria-labelledby="referencesTab">
+      <p class="resource-note">References linked from the phase, technique, tool and CVE documentation.</p>
+      <div class="table-wrap">
+        <table id="referenceTable">
+          <thead><tr><th>Reference</th><th>Topic</th><th>Source</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="resource-panel" id="commitsPanel" role="tabpanel" aria-labelledby="commitsTab">
+      <p class="resource-note">Recent updates from the project repository.</p>
+      <div class="commit-list" id="commitList" aria-live="polite">
+        <p class="resource-note">Open this tab to load recent commits.</p>
+      </div>
     </div>
   </div>
 </div>
@@ -379,6 +463,7 @@ function renderMarkdownBlock(md){
     codeBlocks.push(code.replace(/^\w*\n/, ""));
     return "\u0000CODE" + (codeBlocks.length-1) + "\u0000";
   });
+  work = work.replace(/(\u0000(?:CODE|MERMAID)\d+\u0000)/g, "\n\n$1\n\n");
   const tableBlocks = [];
   const lines = work.split(/\r?\n/);
   const renderedLines = [];
@@ -397,7 +482,7 @@ function renderMarkdownBlock(md){
       const headHtml = header.map(cell=>`<th>${mdInline(cell)}</th>`).join("");
       const bodyHtml = rows.map(row=>`<tr>${header.map((_, index)=>`<td>${mdInline(row[index] || "")}</td>`).join("")}</tr>`).join("");
       tableBlocks.push(`<div class="md-table-wrap"><table class="md-table"><thead><tr>${headHtml}</tr></thead><tbody>${bodyHtml}</tbody></table></div>`);
-      renderedLines.push("\u0000TABLE" + (tableBlocks.length-1) + "\u0000");
+      renderedLines.push("", "\u0000TABLE" + (tableBlocks.length-1) + "\u0000", "");
     }else{
       renderedLines.push(lines[i]);
       i++;
@@ -503,6 +588,29 @@ links.forEach(l=>{ if(nodeIndex.get(l.target)?.type==="tool") usedToolIds.add(l.
 const graphNodes = nodes.filter(n=> n.type!=="tool" || usedToolIds.has(n.id));
 const graphIds = new Set(graphNodes.map(n=>n.id));
 const graphLinks = links.filter(l=> graphIds.has(l.source) && graphIds.has(l.target));
+const rootStyle = document.documentElement.style;
+const rootColors = getComputedStyle(document.documentElement);
+const defaultPalette = {
+  phase: rootColors.getPropertyValue("--phase").trim(),
+  technique: rootColors.getPropertyValue("--tech").trim(),
+  tool: rootColors.getPropertyValue("--tool").trim(),
+  cve: rootColors.getPropertyValue("--cve").trim()
+};
+const validColor = value=> typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value);
+let colorSettings = {background:"", types:{}, nodes:{}};
+try{
+  const saved = JSON.parse(localStorage.getItem("findmyattackpath-colors") || "{}");
+  if(validColor(saved.background)) colorSettings.background = saved.background;
+  for(const type of Object.keys(defaultPalette)){
+    if(validColor(saved.types?.[type])) colorSettings.types[type] = saved.types[type];
+  }
+  if(saved.nodes && typeof saved.nodes === "object"){
+    Object.entries(saved.nodes).forEach(([id, value])=>{ if(validColor(value)) colorSettings.nodes[id] = value; });
+  }
+}catch(error){ console.warn("Saved graph colors could not be loaded", error); }
+if(colorSettings.background) rootStyle.setProperty("--bg", colorSettings.background);
+const palette = {...defaultPalette, ...colorSettings.types};
+const nodeColor = d=> colorSettings.nodes[d.id] || palette[d.type];
 
 /* ---------- render: force graph, full viewport ---------- */
 const svg = d3.select("#graph");
@@ -518,7 +626,7 @@ const linkSel = g.append("g").attr("class","links").selectAll("line")
   .attr("opacity", 0.7);
 
 const radius = d => d.type==="phase" ? 16 : d.type==="cve" ? 9 : d.type==="tool" ? 6.5 : 11;
-const color = d => d.type==="phase" ? "var(--phase)" : d.type==="technique" ? "var(--tech)" : d.type==="tool" ? "var(--tool)" : "var(--cve)";
+const color = nodeColor;
 
 const nodeSel = g.append("g").attr("class","nodes").selectAll("g.node")
   .data(graphNodes, d=>d.id).join("g").attr("class","node")
@@ -546,6 +654,80 @@ nodeSel.append("text")
 
 nodeSel.append("title").text(d=>d.label);
 nodeSel.on("click", (ev,d)=>{ ev.stopPropagation(); showDetail(d); });
+
+const toolboxBtn = document.getElementById("toolboxBtn");
+const toolboxPanel = document.getElementById("toolboxPanel");
+const phaseChoices = document.getElementById("phaseChoices");
+const colorTarget = document.getElementById("colorTarget");
+const nodeColorInput = document.getElementById("nodeColor");
+const backgroundColorInput = document.getElementById("backgroundColor");
+function saveColorSettings(){
+  try{ localStorage.setItem("findmyattackpath-colors", JSON.stringify(colorSettings)); }
+  catch(error){ console.warn("Graph colors could not be saved", error); }
+}
+function refreshNodeColors(){
+  nodeSel.select("circle").attr("fill", nodeColor);
+  nodeColorInput.value = colorTarget.value.startsWith("node:")
+    ? (colorSettings.nodes[colorTarget.value.slice(5)] || palette[nodeIndex.get(colorTarget.value.slice(5)).type])
+    : (palette[colorTarget.value] || defaultPalette.phase);
+}
+PHASES.forEach(phase=>{
+  const label = document.createElement("label");
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox"; checkbox.value = phase.id; checkbox.checked = true;
+  label.append(checkbox, document.createTextNode(phase.label));
+  phaseChoices.appendChild(label);
+});
+Object.keys(defaultPalette).forEach(type=>{
+  const option = document.createElement("option");
+  option.value = type; option.textContent = `${type[0].toUpperCase()}${type.slice(1)} nodes`;
+  colorTarget.appendChild(option);
+});
+graphNodes.forEach(node=>{
+  const option = document.createElement("option");
+  option.value = `node:${node.id}`; option.textContent = node.label;
+  colorTarget.appendChild(option);
+});
+backgroundColorInput.value = colorSettings.background || defaultPalette.phase;
+backgroundColorInput.value = colorSettings.background || rootColors.getPropertyValue("--bg").trim();
+colorTarget.addEventListener("change", refreshNodeColors);
+nodeColorInput.addEventListener("input", ()=>{
+  const target = colorTarget.value;
+  if(target.startsWith("node:")) colorSettings.nodes[target.slice(5)] = nodeColorInput.value;
+  else colorSettings.types[target] = nodeColorInput.value;
+  palette[target] = nodeColorInput.value;
+  refreshNodeColors(); saveColorSettings();
+});
+backgroundColorInput.addEventListener("input", ()=>{
+  colorSettings.background = backgroundColorInput.value;
+  rootStyle.setProperty("--bg", colorSettings.background);
+  saveColorSettings();
+});
+document.getElementById("resetColors").addEventListener("click", ()=>{
+  colorSettings = {background:"", types:{}, nodes:{}};
+  Object.assign(palette, defaultPalette);
+  rootStyle.removeProperty("--bg");
+  localStorage.removeItem("findmyattackpath-colors");
+  backgroundColorInput.value = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
+  refreshNodeColors();
+});
+toolboxBtn.addEventListener("click", ev=>{
+  ev.stopPropagation();
+  const open = toolboxPanel.classList.toggle("open");
+  toolboxBtn.setAttribute("aria-expanded", open);
+});
+document.getElementById("openToolbox").addEventListener("click", ev=>{
+  ev.stopPropagation();
+  toolboxPanel.classList.add("open");
+  toolboxBtn.setAttribute("aria-expanded", "true");
+  menuPanel.classList.remove("open");
+});
+document.addEventListener("click", ev=>{
+  if(!toolboxPanel.contains(ev.target) && !toolboxBtn.contains(ev.target)){
+    toolboxPanel.classList.remove("open");
+    toolboxBtn.setAttribute("aria-expanded", "false");
+  }
+});
 
 const sim = d3.forceSimulation(graphNodes)
   .force("link", d3.forceLink(graphLinks).id(d=>d.id).distance(d=> d.kind==="chain" ? 150 : d.kind==="belongs" ? 62 : 52).strength(0.5))
