@@ -14,7 +14,7 @@ ShadowCoerce is a proof-of-concept for authentication coercion through MS-FSRVP.
 
 Tests whether the File Server Remote VSS Agent Service can induce a target to initiate outbound authentication.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use only in an isolated, written relay/coercion assessment with controlled callbacks.
 

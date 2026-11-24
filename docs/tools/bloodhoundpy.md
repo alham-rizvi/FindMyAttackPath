@@ -14,7 +14,7 @@ BloodHound.py is a Python BloodHound-compatible Active Directory collector.
 
 LDAP and supporting protocol collection for users, computers, groups, trusts, sessions, ACLs, GPOs, and relationships supported by its release.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use for authorized graph collection on Linux or other supported Python environments.
 

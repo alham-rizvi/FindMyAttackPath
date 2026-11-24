@@ -14,7 +14,7 @@ Purple Knight is Semperis’s free AD and Entra security-assessment product.
 
 Runs indicators across AD, Entra, AD CS, DNS, privileged groups, backup, and configuration areas and generates risk reports.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use for periodic governance and configuration review with approved directory/tenant credentials and secure report handling.
 

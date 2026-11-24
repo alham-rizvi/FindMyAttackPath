@@ -14,7 +14,7 @@ PayloadsAllTheThings is a community repository of payload, technique, and securi
 
 Indexes examples across web, cloud, Windows, AD, network, and application security.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use as an idea index for defensive test design, then validate procedures in an isolated lab and against official sources.
 

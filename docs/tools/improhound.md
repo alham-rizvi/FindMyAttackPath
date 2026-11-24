@@ -14,7 +14,7 @@ ImproHound is a BloodHound analysis utility for tier-boundary and Tier 0 violati
 
 Compares graph relationships with a configured tier model and flags objects or paths crossing administrative boundaries.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use to validate tiering, find unintended privilege relationships, and track exceptions for remediation.
 

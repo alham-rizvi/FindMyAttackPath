@@ -14,7 +14,7 @@ adPEAS is a PowerShell Active Directory enumeration and misconfiguration-assessm
 
 Domain, group, trust, ACL, GPO, service, certificate, and policy-oriented checks grouped into PowerShell functions.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use read-only functions for an authorized AD inventory and control review.
 

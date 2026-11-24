@@ -14,7 +14,7 @@ tag: null
 
 A golden ticket is a TGT protected using KRBTGT key material or an equivalent KDC context. The result can represent a domain identity and authorization context outside ordinary AS issuance.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized assessment and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
 
 ## Beginner-friendly walkthrough
 

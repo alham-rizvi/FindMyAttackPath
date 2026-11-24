@@ -14,7 +14,7 @@ ldapsearch-ad is a Python LDAP wrapper designed for common Active Directory sear
 
 Filters and attribute retrieval for users, computers, groups, trusts, service accounts, privilege groups, and other directory objects.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use repeatable read-only searches for domain inventory or finding reproduction under authorization.
 

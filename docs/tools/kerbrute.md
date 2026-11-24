@@ -14,7 +14,7 @@ kerbrute is a Go utility for Kerberos pre-authentication assessment.
 
 Username enumeration and bounded password-candidate validation through Kerberos pre-authentication.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use for authorized lockout and account-exposure validation with a documented account/candidate limit.
 

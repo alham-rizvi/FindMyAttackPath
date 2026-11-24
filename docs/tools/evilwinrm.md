@@ -14,7 +14,7 @@ evil-winrm is a Ruby client for interactive Windows Remote Management and PowerS
 
 Provides PSRP/WinRM shell sessions and support for commonly used WinRM authentication formats.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use for authorized remote administration, incident response, or lab practice inside a managed WinRM boundary.
 

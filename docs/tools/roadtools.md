@@ -14,7 +14,7 @@ ROADtools is a Python framework for Entra ID and Microsoft 365 identity research
 
 Tenant and directory discovery, device/application metadata, authentication context, token workflows, and Microsoft identity API experimentation.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use for authorized tenant inventory, incident analysis, role/consent review, and controlled lab validation of Entra controls.
 

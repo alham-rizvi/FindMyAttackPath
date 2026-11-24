@@ -14,7 +14,7 @@ Responder is a network responder for legacy name-resolution and authentication-f
 
 Answers LLMNR, NBT-NS, mDNS, and similar requests and can host protocol endpoints for controlled authentication tests.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use to test legacy-resolution controls in an approved segment. Capture or relay activity requires explicit authorization and strict secret handling.
 

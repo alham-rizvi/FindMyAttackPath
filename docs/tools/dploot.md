@@ -14,7 +14,7 @@ dploot is a Python toolkit for remote DPAPI secret extraction and decryption wor
 
 Targets supported DPAPI secrets and credentials, using available account or domain key material over remote Windows protocols.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use for authorized incident response or lab validation of DPAPI exposure and credential cleanup.
 

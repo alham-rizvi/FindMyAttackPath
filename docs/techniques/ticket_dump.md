@@ -14,7 +14,7 @@ tag: null
 
 Ticket dumping acquires cached TGT/TGS artifacts from LSA/logon state. Usefulness depends on ticket type, context and the service/realm that will accept it.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized assessment and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
 
 ## Relevant objects and normal purpose
 

@@ -14,7 +14,7 @@ tag: null
 
 AD object ACLs can grant an identity rights to alter another object or its authentication-related attributes. The abuse hypothesis is about effective access, not merely a visible ACE.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized assessment and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
 
 ## Beginner-friendly walkthrough
 

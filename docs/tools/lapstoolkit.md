@@ -14,7 +14,7 @@ LAPSToolkit is a PowerShell toolkit for Windows LAPS and legacy Microsoft LAPS a
 
 Inventories LAPS coverage and inspects AD objects and ACLs that govern password storage or password-read access.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use to verify least-privilege password-read rights and policy coverage. Password retrieval requires separate approval.
 

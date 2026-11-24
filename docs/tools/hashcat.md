@@ -14,7 +14,7 @@ hashcat is a GPU- and CPU-accelerated offline password and key recovery tool.
 
 Supports many hash formats, rules, masks, combinators, benchmarks, and workload distribution.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use only on owned or authorized hashes for password-policy validation or incident recovery.
 

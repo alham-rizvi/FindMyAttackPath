@@ -14,7 +14,7 @@ SharpGPOAbuse is a C# proof-of-concept for testing misuse of GPO write rights.
 
 Demonstrates how GPO write access can create supported policy elements such as scheduled-task or other configured actions.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use only in an isolated lab to validate GPO ACL restrictions and endpoint detections.
 

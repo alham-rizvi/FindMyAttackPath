@@ -14,7 +14,7 @@ AADInternals is a PowerShell toolkit for Microsoft Entra ID and hybrid identity 
 
 Tenant and object discovery, authentication and application configuration review, synchronization context, token/OAuth workflows, and selected tenant administration exposed by Entra APIs.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use only an authorized tenant or test tenant. Prefer inventory and policy review; isolate modules that create, consent, modify, acquire, or replay identity artifacts.
 

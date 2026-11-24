@@ -14,7 +14,7 @@ SauronEye is a Windows host/share sensitive-file discovery utility.
 
 Searches configured file systems or shares using filename and content patterns to identify documents that may contain secrets or regulated data.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use for authorized data discovery and incident scoping with a bounded share set and controlled results.
 

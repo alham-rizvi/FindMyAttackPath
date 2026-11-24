@@ -14,7 +14,7 @@ Certify is a C# utility for Active Directory Certificate Services enumeration an
 
 Lists enterprise CAs and published templates, template attributes, EKUs, enrollment-related permissions, and AD CS configuration for analyst review.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use read-only discovery to document CA-template relationships and issuance controls. Certificate requests or authentication require separate approval and a lab.
 

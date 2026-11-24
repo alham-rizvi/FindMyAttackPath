@@ -14,7 +14,7 @@ krbrelayx is a Python toolkit for Kerberos relay and delegation research.
 
 Kerberos listeners, relay helpers, and support for studying unconstrained or constrained delegation relationships.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use only in an isolated lab to test relay, channel, SPN, and delegation boundaries with test identities.
 

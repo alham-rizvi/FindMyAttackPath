@@ -128,5 +128,6 @@ you're renaming or moving the file.
   command sequences; use non-executable configuration examples or controlled-lab context.
 - Link to a real source (advisory, blog post, repo) in the body or in `source`/`repo` wherever
   you can — unverifiable "new since 2025" claims get re-checked before merge.
-- This project is for authorized testing and study (OSCP/CRTO-style prep). Don't add anything
-  that's only useful against systems you don't have permission to test.
+- This project supports authorized Active Directory red-team assessments, controlled lab practice,
+  and job-role/certification preparation, alongside defensive detection and remediation. Don't add
+  anything that's only useful against systems you don't have permission to test.

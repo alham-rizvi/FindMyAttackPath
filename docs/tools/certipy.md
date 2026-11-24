@@ -14,7 +14,7 @@ Certipy is a Python toolkit for AD CS inventory and certificate-related workflow
 
 Enumerates CAs and templates, inspects certificate and issuance configuration, and provides certificate request, PKINIT, relay, and authentication modules in its release.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use read-only inventory for authorized AD CS reviews. Reserve issuance, authentication, relays, and private-key handling for an approved lab or non-production validation.
 
