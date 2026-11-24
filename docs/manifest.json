@@ -1,5 +1,15 @@
 [
   {
+    "id": "readme-start-here",
+    "type": "root",
+    "path": "docs/README_START_HERE.md"
+  },
+  {
+    "id": "docs-test",
+    "type": "root",
+    "path": "docs/test.md"
+  },
+  {
     "id": "recon",
     "type": "phase",
     "path": "docs/phases/recon.md"
