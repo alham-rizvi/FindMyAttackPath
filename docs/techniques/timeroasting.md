@@ -12,34 +12,17 @@ tag: "new"
 
 # Timeroasting
 
-Timeroasting concerns whether an MS-SNTP/time implementation exposes machine-account authentication material suitable for offline verification. Ordinary NTP is not enough evidence.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-## Relevant objects and normal purpose
+## Affected object / attribute
+**MS-SNTP authentication** — computer and trust accounts.
 
-DC time/MS-SNTP implementation, time protocol responses, machine-account key context, network reachability, Windows build/configuration and the DC account recognized by the protocol are involved.
+## Detection
+NTP requests from non-DC hosts with malformed/auth extensions; monitor **UDP 123**; rotate machine passwords (default 30 days helps).
 
-## Prerequisite chain
-
-A compatible time implementation and endpoint must expose the relevant authentication-bearing response for a recognizable machine account. The response must support the claimed verification; ordinary time data is not sufficient.
-
-
-## Impact limits and failure cases
-
-OS/build, protocol implementation, network filtering, account key strength/type and patch state determine impact. It is not equivalent to standard NTP and varies by implementation.
-
-## Detection and validation
-
-Monitor anomalous MS-SNTP/NTP query volume/authentication-relevant responses, unusual source hosts and later machine-account authentication. Baseline time synchronization clients.
-
-Validate an impact hypothesis by correlating the relevant identity, directory, authentication, endpoint, network or cloud telemetry for the exact host, account and time. One event ID or tool label is not proof of success.
-
-## Mitigation and recovery
-
-**Mitigation:** Restrict time-service exposure, patch DCs and use supported authenticated time sync where appropriate.
-
-**Recovery:** Preserve evidence, isolate affected systems and identities, remove unauthorized state through approved procedures, review relevant credentials/sessions and retest in a clean lab.
+---
 
 ## References
 

@@ -12,34 +12,17 @@ tag: "new"
 
 # Kerberos CNAME-abuse relay to ADCS (ESC8)
 
-A CNAME changes a DNS name to an alias. In an authentication or AD CS relay hypothesis, alias resolution may interact with Kerberos SPNs, HTTP names and certificate identity validation.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-## Relevant objects and normal purpose
+## Affected object / attribute
+**ADIDNS zone / record** (`MicrosoftDNS`), default `Authenticated Users` create rights in some configurations.
 
-DNS zone/CNAME and A/AAAA records, resolved host, SPN, HTTP enrollment or service endpoint, TLS certificate, IIS/NTLM/EPA and channel-binding state, and the CA/template trust relationship are the relevant objects.
+## Detection
+**5136** on `MicrosoftDNS`; **4662** zone writes; disable insecure dynamic updates.
 
-## Prerequisite chain
-
-A test needs an authorized DNS position, name resolution visible to the intended client, a reachable target, and a protocol where the alias affects identity. DNS write/read alone does not establish relay or issuance.
-
-
-## Impact limits and failure cases
-
-SPN matching, TLS name validation, HTTPS/EPA, NTLM/Kerberos policy, secure dynamic updates, zone scope, endpoint protections and CA policy can block the chain. Client and server behavior varies by OS and patch level.
-
-## Detection and validation
-
-Correlate DNS zone changes and answers with SPN registration, HTTP/IIS enrollment, KDC/NTLM authentication, CA 4886/4887 issuance and certificate use. CNAME existence alone is not anomalous or proof of abuse.
-
-Validate an impact hypothesis by correlating the relevant identity, directory, authentication, endpoint, network or cloud telemetry for the exact host, account and time. One event ID or tool label is not proof of success.
-
-## Mitigation and recovery
-
-**Mitigation:** Restrict DNS write rights and protect dynamic update, manage aliases/SPNs deliberately, require TLS endpoint identity and protected HTTP authentication, and remove unnecessary enrollment surfaces. Recover by restoring DNS/SPN state, reviewing certificate issuance and preserving authentication logs.
-
-**Recovery:** Preserve evidence, isolate affected systems and identities, remove unauthorized state through approved procedures, review relevant credentials/sessions and retest in a clean lab.
+---
 
 ## References
 

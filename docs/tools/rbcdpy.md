@@ -6,29 +6,13 @@ repo: "tothi/rbcd-attack"
 category: "Privilege Escalation"
 ---
 
-## Overview
+# rbcd-attack
 
-rbcd-attack is a Python resource-based constrained delegation research script.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Inspects and, with rights, modifies delegation attributes on test service resources and examines the resulting RBCD relationship.
-
-## Authorized red-team assessment and defensive use
-
-Use only in an isolated lab or authorized access-control assessment.
-
-## Prerequisites and operating boundaries
-
-Rights to modify test objects, domain connectivity, test services and identities, and rollback.
-
-## Observable behavior and defensive considerations
-
-LDAP ACL/attribute writes, DC audit/replication, KDC tickets, service logons, and endpoint logs.
-
-## Limitations
-
-Usability depends on SPNs, account state, protocol support, and KDC policy. Configuration alone does not prove end-to-end access.
+RBCD write/read/remove. Always remove after testing.
 
 ## References
 

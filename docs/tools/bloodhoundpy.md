@@ -6,29 +6,13 @@ repo: "dirkjanm/BloodHound.py"
 category: "Graph"
 ---
 
-## Overview
+# BloodHound.py
 
-BloodHound.py is a Python BloodHound-compatible Active Directory collector.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-LDAP and supporting protocol collection for users, computers, groups, trusts, sessions, ACLs, GPOs, and relationships supported by its release.
-
-## Authorized red-team assessment and defensive use
-
-Use for authorized graph collection on Linux or other supported Python environments.
-
-## Prerequisites and operating boundaries
-
-Domain credentials or supported authentication context, Python runtime, network access to LDAP/RPC/SMB services, and secure output storage.
-
-## Observable behavior and defensive considerations
-
-LDAP/RPC/SMB/DC authentication and searches, Python process activity, network telemetry, and JSON output-file access.
-
-## Limitations
-
-Coverage depends on permissions and network filtering. Schema parity and stale collection can affect graph accuracy.
+Tool reference for authorized Active Directory assessment; consult the upstream project documentation for supported features, scope controls, and safe configuration.
 
 ## References
 

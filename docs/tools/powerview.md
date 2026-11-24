@@ -6,29 +6,13 @@ repo: "PowerShellMafia/PowerSploit"
 category: "Recon"
 ---
 
-## Overview
+# PowerSploit
 
-PowerView is a PowerShell Active Directory enumeration and relationship-analysis module in PowerSploit.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Domain, user, group, computer, trust, GPO, session, share, and ACL relationship queries.
-
-## Authorized red-team assessment and defensive use
-
-Use read-only functions for authorized AD inventory and effective-rights review.
-
-## Prerequisites and operating boundaries
-
-PowerShell, domain visibility, valid account, and LDAP/RPC/SMB read access.
-
-## Observable behavior and defensive considerations
-
-LDAP/RPC/SMB traffic, DC authentication, PowerShell script-block/AMSI events, and process/file activity.
-
-## Limitations
-
-Legacy code may conflict with modern endpoint controls. Results reflect account rights and may miss effective ACL or recent-state context.
+PowerShell AD recon/ACL manipulation. `Get-DomainObjectAcl`, `Add-ObjectAcl`, `Set-DomainObject`.
 
 ## References
 

@@ -12,63 +12,23 @@ tag: null
 
 # Entra Connect credential extraction
 
-Microsoft Entra Connect is the synchronization bridge between selected on-premises AD objects and a Microsoft Entra tenant. “Credential extraction” is meaningful only within the actual sync mode and host trust boundary.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-## Beginner-friendly walkthrough
+## Affected object / attribute
+**AAD Connect connector account** (`MSOL_*`) with **replication rights** on the domain, and the **on-prem sync credentials** stored encrypted in the AAD Connect SQL/LocalDB.
 
-**In plain terms:** Entra Connect is the service that keeps an on-prem AD in sync with a cloud Microsoft Entra tenant, and to do that it must hold credential material of its own, locally, so it can read and write both sides. Whoever controls the server running Entra Connect effectively controls that trust bridge — recovering its stored secrets can mean recovering a way to act as synced accounts, or even forging cloud-side sign-ins.
+## Impact
+- **Domain replication**: DCSync every hash.
+- **Tenant takeover**: PHS abuse or connector credential misuse.
 
-**Objects abused / affected**
+## Detection and defensive measures
+- **4662** from the `MSOL_*` connector account outside its sync window.
+- **Tier-0 the AAD Connect host**; restrict logon; use **gMSA** for the connector where supported.
+- **Monitor** AAD Connect service account logons and configuration changes.
 
-| Object | Normal purpose | What this technique touches |
-| --- | --- | --- |
-| ADSync service account | Reads/writes AD on behalf of the sync engine | Often holds powerful on-prem AD rights (sometimes DCSync-capable) by default |
-| Local Entra Connect SQL database | Stores sync configuration and connector account secrets | Contains the material needed to decrypt stored credentials |
-| Entra Connect server itself | Runs the sync engine | A single server compromise can therefore become a hybrid-identity compromise |
-
-```mermaid
-flowchart TD
-  A["Attacker gains local admin on the Entra Connect server"] --> B["Access the local ADSync SQL database"]
-  B --> C["Decrypt stored connector account credentials"]
-  C --> D["Recovered secret: often has DCSync rights on-prem"]
-  D --> E["On-prem domain compromise, or further cloud-side abuse"]
-```
-
-**Stages, and which tool typically covers each one**
-
-1. **Prerequisite** — local admin (or equivalent) on the server actually running Entra Connect; this is a high-value target precisely because it bridges both environments.
-2. **Extract the secret** — `AADInternals` is the best-known toolkit purpose-built for reading and decrypting the Entra Connect connector account credentials from the local sync database.
-3. **Use the output** — the recovered connector account frequently has on-prem replication rights, feeding directly into [DCSync](dcsync.md); the same credential may also have cloud-side implications depending on the configured sync scope.
-
-This is exactly why Microsoft documents the Entra Connect server as a Tier-0 asset deserving the same protection level as a domain controller — treating it as "just a sync box" is the actual root cause behind this technique's impact.
-
-
-## Relevant objects and normal purpose
-
-The sync server and ADSync service, connector configuration and staging database, AD and Entra connector identities, synchronization rules, KDS-related configuration where applicable, and corresponding on-premises/cloud accounts are the principal objects.
-
-## Prerequisite chain
-
-A review requires administrative or protected backup access to the sync host, a defined sync mode (password-hash, pass-through, staging, or staged rules), and evidence of connector permissions. Host privilege is not automatically Microsoft Entra privileged role membership.
-
-
-## Impact limits and failure cases
-
-Impact depends on connector account permissions, tenant role assignments, sync scope, password-hash/pass-through mode, hybrid sign-in configuration, and tenant protections. A staging host or database copy may not contain usable cloud credentials.
-
-## Detection and validation
-
-Correlate ADSync service and installer activity, changes to synchronization rules/connectors, database or key file access, sync-cycle and export/import logs, on-premises directory changes, and Entra sign-ins or role changes by the connector or sync account.
-
-Validate an impact hypothesis by correlating the relevant identity, directory, authentication, endpoint, network or cloud telemetry for the exact host, account and time. One event ID or tool label is not proof of success.
-
-## Mitigation and recovery
-
-**Mitigation:** Restrict interactive/RDP access and tier the sync server; use dedicated, patched hosts; limit connector and tenant role permissions; protect the database/configuration and supported secrets; and inventory synchronization rules. Suspected compromise should isolate the host, preserve evidence, use Microsoft-supported credential rotation/recovery procedures, review sync and tenant changes, and validate clean synchronization before reactivation.
-
-**Recovery:** Preserve evidence, isolate affected systems and identities, remove unauthorized state through approved procedures, review relevant credentials/sessions and retest in a clean lab.
+---
 
 ## References
 

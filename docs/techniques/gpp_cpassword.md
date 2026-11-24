@@ -12,41 +12,17 @@ tag: null
 
 # Group Policy Preferences credential exposure
 
-Older Group Policy Preferences could store a `cpassword` value in policy XML under SYSVOL. The value used a published encryption key and is not suitable for protecting a secret. Because SYSVOL is commonly readable by domain users, an old preference may expose a reusable password even when the policy is no longer actively applied.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-> **Authorized assessment only:** Treat any discovered value as a secret. Do not attempt to authenticate with it; coordinate validation and rotation with the owner.
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-## Conceptual path
+## Affected object / attribute
+**SYSVOL `Groups.xml`** (and `Services.xml`, `ScheduledTasks.xml`) — `cpassword`.
 
-```mermaid
-flowchart TD
-  A[Legacy preference contains cpassword] --> B[Policy file is readable from SYSVOL]
-  B --> C[Secret is recoverable from the stored value]
-  C --> D[Account may still be active or reused]
-  D --> E[Owner validates exposure and rotates affected credentials]
-```
+## Detection
+**5145** SYSVOL read of `Groups.xml`; remove `cpassword` from SYSVOL; prefer LAPS/gMSA.
 
-## Conditions and limits
-
-The policy file must remain accessible and the associated account must still be valid for the value to create current risk. A found value is not proof of successful logon or privilege. Check account status, scope, reuse and last-change history through approved administrative processes.
-
-## Affected object and fix
-
-```text
-Objects: Group Policy Preference XML files in SYSVOL and the referenced account
-Setting to review: Legacy cpassword field and SYSVOL read access
-Risky state: Reusable credential is stored in a policy file or was reused elsewhere
-Fix target: Remove the stored value, rotate the secret, investigate reuse, and migrate to
-            an approved secret-management mechanism
-```
-
-## Defensive review
-
-Remove legacy preference passwords, rotate every affected credential, and review for reuse in services, scheduled tasks and other managed systems. Use a supported secret-management mechanism with scoped access instead of policy-file storage.
-
-## Detection and response
-
-Periodically scan SYSVOL through approved defensive processes for legacy password fields. Correlate affected account logons and privilege, preserve the policy path and timestamps, remove the secret and rotate it with service owners.
+---
 
 ## References
 

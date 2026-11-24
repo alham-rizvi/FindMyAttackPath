@@ -12,34 +12,17 @@ tag: null
 
 # Password spraying
 
-Password spraying is a controlled high-volume authentication assessment of a predefined candidate set against many accounts. It must be bounded by written lockout and account-safety plans.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-## Relevant objects and normal purpose
+## Affected object / attribute
+**User credentials** — one password across many users.
 
-Identity account set, authentication endpoint, lockout/smart-lockout policy, observation/reset window, MFA/Conditional Access, legacy protocols, source reputation and identity-protection logs are involved.
+## Detection
+**4625/4771 bursts** per account; **4768 pre-auth failures**; smart lockout + conditional access.
 
-## Prerequisite chain
-
-Written scope, approved account range/candidate set, test window and stop thresholds are mandatory. MFA and source controls must be respected; no guessing parameters are included here.
-
-
-## Impact limits and failure cases
-
-Lockout threshold/window/reset behavior, smart lockout, MFA, legacy protocols, source reputation and account-risk policy alter outcomes. No successful test should expand scope beyond authorization.
-
-## Detection and validation
-
-Correlate 4625/Entra sign-in bursts across accounts from a source, lockouts, MFA/risk failures and source reputation. Baseline approved scanners and identity tools.
-
-Validate an impact hypothesis by correlating the relevant identity, directory, authentication, endpoint, network or cloud telemetry for the exact host, account and time. One event ID or tool label is not proof of success.
-
-## Mitigation and recovery
-
-**Mitigation:** Require MFA/phishing resistance, smart/risk-based lockout and strong unique passwords; disable unnecessary legacy auth and monitor account patterns.
-
-**Recovery:** Preserve evidence, isolate affected systems and identities, remove unauthorized state through approved procedures, review relevant credentials/sessions and retest in a clean lab.
+---
 
 ## References
 

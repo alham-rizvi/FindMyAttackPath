@@ -6,29 +6,13 @@ repo: "byt3bl33d3r/CrackMapExec"
 category: "Lateral Movement"
 ---
 
-## Overview
+# CrackMapExec
 
-CrackMapExec is the archived predecessor of the NetExec network assessment suite.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Historically combined SMB, LDAP, MSSQL, WinRM, authentication, enumeration, and module reporting.
-
-## Authorized red-team assessment and defensive use
-
-Use only for historical findings or legacy comparisons. Prefer maintained NetExec or a purpose-built tool in current assessments.
-
-## Prerequisites and operating boundaries
-
-Archived code, test credentials and hosts, and clear authorization for every module.
-
-## Observable behavior and defensive considerations
-
-Protocol authentication, remote service/process activity, LDAP searches, file access, and endpoint EDR, subject to the old module.
-
-## Limitations
-
-Unmaintained, with stale dependencies and protocol assumptions. It may not reflect modern signing, channel binding, or endpoint controls.
+Legacy NetExec predecessor. Superseded by `netexec`; retain for older playbooks.
 
 ## References
 

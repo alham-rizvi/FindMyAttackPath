@@ -12,40 +12,17 @@ tag: null
 
 # DNSAdmins service control
 
-The DNSAdmins group is intended to delegate administration of Windows DNS. On a domain controller running the DNS Server service, overly broad DNS administration can become host-level risk if a member can influence service configuration or extensions that the service loads. The effect depends on Windows version, service configuration and the exact delegated rights; group membership alone is not proof of code execution or domain compromise.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-> **Authorized assessment only:** Review group membership and service configuration read-only. Do not change DNS service settings or restart production domain controllers as a test.
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-## Conceptual path
+## Affected object / attribute
+**DNS service registry `ServerLevelPluginDll`** on a DC.
 
-```mermaid
-flowchart TD
-  A[Principal has DNS administration rights] --> B[Rights reach a DNS service configuration boundary]
-  B --> C[DNS Server service consumes the changed configuration]
-  C --> D[Host impact depends on service identity and safeguards]
-  D --> E[Assess reachable directory privileges separately]
-```
+## Detection
+DNS registry **`ServerLevelPluginDll`** (**4657**); DNS service restart (**7036**); `dns.exe` loading a non-Microsoft DLL (**Sysmon 7**).
 
-## Conditions and limits
-
-The DNS service must be present and affected by the delegated configuration. Service identity, supported extension behavior, file and registry permissions, service restart requirements and host protections all affect impact. A DNSAdmins edge in a graph is a review lead, not a universal escalation path.
-
-## Affected object and fix
-
-```text
-Objects: DNSAdmins group, DNS Server service, and service configuration
-Risky state: Unnecessary membership or delegated control over service configuration
-Fix target: Small documented administrator set; protected service configuration and host
-Review: Confirm the service role, effective rights, and business need with DNS owners
-```
-
-## Defensive review
-
-Keep DNSAdmins membership small, role-based and reviewed. Prefer supported DNS management delegation, protect service configuration and extension-loading boundaries, and avoid unnecessary DNS Server roles on domain controllers.
-
-## Detection and response
-
-Alert on DNSAdmins membership changes, DNS service configuration changes, unexpected module/image loads and DNS service restarts. Correlate with directory changes, source identity and host telemetry. Preserve service and directory evidence before restoring known-good configuration.
+---
 
 ## References
 

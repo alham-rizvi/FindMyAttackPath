@@ -6,29 +6,13 @@ repo: "lgandx/Responder"
 category: "Initial Access"
 ---
 
-## Overview
+# Responder
 
-Responder is a network responder for legacy name-resolution and authentication-flow research.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Answers LLMNR, NBT-NS, mDNS, and similar requests and can host protocol endpoints for controlled authentication tests.
-
-## Authorized red-team assessment and defensive use
-
-Use to test legacy-resolution controls in an approved segment. Capture or relay activity requires explicit authorization and strict secret handling.
-
-## Prerequisites and operating boundaries
-
-Written network scope, controlled segment, approved listeners, and evidence/credential handling procedures.
-
-## Observable behavior and defensive considerations
-
-Name-resolution traffic, listener processes, DNS/network sensors, SMB/HTTP authentication, EDR, and SIEM alerts.
-
-## Limitations
-
-It is noisy and can affect shared hosts. Captured data may be unusable or sensitive, and modern settings reduce exposure.
+LLMNR/NBT-NS/mDNS poisoner + capture. `-A` analyse only. Pair with relay (disable SMB in Responder when relaying).
 
 ## References
 

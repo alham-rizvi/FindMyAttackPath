@@ -6,29 +6,13 @@ repo: "FSecureLABS/SharpGPOAbuse"
 category: "Privilege Escalation"
 ---
 
-## Overview
+# SharpGPOAbuse
 
-SharpGPOAbuse is a C# proof-of-concept for testing misuse of GPO write rights.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Demonstrates how GPO write access can create supported policy elements such as scheduled-task or other configured actions.
-
-## Authorized red-team assessment and defensive use
-
-Use only in an isolated lab to validate GPO ACL restrictions and endpoint detections.
-
-## Prerequisites and operating boundaries
-
-GPO/SYSVOL write rights in the test domain, test endpoints, and rollback procedures.
-
-## Observable behavior and defensive considerations
-
-GPO/SYSVOL writes, DC LDAP audit, policy replication and refresh, task/service creation, and EDR.
-
-## Limitations
-
-Replication, precedence, membership, OS context, and policy blockers affect results. Write rights do not reach every host.
+GPO abuse. `--AddLocalAdmin|--AddUserRights|--AddComputerTask`. **State-changing**.
 
 ## References
 

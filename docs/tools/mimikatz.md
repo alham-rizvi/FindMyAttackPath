@@ -6,29 +6,13 @@ repo: "gentilkiwi/mimikatz"
 category: "Credential Access"
 ---
 
-## Overview
+# mimikatz
 
-mimikatz is a Windows security research tool for credentials, tickets, certificates, and identity-state behavior.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Inspects or dumps credential/ticket material, exercises LSASS and token concepts, and includes DCSync, ticket, certificate, and persistence research features.
-
-## Authorized red-team assessment and defensive use
-
-Use only for authorized incident response, credential-risk labs, or tightly scoped validation with synthetic or owned data.
-
-## Prerequisites and operating boundaries
-
-A controlled Windows host and separately approved privilege or data access. Credential Guard, LSASS protection, patching, and EDR may block features.
-
-## Observable behavior and defensive considerations
-
-LSASS process access, handle/injection activity, DCSync replication, ticket-cache changes, RPC/DC/KDC authentication, and EDR alerts.
-
-## Limitations
-
-Highly sensitive and potentially disruptive. OS and endpoint protections vary; extracted secrets require incident handling and strict disposal.
+Credential/ticket/DC toolkit: `sekurlsa::logonpasswords`, `lsadump::dcsync`, `kerberos::golden|ptt`, `lsadump::dcshadow`, `misc::skeleton`. Tier-0 noise; heavily signatured.
 
 ## References
 

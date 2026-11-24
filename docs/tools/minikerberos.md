@@ -6,29 +6,13 @@ repo: "skelsec/minikerberos"
 category: "Kerberos"
 ---
 
-## Overview
+# minikerberos
 
-minikerberos is a Python library for Kerberos protocol and ticket workflows.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-AS, TGS, SPN, ticket, key, delegation, and PKINIT-oriented operations for custom authorized clients or analysis tools.
-
-## Authorized red-team assessment and defensive use
-
-Use for lab interoperability, protocol tests, incident-response utilities, or defensive automation.
-
-## Prerequisites and operating boundaries
-
-Python environment, authorized identities and services, reachable KDCs, synchronized clocks, and compatible key/crypto settings.
-
-## Observable behavior and defensive considerations
-
-KDC AS/TGS traffic, service logons, ticket material, and application process/network telemetry.
-
-## Limitations
-
-A protocol library, not an impact classifier. Ticket and key support varies with clocks, SPNs, encryption, and KDC policy.
+Python Kerberos library/CLI (AS-REQ/TGS, S4U). Custom scripting.
 
 ## References
 

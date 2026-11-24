@@ -12,37 +12,17 @@ tag: "new"
 
 # Certighost
 
-CVE-2026-54121 is publicly described as improper authorization in Active Directory Certificate Services that could allow an authorized network attacker to elevate privileges. The public summary does not establish a certificate fallback, DC identity, coercion mechanism or named exploitation chain.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-> **Authorized assessment only:** This guide is for controlled labs and explicitly authorized reviews. It provides no exploit, issuance or coercion procedure.
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-## CVE summary versus technique hypothesis
+## Affected object / attribute
+**ADCS enrolment endpoint / coercion path** (2025 research). **Verify against current research before operational use.**
 
-| Source | Confirmed scope |
-| --- | --- |
-| NVD | Improper authorization in AD CS; authorized network privilege escalation. |
-| Microsoft MSRC | Authoritative affected builds, prerequisites and patch guidance; implementation detail should follow the vendor advisory. |
-| This page | Only a bounded AD CS authorization hypothesis. It does not assert DC-identity issuance or CA-coercion/fallback behavior. |
+## Detection
+NTLM to CA endpoints; **4886** issued to a machine that did not request it.
 
-## Objects and validation scope
-
-Relevant objects are enterprise CA authorization, CA host/build state, enrollment interfaces, CA policy/template authorization, requester identity and certificate trust. Do not add `pKIEnrollmentService`, template, DC identity or issuance mechanics unless Microsoft/vendor evidence substantiates the exact condition.
-
-## Prerequisite chain
-
-Microsoft’s advisory must confirm that the Windows/AD CS build is affected. An authorized network position and reachable CA authorization boundary must exist. The public CVE summary alone does not establish template publication, DC identity, requester rights or a usable certificate outcome.
-
-## Impact limits
-
-Affected build, patch state, network position, CA authorization and the exact elevated operation determine impact. Certificate request or tool labels are not evidence of this CVE, and DC-identity issuance or coercion is unconfirmed.
-
-## Detection and validation
-
-Correlate AD CS authorization/configuration changes, requests and issuance, network access to CA interfaces, certificate trust/authentication and host patch state. The public summary provides no unique event signature; an event pattern from another AD CS technique is not evidence for this CVE.
-
-## Mitigation and recovery
-
-Apply Microsoft patch guidance for the exact build, restrict network exposure and CA/enrollment administration, review CA authorization and template least privilege. Preserve CA, host and network evidence if compromise is suspected; revoke or investigate certificates only when misuse is independently established, and retest in a lab.
+---
 
 ## References
 

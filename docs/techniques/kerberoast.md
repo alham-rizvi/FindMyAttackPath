@@ -12,34 +12,14 @@ tag: null
 
 # Kerberoasting
 
-## Concept
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-Kerberos clients can request a service ticket for a service principal name (SPN) registered in the domain. A portion of the ticket is protected using a key associated with the service account. An authenticated domain user who can request the ticket may therefore create an offline password-guessing exposure if the service account uses a guessable secret.
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-The request itself is a normal Kerberos operation, so a request is not proof of malicious activity. Offline guessing does not generate repeated domain logons or trigger account lockout in the same way as online guessing. Crackability depends on password strength, encryption type, and attacker resources. RC4 tickets are often easier to attack than modern AES-protected tickets, but AES does not make a weak password safe.
+## Affected object / attribute
+**User account with an SPN** (`servicePrincipalName`), `msDS-SupportedEncryptionTypes`.
 
-```mermaid
-flowchart LR
-  A[SPN-backed service identity] --> B[Ticket requested through normal Kerberos service]
-  B --> C[Ticket protected with service-account key]
-  C --> D[Offline guessing exposure if secret is weak]
-  D --> E[Potential service-account compromise]
-```
+## Detection and defensive measures
+**4769 with `TicketEncryptionType=0x17`** for service accounts, **bursts from one user across many SPNs**. Move to **AES-only** (`msDS-SupportedEncryptionTypes`), use **gMSA**, and deploy a **honeypot SPN**.
 
-## Prerequisites and affected objects
-
-A review needs an approved account inventory, SPN-to-owner mapping, encryption configuration, password age and management method, and an understanding of each identity’s privileges. Prioritize human-managed service accounts, stale SPNs, accounts with broad access, and identities reused across systems. An SPN is a configuration indicator, not proof that the associated account is exposed or weak.
-
-Assess the least-privilege boundary of the service account and its credential storage. Managed service identities can reduce operational password risk, but deployment compatibility and permissions still need review.
-
-## Detection
-
-Review Event 4769 for unusual service-ticket request volume, rare SPNs, unexpected source systems, and RC4 encryption (etype `0x17`) where modern policy and workloads should use stronger options. Establish a baseline: legitimate applications may make bursts of requests and legacy dependencies may still require RC4. Correlate with identity, host, and service telemetry rather than treating any single ticket request as malicious.
-
-## Remediation
-
-Prefer group Managed Service Accounts or other supported managed identities where feasible. Otherwise use unique, long, randomly generated secrets with controlled rotation, minimize account privileges, eliminate obsolete SPNs, and migrate away from RC4 where compatibility allows. Review historical exposure before assuming a rotation alone is sufficient.
-
-## Limits and related topics
-
-Kerberoasting is distinct from [AS-REP roasting](asreproast.md), which concerns accounts configured without pre-authentication. This guide covers assessment and defense; it omits ticket collection and password-cracking procedures.
+---

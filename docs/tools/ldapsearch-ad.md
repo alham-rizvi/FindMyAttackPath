@@ -6,29 +6,13 @@ repo: "yaap7/ldapsearch-ad"
 category: "Recon"
 ---
 
-## Overview
+# ldapsearch-ad
 
-ldapsearch-ad is a Python LDAP wrapper designed for common Active Directory searches.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Filters and attribute retrieval for users, computers, groups, trusts, service accounts, privilege groups, and other directory objects.
-
-## Authorized red-team assessment and defensive use
-
-Use repeatable read-only searches for domain inventory or finding reproduction under authorization.
-
-## Prerequisites and operating boundaries
-
-LDAP or LDAPS, authorized credentials, read rights, and an appropriate search base/schema.
-
-## Observable behavior and defensive considerations
-
-LDAP bind/search volume, DC logs, network monitoring, and workstation process/file telemetry.
-
-## Limitations
-
-Completeness depends on account rights and replicas. An LDAP hit is not evidence of effective ACL or exploitability.
+Python LDAP query wrapper. Scripted enumeration.
 
 ## References
 

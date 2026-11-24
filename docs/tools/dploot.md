@@ -6,29 +6,13 @@ repo: "zblurx/dploot"
 category: "Credential Access"
 ---
 
-## Overview
+# dploot
 
-dploot is a Python toolkit for remote DPAPI secret extraction and decryption workflows.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Targets supported DPAPI secrets and credentials, using available account or domain key material over remote Windows protocols.
-
-## Authorized red-team assessment and defensive use
-
-Use for authorized incident response or lab validation of DPAPI exposure and credential cleanup.
-
-## Prerequisites and operating boundaries
-
-Scoped credentials, remote connectivity, required key context, and approved secret-handling procedures.
-
-## Observable behavior and defensive considerations
-
-Remote SMB/RPC/WinRM authentication, file/registry access, DPAPI operations, process execution, and EDR.
-
-## Limitations
-
-Success varies by OS, account state, privilege, and key availability. It does not prove every protected secret is recoverable.
+DPAPI looting. `dploot backupkeys|masterkeys|credentials`. Use with or without domain backup keys.
 
 ## References
 

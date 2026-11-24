@@ -6,29 +6,13 @@ repo: "infosecn1nja/AD-Attack-Defense"
 category: "Reference"
 ---
 
-## Overview
+# AD-Attack-Defense
 
-AD-Attack-Defense is a community knowledge repository mapping Active Directory attack topics to defensive controls and monitoring.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Attack-and-defense checklists, monitoring ideas, and links covering credentials, Kerberos, ACLs, AD CS, and lateral movement.
-
-## Authorized red-team assessment and defensive use
-
-Use for control-gap and purple-team planning; confirm controls and test only in authorized, isolated scenarios.
-
-## Prerequisites and operating boundaries
-
-Security and AD knowledge; no target system is needed to study the reference.
-
-## Observable behavior and defensive considerations
-
-It emits no telemetry itself. Linked procedures may create AD, authentication, endpoint, or network events.
-
-## Limitations
-
-Community-maintained content can be stale or mix historical and current Windows behavior. It is not a validator or collector.
+Defensive/auditing PowerShell suite. Use to validate detections and recommend hardening.
 
 ## References
 

@@ -12,34 +12,17 @@ tag: null
 
 # Pass-the-ticket
 
-Pass-the-ticket reuses a cached or acquired TGT/TGS within a compatible realm and service context.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-## Relevant objects and normal purpose
+## Affected object / attribute
+**Kerberos ticket** (TGT/TGS) in a logon session.
 
-LSA ticket cache/logon session, TGT/TGS, account/PAC/SPN/realm, encryption type/key, lifetime, KDC and target service authorization are central.
+## Detection
+**4768/4769** from a host that did not perform the initial auth; anomalous ticket lifetimes.
 
-## Prerequisite chain
-
-A usable ticket and a security context/KDC/service that accepts it are required. The target SPN and account/PAC scope must match.
-
-
-## Impact limits and failure cases
-
-Ticket protection, PPL/Credential Guard, logon type/session, clock, account state, realm/SPN and target ACL affect reuse. Cached presence does not prove export or resource access.
-
-## Detection and validation
-
-Look for 4769 without matching 4768, ticket-cache/process access, anomalous SPN/source host and later service access. Correlate account and logon-session context.
-
-Validate an impact hypothesis by correlating the relevant identity, directory, authentication, endpoint, network or cloud telemetry for the exact host, account and time. One event ID or tool label is not proof of success.
-
-## Mitigation and recovery
-
-**Mitigation:** Protect LSA and privileged sessions, enable supported credential isolation and restrict admin logons.
-
-**Recovery:** Preserve evidence, isolate affected systems and identities, remove unauthorized state through approved procedures, review relevant credentials/sessions and retest in a clean lab.
+---
 
 ## References
 

@@ -6,29 +6,13 @@ repo: "Gerenios/AADInternals"
 category: "Hybrid / Cloud"
 ---
 
-## Overview
+# AADInternals
 
-AADInternals is a PowerShell toolkit for Microsoft Entra ID and hybrid identity assessment.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Tenant and object discovery, authentication and application configuration review, synchronization context, token/OAuth workflows, and selected tenant administration exposed by Entra APIs.
-
-## Authorized red-team assessment and defensive use
-
-Use only an authorized tenant or test tenant. Prefer inventory and policy review; isolate modules that create, consent, modify, acquire, or replay identity artifacts.
-
-## Prerequisites and operating boundaries
-
-An authorized Entra identity with the role or API scope required by each module, network access to Microsoft identity endpoints, and a controlled PowerShell host.
-
-## Observable behavior and defensive considerations
-
-Entra sign-in and audit events, Graph/API requests, application consent and role changes, synchronization records, and PowerShell host telemetry.
-
-## Limitations
-
-Coverage and authorization depend on licenses, roles, tenant policy, API changes, and module maturity. A configuration view does not prove exploitability.
+Hybrid/Entra ID offensive PowerShell module. `Install-Module AADInternals`. `Get-AADIntSyncCredentials`, `New-AADIntUserPRTToken`. Use for AAD Connect and PRT work. Caveat: heavy tenant logging.
 
 ## References
 

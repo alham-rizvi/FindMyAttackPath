@@ -12,34 +12,17 @@ tag: "new"
 
 # dMSA Ouroboros credential extraction
 
-Delegated Managed Service Accounts introduce migration and self-managed credential state that can expose or repeat managed credential material if readers or migration objects are misconfigured.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-## Relevant objects and normal purpose
+## Affected object / attribute
+**dMSA object** (`msDS-ManagedPassword`, key material) — Server 2025.
 
-dMSA/migration objects, managed-password or migration attributes, allowed password readers, KDS root key, service host account state, Windows Server 2025 feature/schema support and replication are relevant.
+## Detection
+**5136** on dMSA objects modifying key material; dMSA created by non-tier-0 principals.
 
-## Prerequisite chain
-
-The dMSA feature and migration state must exist, a principal or host must have authorized retrieval capability, and the service must accept the credential. Attribute presence alone is not a usable secret.
-
-
-## Impact limits and failure cases
-
-Impact depends on migration state, patch/schema support, host membership, reader ACL, KDS key, account state and credential lifetime. This is highly version and configuration dependent.
-
-## Detection and validation
-
-Audit directory reads/writes to dMSA/managed-password attributes, migration changes, KDS activity and service-host sign-ins. Filter normal gMSA/dMSA retrieval patterns rather than alerting on every read.
-
-Validate an impact hypothesis by correlating the relevant identity, directory, authentication, endpoint, network or cloud telemetry for the exact host, account and time. One event ID or tool label is not proof of success.
-
-## Mitigation and recovery
-
-**Mitigation:** Limit managed-password readers, isolate service hosts, apply supported updates, remove incomplete migrations and manage dMSA lifecycle.
-
-**Recovery:** Preserve evidence, isolate affected systems and identities, remove unauthorized state through approved procedures, review relevant credentials/sessions and retest in a clean lab.
+---
 
 ## References
 

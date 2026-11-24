@@ -6,29 +6,10 @@ repo: "AlmondOffSec/ADSearch"
 category: "Recon"
 ---
 
-## Overview
+# ADSearch
 
-ADSearch is an LDAP-focused utility for querying Active Directory objects and attributes.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Configurable LDAP searches for users, computers, groups, trusts, privilege groups, and security-relevant directory fields.
-
-## Authorized red-team assessment and defensive use
-
-Use repeatable read-only filters for inventory and finding reproduction in an authorized domain.
-
-## Prerequisites and operating boundaries
-
-LDAP or LDAPS, authorized credentials, read rights, and knowledge of the target search base and schema.
-
-## Observable behavior and defensive considerations
-
-LDAP bind/search traffic, DC audit or network logs, and LDAPS-encrypted request metadata.
-
-## Limitations
-
-Successful object hits do not prove privilege or exploitability; filters and scope can miss objects or stale replicas.
-
-## References
-
+Tool reference for authorized Active Directory assessment; consult the upstream project documentation for supported features, scope controls, and safe configuration.

@@ -12,34 +12,17 @@ tag: null
 
 # DCShadow
 
-DCShadow is a replication-peer abuse concept: an illicit or test peer introduces directory changes that can look like replica synchronization.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-## Relevant objects and normal purpose
+## Affected object / attribute
+**Rogue DC registration** in the **Configuration partition**; pushes changes to **any AD object** via replication.
 
-MS-DRSR replication RPC, DC registration and SPNs, naming contexts, replication metadata/source DC fields, replication rights and destination DC topology are involved.
+## Detection
+**4742/5136** changes with a replication source not in the DC list; **4928/4929** replication partner anomalies; **DRSUAPI from a non-DC**.
 
-## Prerequisite chain
-
-The assessed context needs account/host rights to act as or register a replication peer and a DC that will accept and propagate the change. Ordinary directory write rights are not equivalent.
-
-
-## Impact limits and failure cases
-
-Replication topology, source/target DC recognition, RPC authentication, DRS ACL, object ACL, patch/forest policy and monitoring affect whether and how long a change propagates.
-
-## Detection and validation
-
-Monitor new DC/peer registrations, replication from non-DC sources, DRS RPC and replication metadata inconsistent with normal topology. Audit 4662 with replication GUIDs and correlate source host/account.
-
-Validate an impact hypothesis by correlating the relevant identity, directory, authentication, endpoint, network or cloud telemetry for the exact host, account and time. One event ID or tool label is not proof of success.
-
-## Mitigation and recovery
-
-**Mitigation:** Restrict DRS rights to DC/admin tiers, monitor DC registration/SPNs and replication topology, and tier DC administration.
-
-**Recovery:** Preserve evidence, isolate affected systems and identities, remove unauthorized state through approved procedures, review relevant credentials/sessions and retest in a clean lab.
+---
 
 ## References
 

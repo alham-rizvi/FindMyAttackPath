@@ -6,29 +6,13 @@ repo: "GhostPack/Certify"
 category: "ADCS"
 ---
 
-## Overview
+# Certify
 
-Certify is a C# utility for Active Directory Certificate Services enumeration and assessment.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Lists enterprise CAs and published templates, template attributes, EKUs, enrollment-related permissions, and AD CS configuration for analyst review.
-
-## Authorized red-team assessment and defensive use
-
-Use read-only discovery to document CA-template relationships and issuance controls. Certificate requests or authentication require separate approval and a lab.
-
-## Prerequisites and operating boundaries
-
-Authorized AD read access and network reachability to AD CS configuration; module-specific enrollment or HTTP/RPC access for non-read-only tests.
-
-## Observable behavior and defensive considerations
-
-LDAP CA/template reads, enrollment endpoint traffic, CA issuance records, certificate authentication, and workstation process/network activity.
-
-## Limitations
-
-An ESC label or permissive setting is not proof of impact. Effective ACLs, CA policy, trust, EKU, mapping, and enrollment approvals must be reviewed together.
+Windows C# ADCS enumeration/exploitation. `Certify.exe find /vulnerable`, `Certify.exe request`.
 
 ## References
 

@@ -6,29 +6,13 @@ repo: "eladshamir/Whisker"
 category: "Privilege Escalation"
 ---
 
-## Overview
+# Whisker
 
-Whisker is a C# tool for assessing and modifying AD Key Credential Link state.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Creates, lists, or removes public-key credential metadata on test AD objects and checks whether the LDAP write is permitted.
-
-## Authorized red-team assessment and defensive use
-
-Use only in an isolated lab or approved incident exercise to validate write controls and then remove test state.
-
-## Prerequisites and operating boundaries
-
-LDAPS or compatible LDAP access, explicit write rights to test objects, and rollback/cleanup procedures.
-
-## Observable behavior and defensive considerations
-
-LDAP attribute writes, DC audit/replication, Key Credential Link state, certificate or Kerberos authentication, and endpoint logs.
-
-## Limitations
-
-It changes security-sensitive directory state. AD support and account type affect behavior; key metadata does not prove authentication or persistence.
+Windows Shadow Credentials. `Whisker.exe add /target:VICTIM$`. Pair with `Rubeus asktgt /certificate`.
 
 ## References
 

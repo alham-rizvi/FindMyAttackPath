@@ -12,34 +12,17 @@ tag: null
 
 # Inter-forest trust-ticket abuse
 
-Inter-realm trust-ticket abuse concerns tickets crossing domain/forest trust boundaries using trust-key/referral relationships.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-## Relevant objects and normal purpose
+## Affected object / attribute
+**Inter-realm trust key** (`trustedDomain` object / `krbtgt` of the trusted domain).
 
-Trust account/key, TGT/referral/TGS, PAC, domain/forest SID filtering/quarantine, trust direction/type, selective authentication, target SPN and resource ACL are relevant.
+## Detection
+**4769 cross-realm** with SID filtering bypass; enable **SID filtering** (`Quarantine`) and rotate trust keys.
 
-## Prerequisite chain
-
-The trust key/equivalent privileged context and a target domain/service that accepts crossing tickets are required. The ticket must represent an authorized SID and target context.
-
-
-## Impact limits and failure cases
-
-Trust key state, SID filtering, selective auth, lifetime, clock, account state and resource ACL limit impact. Enumerating a trust does not prove ticket or resource authorization.
-
-## Detection and validation
-
-Correlate cross-realm 4769/4776/4624, trust object/key changes, source/target DC/SPN and resource access. Alert on filtering or PAC/SID anomalies, not trust traffic alone.
-
-Validate an impact hypothesis by correlating the relevant identity, directory, authentication, endpoint, network or cloud telemetry for the exact host, account and time. One event ID or tool label is not proof of success.
-
-## Mitigation and recovery
-
-**Mitigation:** Remove obsolete/broad trusts, protect trust keys and tune SID filtering/selective auth.
-
-**Recovery:** Preserve evidence, isolate affected systems and identities, remove unauthorized state through approved procedures, review relevant credentials/sessions and retest in a clean lab.
+---
 
 ## References
 

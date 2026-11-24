@@ -12,34 +12,17 @@ tag: "new"
 
 # Shadow Credentials attack
 
-Shadow Credentials concerns an unauthorized public key added to `msDS-KeyCredentialLink`, potentially affecting Windows Hello or related key authentication flows.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-## Relevant objects and normal purpose
+## Affected object / attribute
+**`msDS-KeyCredentialLink`** on a user or computer.
 
-Target user/computer object, `msDS-KeyCredentialLink`, key identifier/public key, DC/schema support, PKINIT or Entra key sign-in, account state, key/tenant policy and private-key platform context are involved.
+## Detection
+**5136** on `msDS-KeyCredentialLink`; **PKINIT** within 5 minutes of the key write; alert on key additions by non-helpdesk.
 
-## Prerequisite chain
-
-Write/control rights on the target attribute and a supported key authentication path plus matching private-key context are required. The target KDC/tenant must accept the key.
-
-
-## Impact limits and failure cases
-
-Schema/OS support, account type, MFA/CA, key type/lifecycle, device and tenant policy determine impact. Attribute presence or a public key does not prove sign-in acceptance.
-
-## Detection and validation
-
-Audit 5136/4662 writes to KeyCredentialLink and subsequent PKINIT/Entra key sign-ins, key registration and target account anomalies.
-
-Validate an impact hypothesis by correlating the relevant identity, directory, authentication, endpoint, network or cloud telemetry for the exact host, account and time. One event ID or tool label is not proof of success.
-
-## Mitigation and recovery
-
-**Mitigation:** Restrict object write rights and monitor key-credential changes, remove stale keys and tier key-authenticated identities.
-
-**Recovery:** Preserve evidence, isolate affected systems and identities, remove unauthorized state through approved procedures, review relevant credentials/sessions and retest in a clean lab.
+---
 
 ## References
 

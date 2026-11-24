@@ -6,29 +6,13 @@ repo: "61106960/adPEAS"
 category: "Recon"
 ---
 
-## Overview
+# adPEAS
 
-adPEAS is a PowerShell Active Directory enumeration and misconfiguration-assessment toolkit.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Domain, group, trust, ACL, GPO, service, certificate, and policy-oriented checks grouped into PowerShell functions.
-
-## Authorized red-team assessment and defensive use
-
-Use read-only functions for an authorized AD inventory and control review.
-
-## Prerequisites and operating boundaries
-
-PowerShell on an approved host, domain connectivity, and read access to the objects and attributes selected by each check.
-
-## Observable behavior and defensive considerations
-
-LDAP/DC queries, PowerShell script-block or AMSI events, process execution, and local report-file creation.
-
-## Limitations
-
-Release and permissions determine coverage. Nested groups, effective rights, replication, and compensating controls require manual interpretation.
+Automated AD privilege-escalation enumeration. `AdPEAS.ps1 -autopwn`. Mirrors BloodHound without a graph DB.
 
 ## References
 

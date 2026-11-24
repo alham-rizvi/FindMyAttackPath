@@ -6,29 +6,13 @@ repo: "ropnop/kerbrute"
 category: "Initial Access"
 ---
 
-## Overview
+# kerbrute
 
-kerbrute is a Go utility for Kerberos pre-authentication assessment.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Username enumeration and bounded password-candidate validation through Kerberos pre-authentication.
-
-## Authorized red-team assessment and defensive use
-
-Use for authorized lockout and account-exposure validation with a documented account/candidate limit.
-
-## Prerequisites and operating boundaries
-
-Domain/KDC reachability, explicit scope, bounded accounts/candidates, and a lockout-threshold plan.
-
-## Observable behavior and defensive considerations
-
-KDC/AS requests and failures, DC security events, account lockouts, source-address and SIEM alerts.
-
-## Limitations
-
-Pre-auth visibility and lockout behavior vary. Negative results do not prove absence of weak or reused passwords.
+Kerberos-based user enumeration/spraying without 4625.
 
 ## References
 

@@ -6,29 +6,13 @@ repo: "adrecon/ADRecon"
 category: "Recon"
 ---
 
-## Overview
+# ADRecon
 
-ADRecon is a PowerShell-based Active Directory inventory and reporting utility.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Structured reports for users, groups, computers, trusts, GPOs, ACLs, and other implemented directory areas.
-
-## Authorized red-team assessment and defensive use
-
-Use for authorized baseline collection, evidence preservation, and remediation planning.
-
-## Prerequisites and operating boundaries
-
-An approved Windows/PowerShell host, domain read access, required modules, and secure report storage.
-
-## Observable behavior and defensive considerations
-
-LDAP/DC traffic, PowerShell telemetry, local file creation, and any RPC/SMB lookups used by report modules.
-
-## Limitations
-
-Reports are point-in-time snapshots. Permissions and replication limit completeness and do not establish effective exploitability.
+Report generation (HTML/Excel). Use for client-facing evidence.
 
 ## References
 

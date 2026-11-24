@@ -6,29 +6,13 @@ repo: "ShutdownRepo/pywhisker"
 category: "Privilege Escalation"
 ---
 
-## Overview
+# pywhisker
 
-pywhisker is a Python implementation for assessing AD Key Credential Link state.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Reads or manages public-key credential metadata on test user/computer objects and checks whether the relevant LDAP write is permitted.
-
-## Authorized red-team assessment and defensive use
-
-Use only in a lab or approved incident exercise to validate object-write controls and Key Credential Link cleanup.
-
-## Prerequisites and operating boundaries
-
-Rights to a test object, LDAPS or compatible LDAP access, and rollback/cleanup procedures.
-
-## Observable behavior and defensive considerations
-
-LDAP writes to Key Credential Link attributes, DC audit/replication, certificate or Kerberos authentication, and endpoint logs.
-
-## Limitations
-
-Support depends on AD and account state. Stored key metadata does not prove authentication or persistence.
+Shadow Credentials (Linux). `--action add|list|remove`. Use with `certipy auth`.
 
 ## References
 

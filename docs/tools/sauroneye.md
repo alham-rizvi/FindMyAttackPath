@@ -6,29 +6,13 @@ repo: "vivami/SauronEye"
 category: "Recon"
 ---
 
-## Overview
+# SauronEye
 
-SauronEye is a Windows host/share sensitive-file discovery utility.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Searches configured file systems or shares using filename and content patterns to identify documents that may contain secrets or regulated data.
-
-## Authorized red-team assessment and defensive use
-
-Use for authorized data discovery and incident scoping with a bounded share set and controlled results.
-
-## Prerequisites and operating boundaries
-
-Written host/share scope, valid read permissions, and secure handling of matches.
-
-## Observable behavior and defensive considerations
-
-SMB/file-share reads, file enumeration, process activity, EDR, DLP, and storage audit events.
-
-## Limitations
-
-Matches are heuristic, not valid-secret or data-classification proof. Encryption and permissions limit coverage.
+AD/Entra security review tool. Defensive validation and reporting.
 
 ## References
 

@@ -12,41 +12,20 @@ tag: null
 
 # AdminSDHolder / SDProp persistence
 
-Active Directory uses the AdminSDHolder object as a security-descriptor template for protected accounts and groups. The SDProp process periodically reconciles those objects with the template. An unauthorized change to the AdminSDHolder ACL can therefore cause a permission change to reappear on protected objects after ordinary remediation.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-> **Authorized assessment only:** Compare directory ACLs read-only. Do not change AdminSDHolder or protected-account permissions as a test.
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-## Conceptual path
+## Affected object / attribute
+**`CN=AdminSDHolder,CN=System,DC=...`** — `nTSecurityDescriptor`.
 
-```mermaid
-flowchart TD
-  A[AdminSDHolder ACL differs from approved baseline]
-  A --> B[SDProp processes protected objects]
-  B --> C[Template permissions propagate to protected accounts]
-  C --> D[Unexpected delegated access may persist]
-  D --> E[Restore baseline and verify reconciliation]
-```
+## Impact
+**Persistent domain-wide privilege** on every protected account.
 
-## Conditions and limits
+## Detection and defensive measures
+**5136** on `CN=AdminSDHolder`; compare `adminCount=1` objects’ ACLs against baseline; alert on SDProp ACL drift.
 
-The affected account must be in the protected set and SDProp must process it. A changed ACL does not automatically grant useful access; identify the specific right, affected object and resulting authorization. Replication and processing timing can make observations differ between domain controllers.
-
-## Affected object and fix
-
-```text
-Objects: AdminSDHolder and protected users/groups
-Setting to review: Owner and nTSecurityDescriptor on the template and protected objects
-Risky state: Unauthorized ACE is present on the template or reappears after SDProp
-Fix target: Approved baseline ACL and owner; verify propagation after directory replication
-```
-
-## Defensive review
-
-Restrict writes to AdminSDHolder and protected-object ACLs to tiered directory administrators. Compare the template against a known-good baseline, review protected-group membership and ensure remediation includes both the template and any already-affected objects.
-
-## Detection and recovery
-
-Audit changes to AdminSDHolder's owner and DACL, then monitor protected-account descriptors for unexpected reapplication. Preserve directory replication and audit evidence; restore the approved ACL and verify after SDProp has run on the relevant domain controllers.
+---
 
 ## References
 

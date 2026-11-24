@@ -12,34 +12,20 @@ tag: null
 
 # BloodHound graph collection
 
-Graph collection converts identity relationships into nodes and edges for authorized attack-path review. Graph output is inventory and hypothesis generation, not exploit confirmation.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-## Relevant objects and normal purpose
+## Affected object / attribute
+**Graph of users, computers, groups, GPOs, trusts, ACLs, ADCS, sessions, containers**.
 
-Depending on collectors, data comes from LDAP/AD objects, ACLs, group membership, SPNs, GPO links, sessions, local groups, trusts, SMB/RPC, and optionally Entra roles/applications/devices.
+## Impact
+**Ranked attack paths** to DA/DCSync/ADCS.
 
-## Prerequisite chain
+## Detection
+LDAP query bursts, SAMR enumeration, SharpHound/bloodhound-python user agents.
 
-The collector needs the directory/network/API read rights and reachability selected by the written scope. Credentials and tenant integrations limit which objects and edges can be resolved.
-
-
-## Impact limits and failure cases
-
-Graph completeness varies by collector permissions, RODC/GC behavior, stale sessions, ACL resolution, network segmentation, license/integration coverage, and stale replicas. An edge may describe permission but not a successful operation or protected target.
-
-## Detection and validation
-
-Watch for LDAP/SAMRPC/SMB bursts, session enumeration, collector processes, archive creation and large directory reads from unusual hosts. Compare collection timing with the approved inventory window.
-
-Validate an impact hypothesis by correlating the relevant identity, directory, authentication, endpoint, network or cloud telemetry for the exact host, account and time. One event ID or tool label is not proof of success.
-
-## Mitigation and recovery
-
-**Mitigation:** Limit directory/API reads, isolate inventory identities, segment management networks and baseline collectors. If collection was unauthorized, revoke collector credentials, determine data scope, review affected identities, and remove excessive read rights after access review.
-
-**Recovery:** Preserve evidence, isolate affected systems and identities, remove unauthorized state through approved procedures, review relevant credentials/sessions and retest in a clean lab.
+---
 
 ## References
 

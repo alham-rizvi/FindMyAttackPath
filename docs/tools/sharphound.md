@@ -6,29 +6,13 @@ repo: "SpecterOps/SharpHound"
 category: "Graph"
 ---
 
-## Overview
+# SharpHound
 
-SharpHound is the official C# BloodHound collector for Active Directory.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Collects objects, ACLs, trusts, sessions, GPO relationships, and optional local/domain relationship data for BloodHound.
-
-## Authorized red-team assessment and defensive use
-
-Use for authorized graph collection, baseline assessment, tier-boundary review, and remediation planning.
-
-## Prerequisites and operating boundaries
-
-Authorized domain credentials, network reachability, approved collection scope/mode, supported runtime, and secure output.
-
-## Observable behavior and defensive considerations
-
-LDAP/RPC/SMB/DC traffic, authentication, session or host queries, executable/process/file activity, and graph ingestion.
-
-## Limitations
-
-Rights and network filtering determine completeness. Session and local-admin data can be stale and graph findings need validation.
+Primary BloodHound collector. `-c All|DCOnly|ACL|Trusts`, `--stealth`. Use `-c DCOnly` for quiet collection.
 
 ## References
 

@@ -6,29 +6,13 @@ repo: "p0dalirius/Coercer"
 category: "Coercion"
 ---
 
-## Overview
+# Coercer
 
-Coercer is a suite of Windows RPC authentication-coercion probes.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Contains modules that test whether supported RPC service interfaces can make a target initiate outbound authentication toward a controlled destination.
-
-## Authorized red-team assessment and defensive use
-
-Use only in an approved lab or scoped assessment to validate relay boundaries; prefer passive review unless coercion is explicitly authorized.
-
-## Prerequisites and operating boundaries
-
-Explicit host/network scope, reachable RPC interfaces, controlled callback/listener, and monitoring or rollback arrangements.
-
-## Observable behavior and defensive considerations
-
-RPC service calls, outbound SMB/HTTP/Kerberos authentication, DC/endpoint events, and callback-listener records.
-
-## Limitations
-
-A callback proves network reachability only. It does not prove relay success, credential replay, or privilege and may affect availability.
+Tool reference for authorized Active Directory assessment; consult the upstream project documentation for supported features, scope controls, and safe configuration.
 
 ## References
 

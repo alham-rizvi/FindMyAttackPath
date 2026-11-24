@@ -6,29 +6,13 @@ repo: "dirkjanm/mitm6"
 category: "Coercion"
 ---
 
-## Overview
+# mitm6
 
-mitm6 is an IPv6/DNS relay-preparation and network exposure research tool.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Observes IPv6 state and can advertise IPv6/DHCPv6 and DNS configuration for testing whether legacy DNS/WPAD and relay controls are effective.
-
-## Authorized red-team assessment and defensive use
-
-Use only in an isolated VLAN or written network assessment with controlled relay infrastructure.
-
-## Prerequisites and operating boundaries
-
-Network authorization, VLAN isolation, test clients, controlled relay host, and rollback coordination.
-
-## Observable behavior and defensive considerations
-
-Router advertisements, DHCPv6, DNS/WPAD traffic, IPv6 assignment, authentication, EDR, and network IDS.
-
-## Limitations
-
-Behavior varies across clients and operating systems. DNS configuration alone does not prove credential or privilege compromise and can disrupt hosts.
+Tool reference for authorized Active Directory assessment; consult the upstream project documentation for supported features, scope controls, and safe configuration.
 
 ## References
 

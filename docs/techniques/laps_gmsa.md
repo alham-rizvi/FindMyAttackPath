@@ -12,34 +12,17 @@ tag: null
 
 # LAPS / gMSA readable-password discovery
 
-LAPS and gMSA are managed credential services. Exposure depends on whether an identity has effective rights to retrieve the relevant password and whether the target accepts it.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-## Relevant objects and normal purpose
+## Affected object / attribute
+**`ms-Mcs-AdmPwd` / `msLAPS-Password`** (LAPS) and **`msDS-ManagedPassword`** (gMSA).
 
-Windows LAPS legacy/modern password attributes, gMSA `msDS-ManagedPassword`, retrieval ACL/`PrincipalsAllowedToRetrieveManagedPassword`, gMSA host membership, KDS root key, DC replication and target host state are relevant.
+## Detection
+**4662** reads of `ms-Mcs-AdmPwd`/`msDS-ManagedPassword`; delegate LAPS read to a narrow group; use Windows LAPS encryption.
 
-## Prerequisite chain
-
-The principal needs effective read rights and a target authorized to use or accept the credential. The managed secret must be current and usable; attribute visibility alone is not success.
-
-
-## Impact limits and failure cases
-
-LAPS version/encryption, ACL inheritance, gMSA host membership, RODC replication, password age and target authentication policy can limit impact. Encrypted LAPS and host isolation reduce exposure.
-
-## Detection and validation
-
-Audit LDAP 4662 reads of password attributes, ACL/host-membership changes, retrieval-host activity and unexpected local/service logons. Baseline approved password-management and gMSA access.
-
-Validate an impact hypothesis by correlating the relevant identity, directory, authentication, endpoint, network or cloud telemetry for the exact host, account and time. One event ID or tool label is not proof of success.
-
-## Mitigation and recovery
-
-**Mitigation:** Restrict readers, enable encrypted/current LAPS as supported, remove broad management groups and isolate retrieval hosts.
-
-**Recovery:** Preserve evidence, isolate affected systems and identities, remove unauthorized state through approved procedures, review relevant credentials/sessions and retest in a clean lab.
+---
 
 ## References
 

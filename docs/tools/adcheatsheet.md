@@ -6,29 +6,13 @@ repo: "S1ckB0y1337/Active-Directory-Exploitation-Cheat-Sheet"
 category: "Reference"
 ---
 
-## Overview
+# Active-Directory-Exploitation-Cheat-Sheet
 
-The Active Directory Exploitation Cheat Sheet is a community-maintained index of assessment and attack references for Windows and Active Directory.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-It organizes concepts and examples for enumeration, credentials, Kerberos, ACLs, AD CS, lateral movement, persistence, and defenses.
-
-## Authorized red-team assessment and defensive use
-
-Use it to plan defensive tests and map findings, with every procedure validated against official documentation and written authorization.
-
-## Prerequisites and operating boundaries
-
-Review skills and a safe lab or approved assessment scope; referenced examples may have specific platform prerequisites.
-
-## Observable behavior and defensive considerations
-
-It emits no telemetry itself. Referenced procedures may produce LDAP, RPC, SMB, Kerberos, endpoint, or network evidence.
-
-## Limitations
-
-Community entries vary in age and accuracy and are not authoritative or complete. Examples can be dangerous or environment-specific.
+Reference repository of AD attack commands. Use as a lookup while building engagement notes.
 
 ## References
 

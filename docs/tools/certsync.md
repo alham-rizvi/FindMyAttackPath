@@ -6,29 +6,13 @@ repo: "zer1t0/certsync"
 category: "ADCS"
 ---
 
-## Overview
+# certsync
 
-certsync is a proof-of-concept connecting certificate authentication to directory secret-recovery workflows.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Explores whether a valid certificate and identity context can use directory replication interfaces to recover domain secret material.
-
-## Authorized red-team assessment and defensive use
-
-Use only for tightly authorized incident-response or lab validation of certificate trust and replication exposure.
-
-## Prerequisites and operating boundaries
-
-A test certificate and key, explicit target authorization, a suitable identity, and network access to the relevant domain services.
-
-## Observable behavior and defensive considerations
-
-Certificate authentication, KDC/DC activity, directory replication interfaces, CA issuance/revocation, process and file telemetry.
-
-## Limitations
-
-Depends on EKU, mapping, KDC policy, CA trust, privileges, patch level, and replication controls. It is not a normal inventory or backup utility.
+CA backup/extraction (CA key, certificates, templates) — **Golden Certificate** enabler. Requires Tier-0 CA access.
 
 ## References
 

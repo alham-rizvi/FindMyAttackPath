@@ -12,34 +12,17 @@ tag: null
 
 # Silver ticket
 
-A silver ticket is a service-specific TGS protected by the target service account/computer key, not necessarily issued through a prior AS/TGT exchange.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-## Relevant objects and normal purpose
+## Affected object / attribute
+**Service account key** (the target service’s password hash/AES key).
 
-Target service account/computer key, SPN, TGS/PAC, target host/service validation, ticket lifetime, clock, encryption and target ACL are relevant.
+## Detection
+**4769** where the PAC group SIDs exceed AD truth; service account password rotation; AES-only service accounts.
 
-## Prerequisite chain
-
-A valid key for the exact target service and a ticket accepted by that service are required. A ticket for one SPN is not general domain authority.
-
-
-## Impact limits and failure cases
-
-Service key/account state, PAC validation, clock, host patch, SPN/DNS and target ACL determine usability. Service credential rotation invalidates the old key context.
-
-## Detection and validation
-
-Correlate 4769/KDC-source mismatch or absence with service logon/PAC anomalies and service-account/SPN/key changes. Lack of 4768 alone is insufficient.
-
-Validate an impact hypothesis by correlating the relevant identity, directory, authentication, endpoint, network or cloud telemetry for the exact host, account and time. One event ID or tool label is not proof of success.
-
-## Mitigation and recovery
-
-**Mitigation:** Use gMSA/strong service secrets, isolate service keys/SPNs and patch/monitor hosts.
-
-**Recovery:** Preserve evidence, isolate affected systems and identities, remove unauthorized state through approved procedures, review relevant credentials/sessions and retest in a clean lab.
+---
 
 ## References
 

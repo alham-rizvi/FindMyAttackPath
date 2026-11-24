@@ -6,29 +6,13 @@ repo: "Kevin-Robertson/Inveigh"
 category: "Initial Access"
 ---
 
-## Overview
+# Inveigh
 
-Inveigh is a .NET and PowerShell framework for legacy name-resolution and authentication-flow research.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-LLMNR, NBNS, mDNS, WPAD/HTTP, and related listeners used to study how Windows authentication may leak in local networks.
-
-## Authorized red-team assessment and defensive use
-
-Use only in an isolated segment to test legacy-resolution and relay protections; capture and listener activity require explicit approval.
-
-## Prerequisites and operating boundaries
-
-Written network scope, isolated broadcast/multicast area, controlled listeners, and credential-safe evidence handling.
-
-## Observable behavior and defensive considerations
-
-Name-resolution traffic, listener process activity, DNS/DHCP/network events, SMB/HTTP authentication, EDR, and IDS.
-
-## Limitations
-
-Modern OS settings and segmentation reduce exposure. Captures may be unusable and contain sensitive authentication material.
+Windows LLMNR/NBNS/mDNS/DHCPv6 poisoner. `Inveigh.exe -LLMNR -NBNS -HTTP`.
 
 ## References
 

@@ -12,34 +12,17 @@ tag: null
 
 # SID history injection
 
-SID history preserves migration-compatible SIDs on an account. It has impact only if the trust/PAC and resource ACL accept the extra SID.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-## Relevant objects and normal purpose
+## Affected object / attribute
+**`sIDHistory`** on a user or computer.
 
-sIDHistory, account/domain SIDs, resource group SIDs, trust direction/type, SID filtering/quarantine, migration tools, PAC and target ACL are central.
+## Detection
+**5136** on `sIDHistory`; **4765/4766**; alert on any `sIDHistory` write.
 
-## Prerequisite chain
-
-A principal or migration process needs ability to modify or legitimate use the SID-history state, and a target trust/resource must accept a privileged SID.
-
-
-## Impact limits and failure cases
-
-Trust and resource scope, SID filtering/quarantine, selective authentication, account state and PAC/KDC behavior can ignore or reject it. SID history outside the trusting resource’s scope does not grant access.
-
-## Detection and validation
-
-Audit 4765/4766 and 5136 SID-history changes, migration activity and cross-trust privileged resource use. Correlate account, SID, source/target domain and resource.
-
-Validate an impact hypothesis by correlating the relevant identity, directory, authentication, endpoint, network or cloud telemetry for the exact host, account and time. One event ID or tool label is not proof of success.
-
-## Mitigation and recovery
-
-**Mitigation:** Restrict migration/DC rights, apply SID filtering/quarantine, remove obsolete SID history after migration and review cross-trust groups.
-
-**Recovery:** Preserve evidence, isolate affected systems and identities, remove unauthorized state through approved procedures, review relevant credentials/sessions and retest in a clean lab.
+---
 
 ## References
 

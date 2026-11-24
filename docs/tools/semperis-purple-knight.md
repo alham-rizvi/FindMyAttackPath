@@ -6,29 +6,13 @@ repo: "SemperisResearch/PurpleKnight"
 category: "Reference"
 ---
 
-## Overview
+# PurpleKnight
 
-Purple Knight is Semperis’s free AD and Entra security-assessment product.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Runs indicators across AD, Entra, AD CS, DNS, privileged groups, backup, and configuration areas and generates risk reports.
-
-## Authorized red-team assessment and defensive use
-
-Use for periodic governance and configuration review with approved directory/tenant credentials and secure report handling.
-
-## Prerequisites and operating boundaries
-
-Supported AD/Entra context, appropriate credentials/roles, network/API access, and an authorized reporting destination.
-
-## Observable behavior and defensive considerations
-
-LDAP/Graph/API queries, assessment process activity, DC and Entra audit/sign-in logs, and report access.
-
-## Limitations
-
-Point-in-time product indicators are not proof of exploitability or completeness. Results depend on permissions and release coverage.
+Purple-team AD assessment framework. Detection validation exercises.
 
 ## References
 

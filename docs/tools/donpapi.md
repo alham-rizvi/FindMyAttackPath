@@ -6,29 +6,13 @@ repo: "login-securite/DonPAPI"
 category: "Credential Access"
 ---
 
-## Overview
+# DonPAPI
 
-DonPAPI is a remote framework for discovering and recovering supported DPAPI-protected secrets.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Coordinates remote access and decryption of DPAPI material where account, machine, or domain key context is available.
-
-## Authorized red-team assessment and defensive use
-
-Use only for authorized incident response or a tightly controlled credential-exposure assessment.
-
-## Prerequisites and operating boundaries
-
-Valid scoped credentials, remote protocol access, required key context, and strict handling for recovered secrets.
-
-## Observable behavior and defensive considerations
-
-Remote authentication and service access, file/registry reads, DPAPI operations, process execution, and endpoint DLP/EDR.
-
-## Limitations
-
-Remote recovery is context-dependent and may fail without the required account or domain keys. Output is highly sensitive.
+Remote DPAPI looting. `DonPAPI.py corp.local/admin:p@target`. Harvests browser/credential blobs.
 
 ## References
 

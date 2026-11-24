@@ -6,29 +6,13 @@ repo: "idnahacks/GoodHound"
 category: "Graph"
 ---
 
-## Overview
+# GoodHound
 
-GoodHound is a remediation-ranking utility for BloodHound graph findings.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Consumes graph analyses and ranks attack paths or excessive relationships according to configurable criteria.
-
-## Authorized red-team assessment and defensive use
-
-Use to prioritize remediation work from validated graph evidence and compare which relationship changes reduce exposure.
-
-## Prerequisites and operating boundaries
-
-A representative dataset, documented scoring or tier rules, and controlled graph-data access.
-
-## Observable behavior and defensive considerations
-
-Graph import, database/API access, report/file generation, and analyst export activity.
-
-## Limitations
-
-Rankings reflect supplied weights and graph completeness and may miss compensating controls or uncollected relationships.
+BloodHound alternative front end/collector (community). Secondary graph viewer.
 
 ## References
 

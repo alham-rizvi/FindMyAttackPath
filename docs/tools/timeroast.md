@@ -6,29 +6,13 @@ repo: "SecuraBV/Timeroast"
 category: "Credential Access"
 ---
 
-## Overview
+# Timeroast
 
-Timeroast is a proof of concept for assessing machine-account material exposed through MS-SNTP/Windows Time behavior.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Obtains protocol-relevant material that can be assessed offline for machine-account password or key resilience.
-
-## Authorized red-team assessment and defensive use
-
-Use to test machine-account password practices in an authorized lab or bounded assessment.
-
-## Prerequisites and operating boundaries
-
-Authorized hosts/domain context, reachable Windows Time/MS-SNTP endpoints, and controlled offline analysis.
-
-## Observable behavior and defensive considerations
-
-MS-SNTP/NTP traffic, host/DC network telemetry, and offline process/file activity on the assessment host.
-
-## Limitations
-
-Success depends on protocol mode and machine-account behavior. Windows/network policy varies; no result is not proof of strong security.
+Tool reference for authorized Active Directory assessment; consult the upstream project documentation for supported features, scope controls, and safe configuration.
 
 ## References
 

@@ -6,29 +6,13 @@ repo: "ly4k/Certipy"
 category: "ADCS"
 ---
 
-## Overview
+# Certipy
 
-Certipy is a Python toolkit for AD CS inventory and certificate-related workflows.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Enumerates CAs and templates, inspects certificate and issuance configuration, and provides certificate request, PKINIT, relay, and authentication modules in its release.
-
-## Authorized red-team assessment and defensive use
-
-Use read-only inventory for authorized AD CS reviews. Reserve issuance, authentication, relays, and private-key handling for an approved lab or non-production validation.
-
-## Prerequisites and operating boundaries
-
-Domain identity and network access to LDAP and AD CS endpoints; module-specific identities and certificates for controlled tests.
-
-## Observable behavior and defensive considerations
-
-LDAP CA/template reads, enrollment traffic, CA request/issuance logs, certificate authentication, Kerberos/service logons, and endpoint telemetry.
-
-## Limitations
-
-Template, EKU, effective ACL, CA policy, certificate mapping, trust, and revocation must align for impact. Module labels do not prove exploitability.
+ADCS toolkit. `certipy find|req|auth|ca|template|forge`. Primary ESC tool. Caveat: `template`/`ca` actions are **state-changing**.
 
 ## References
 

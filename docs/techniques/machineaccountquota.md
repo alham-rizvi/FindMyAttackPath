@@ -12,34 +12,17 @@ tag: null
 
 # MachineAccountQuota abuse
 
-MachineAccountQuota controls ordinary users’ ability to create computer objects. Creation alone is only a directory event and not a privilege escalation.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-## Relevant objects and normal purpose
+## Affected object / attribute
+**`ms-DS-MachineAccountQuota`** on the domain object (default **10**).
 
-The `ms-DS-MachineAccountQuota` value, computer object and OU/container create rights, sAMAccountName/dNSHostName/SPNs, DNS update rights and downstream delegation/state are relevant.
+## Detection and defensive measures
+**4741** machine account creation by non-machine principals; set MAQ to **0** and delegate creation to a tier-0 group.
 
-## Prerequisite chain
-
-A domain user needs remaining MAQ capacity and an OU/container that allows computer creation. Naming/DNS policy may additionally apply. Another trust or authorization change is required for practical impact.
-
-
-## Impact limits and failure cases
-
-MAQ value, OU ACL, collisions, DNS/SPN policy, join process and downstream ACL determine whether creation creates usable identity. Most tool reports should stop at object creation if no further relationship exists.
-
-## Detection and validation
-
-Audit 4741 computer creation from unusual users/hosts, MAQ/OU ACL changes, SPN/DNS additions and downstream delegation/group changes. Baseline join tooling and helpdesk workflows.
-
-Validate an impact hypothesis by correlating the relevant identity, directory, authentication, endpoint, network or cloud telemetry for the exact host, account and time. One event ID or tool label is not proof of success.
-
-## Mitigation and recovery
-
-**Mitigation:** Set conservative MAQ only with compatibility review, restrict OU/create-object rights, require controlled join workflows and monitor computer objects.
-
-**Recovery:** Preserve evidence, isolate affected systems and identities, remove unauthorized state through approved procedures, review relevant credentials/sessions and retest in a clean lab.
+---
 
 ## References
 

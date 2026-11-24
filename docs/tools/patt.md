@@ -6,29 +6,13 @@ repo: "swisskyrepo/PayloadsAllTheThings"
 category: "Reference"
 ---
 
-## Overview
+# PayloadsAllTheThings
 
-PayloadsAllTheThings is a community repository of payload, technique, and security-check references.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Indexes examples across web, cloud, Windows, AD, network, and application security.
-
-## Authorized red-team assessment and defensive use
-
-Use as an idea index for defensive test design, then validate procedures in an isolated lab and against official sources.
-
-## Prerequisites and operating boundaries
-
-Platform knowledge and a safe authorized test environment.
-
-## Observable behavior and defensive considerations
-
-No telemetry is emitted by the repository itself. Cited procedures may produce application, network, identity, DC, or endpoint logs.
-
-## Limitations
-
-Community content is uneven in age and accuracy and may contain dangerous or obsolete examples. It is not proof or a product.
+Password/credential pattern tooling. Generate targeted candidate lists from recon.
 
 ## References
 

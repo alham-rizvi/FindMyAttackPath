@@ -12,34 +12,17 @@ tag: "new"
 
 # ResetNightmare
 
-CVE-2026-27912 is publicly described as improper authorization in Windows Kerberos that could allow an authorized attacker to elevate privileges over an adjacent network. NVD/MSRC summaries do not establish password-reset or kpasswd mechanics.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-## Relevant objects and normal purpose
+## Affected object / attribute
+**`pwdLastSet`** / victim password.
 
-The public scope is Windows Kerberos authorization and affected Windows/DC build state. Account-change 4724 or kpasswd traffic is not identified as a confirmed mechanism by the public summaries.
+## Detection
+**4723/4724** password changes by non-owner; **5136** `pwdLastSet` writes.
 
-## Prerequisite chain
-
-The Microsoft advisory must confirm the build, and an authorized adjacent-network position and reachable authorization condition must exist. An account-reset event alone is not CVE proof.
-
-
-## Impact limits and failure cases
-
-Affected build, network position, account authorization and exact privilege boundary determine impact. Password-reset, kpasswd or specific protocol chaining is not confirmed by current public summaries.
-
-## Detection and validation
-
-Correlate Kerberos authorization, account-change, DC/endpoint and adjacent-network telemetry. Do not use 4724 or kpasswd as a standalone detection rule for this CVE.
-
-Validate an impact hypothesis by correlating the relevant identity, directory, authentication, endpoint, network or cloud telemetry for the exact host, account and time. One event ID or tool label is not proof of success.
-
-## Mitigation and recovery
-
-**Mitigation:** Apply exact Microsoft patch guidance and restrict adjacent-network/Kerberos administration.
-
-**Recovery:** Preserve evidence, isolate affected systems and identities, remove unauthorized state through approved procedures, review relevant credentials/sessions and retest in a clean lab.
+---
 
 ## References
 

@@ -6,29 +6,13 @@ repo: "dirkjanm/PKINITtools"
 category: "ADCS"
 ---
 
-## Overview
+# PKINITtools
 
-PKINITtools is a Python collection for Kerberos PKINIT and certificate-authentication workflows.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Requests and processes Kerberos tickets using X.509 certificates and explores certificate-to-principal mapping.
-
-## Authorized red-team assessment and defensive use
-
-Use to validate AD CS/PKINIT integration and certificate mapping in an approved lab or incident analysis.
-
-## Prerequisites and operating boundaries
-
-Authorized certificate and key, domain/KDC access, synchronized clocks, correct mapping context, and separate approval for ticket tests.
-
-## Observable behavior and defensive considerations
-
-CA issuance, certificate authentication, KDC/AS activity, ticket and service-logon events, and endpoint certificate use.
-
-## Limitations
-
-Mapping, EKU, revocation, KDC policy, and smart-card/PKINIT configuration determine success. Certificate possession does not imply broad privilege.
+PKINIT tooling (certificate → TGT). Use when Certipy auth is unavailable.
 
 ## References
 

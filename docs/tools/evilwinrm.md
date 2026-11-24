@@ -6,29 +6,13 @@ repo: "Hackplayers/evil-winrm"
 category: "Lateral Movement"
 ---
 
-## Overview
+# evil-winrm
 
-evil-winrm is a Ruby client for interactive Windows Remote Management and PowerShell Remoting.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Provides PSRP/WinRM shell sessions and support for commonly used WinRM authentication formats.
-
-## Authorized red-team assessment and defensive use
-
-Use for authorized remote administration, incident response, or lab practice inside a managed WinRM boundary.
-
-## Prerequisites and operating boundaries
-
-WinRM enabled, network access, a valid authorized identity or certificate, and policy permitting the intended session.
-
-## Observable behavior and defensive considerations
-
-WinRM/WSMan authentication, process and PowerShell script-block logs, JEA transcripts, network events, and EDR.
-
-## Limitations
-
-A shell session does not imply privileged access. JEA and constrained language may limit operations; certificate and authentication modes vary.
+Tool reference for authorized Active Directory assessment; consult the upstream project documentation for supported features, scope controls, and safe configuration.
 
 ## References
 

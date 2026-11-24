@@ -6,29 +6,13 @@ repo: "Kevin-Robertson/Powermad"
 category: "Privilege Escalation"
 ---
 
-## Overview
+# Powermad
 
-Powermad is a PowerShell module for machine-account and computer-object research.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Inventories or, with rights, creates or modifies computer objects and MachineAccountQuota-related state.
-
-## Authorized red-team assessment and defensive use
-
-Use in a lab or approved domain-change review to verify restrictions on computer-object creation and attributes.
-
-## Prerequisites and operating boundaries
-
-Domain rights matching the read or write test, PowerShell execution, and rollback for object or attribute changes.
-
-## Observable behavior and defensive considerations
-
-LDAP object creation/writes, DC audit, computer lifecycle and join activity, replication, and endpoint join telemetry.
-
-## Limitations
-
-Quota and ACL state differ by domain. Object creation does not prove a downstream delegation or privilege path.
+Machine account creation, ADIDNS, Kerberos tickets. `New-MachineAccount`, `Invoke-DNSUpdate`.
 
 ## References
 

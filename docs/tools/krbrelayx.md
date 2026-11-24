@@ -6,29 +6,13 @@ repo: "dirkjanm/krbrelayx"
 category: "Kerberos"
 ---
 
-## Overview
+# krbrelayx
 
-krbrelayx is a Python toolkit for Kerberos relay and delegation research.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Kerberos listeners, relay helpers, and support for studying unconstrained or constrained delegation relationships.
-
-## Authorized red-team assessment and defensive use
-
-Use only in an isolated lab to test relay, channel, SPN, and delegation boundaries with test identities.
-
-## Prerequisites and operating boundaries
-
-Written authorization, controlled relay endpoints, reachable KDC/services, compatible delegation and SPN state, and rollback.
-
-## Observable behavior and defensive considerations
-
-KDC AS/TGS and service-logon events, SMB/HTTP/LDAP authentication, DC/endpoint logs, and listener traffic.
-
-## Limitations
-
-Success depends on protocol flags, channel protection, encryption, SPNs, account state, and service configuration.
+Kerberos/relay helper (`addspn.py`, `dnstool.py`, `printerbug.py`). SPN/DNS manipulation and RPRN coercion.
 
 ## References
 

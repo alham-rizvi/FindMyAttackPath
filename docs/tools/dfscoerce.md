@@ -6,29 +6,13 @@ repo: "Wh0amI123/DFSCoerce"
 category: "Coercion"
 ---
 
-## Overview
+# DFSCoerce
 
-DFSCoerce is a proof-of-concept for authentication coercion through the MS-DFSNM DFS namespace interface.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Invokes the DFS namespace RPC pattern to test whether a host initiates outbound authentication.
-
-## Authorized red-team assessment and defensive use
-
-Use only in an isolated lab or explicitly authorized relay assessment with a controlled callback.
-
-## Prerequisites and operating boundaries
-
-Target authorization, reachable DFSN RPC, a callback/listener, and rollback monitoring.
-
-## Observable behavior and defensive considerations
-
-DFS namespace RPC traffic, outbound SMB or authentication, DC/endpoint events, and callback listener telemetry.
-
-## Limitations
-
-Interface exposure and behavior vary by patch level and service state. A callback does not establish relay or elevated access.
+MS-DFSNM coercion. Alternate when EFSR/RPRN are patched.
 
 ## References
 

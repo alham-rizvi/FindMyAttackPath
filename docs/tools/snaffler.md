@@ -6,29 +6,13 @@ repo: "SnaffCon/Snaffler"
 category: "Recon"
 ---
 
-## Overview
+# Snaffler
 
-Snaffler is a Windows share and sensitive-file discovery tool.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Enumerates approved shares and applies heuristics to filenames and contents for likely credentials, configuration, backups, and sensitive artifacts.
-
-## Authorized red-team assessment and defensive use
-
-Use for authorized data-exposure review and incident scoping with bounded shares and controlled output.
-
-## Prerequisites and operating boundaries
-
-Written share scope, credentials with approved read rights, and secure storage for matches.
-
-## Observable behavior and defensive considerations
-
-SMB/share enumeration and file reads, process activity, EDR, DLP, and storage audit logs.
-
-## Limitations
-
-Heuristics create false positives and miss encrypted or poorly named files. It does not prove secret validity or ownership.
+Tool reference for authorized Active Directory assessment; consult the upstream project documentation for supported features, scope controls, and safe configuration.
 
 ## References
 

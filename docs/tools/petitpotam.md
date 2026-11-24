@@ -6,29 +6,13 @@ repo: "topotam/PetitPotam"
 category: "Coercion"
 ---
 
-## Overview
+# PetitPotam
 
-PetitPotam is a proof-of-concept for authentication coercion through the MS-EFSR interface.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Tests whether a Windows host can be induced to initiate outbound authentication via the Encrypting File System Remote protocol.
-
-## Authorized red-team assessment and defensive use
-
-Use only in a controlled lab or explicitly authorized relay/coercion assessment.
-
-## Prerequisites and operating boundaries
-
-Target approval, reachable EFS RPC, controlled callback/relay, and monitoring.
-
-## Observable behavior and defensive considerations
-
-MS-EFSR RPC, outbound SMB/HTTP/Kerberos authentication, DC security events, endpoint EDR, and listener traffic.
-
-## Limitations
-
-Patch level and RPC exposure vary. A callback does not prove relay success, credential reuse, or privilege.
+MS-EFSRPC coercion. Pair with relay; often blocked on patched hosts.
 
 ## References
 

@@ -6,29 +6,13 @@ repo: "dev-2null/ADCollector"
 category: "Recon"
 ---
 
-## Overview
+# ADCollector
 
-ADCollector is a Windows-oriented utility that collects Active Directory configuration and highlights selected misconfiguration indicators.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Selected inventory of users, computers, groups, trusts, permissions, policies, sessions, or related AD objects implemented by the release.
-
-## Authorized red-team assessment and defensive use
-
-Use read-oriented collection for an authorized domain baseline, then verify effective ACLs and business context before remediation.
-
-## Prerequisites and operating boundaries
-
-Domain read access, Windows execution support, network reachability to domain services, and a protected report destination.
-
-## Observable behavior and defensive considerations
-
-LDAP/DC authentication and search traffic, any RPC/SMB lookups, executable or script process activity, and report-file access.
-
-## Limitations
-
-Output reflects permissions and implemented checks. It may miss nested ACLs, compensating controls, replication state, or newer schema features.
+C# AD recon collector. `ADCollector.exe -h`. Lightweight alternative to SharpHound when only ACLs matter.
 
 ## References
 

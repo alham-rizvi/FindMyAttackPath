@@ -6,29 +6,19 @@ repo: "ropnop/windapsearch"
 category: "Recon"
 ---
 
-## Overview
+# windapsearch
 
-windapsearch is an LDAP enumeration utility for Active Directory.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-LDAP searches for users, groups, computers, service principals, privileged groups, and common directory patterns.
+Tool reference for authorized Active Directory assessment; consult the upstream project documentation for supported features, scope controls, and safe configuration.
 
-## Authorized red-team assessment and defensive use
+---
 
-Use read-only searches for domain inventory and specific object or permission findings under authorization.
+# PART 5 — Manifest and test files
 
-## Prerequisites and operating boundaries
-
-Authorized domain credentials, LDAP or LDAPS access, and read rights for selected objects and attributes.
-
-## Observable behavior and defensive considerations
-
-LDAP bind/search traffic, DC audit/network telemetry, and workstation process/file activity.
-
-## Limitations
-
-Completeness depends on filters, permissions, schema, and replicas. LDAP visibility does not establish effective privilege or exploitability.
+## `docs/manifest.json`
 
 ## References
 

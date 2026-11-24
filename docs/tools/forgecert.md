@@ -6,29 +6,13 @@ repo: "GhostPack/ForgeCert"
 category: "ADCS"
 ---
 
-## Overview
+# ForgeCert
 
-ForgeCert is a C# proof-of-concept for constructing CA-signed certificate material.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Demonstrates certificate subject/issuer construction and the use of CA signing material in certificate-persistence scenarios.
-
-## Authorized red-team assessment and defensive use
-
-Use only in an isolated lab or explicitly authorized CA-compromise simulation. Production trust boundaries must remain untouched.
-
-## Prerequisites and operating boundaries
-
-Lab CA or approved signing material, test identity, and no connection to production certificate trust.
-
-## Observable behavior and defensive considerations
-
-CA signing/issuance, certificate authentication, KDC/DC events, unusual subject/issuer or SAN values, and audit logs.
-
-## Limitations
-
-Impact depends on possession of the CA key and certificate mapping/trust behavior. Certificates may be rejected or revoked.
+Forge certificates from a stolen CA key. Golden Certificate step.
 
 ## References
 

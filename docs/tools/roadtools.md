@@ -6,29 +6,13 @@ repo: "dirkjanm/ROADtools"
 category: "Hybrid / Cloud"
 ---
 
-## Overview
+# ROADtools
 
-ROADtools is a Python framework for Entra ID and Microsoft 365 identity research.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Tenant and directory discovery, device/application metadata, authentication context, token workflows, and Microsoft identity API experimentation.
-
-## Authorized red-team assessment and defensive use
-
-Use for authorized tenant inventory, incident analysis, role/consent review, and controlled lab validation of Entra controls.
-
-## Prerequisites and operating boundaries
-
-Tenant authorization, credentials or tokens with the needed role, Microsoft identity network access, and secure output storage.
-
-## Observable behavior and defensive considerations
-
-Entra sign-in/audit logs, Graph/service API requests, token use, consent, role/device changes, and application telemetry.
-
-## Limitations
-
-Licensing and role scope limit data. Token or directory properties do not prove replay or privilege without tenant-context validation.
+`roadrecon`/`roadtx` for Entra ID. `roadrecon auth`, `gather`, `roadtx prtenrich`.
 
 ## References
 

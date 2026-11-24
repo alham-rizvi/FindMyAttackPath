@@ -6,29 +6,13 @@ repo: "gentilkiwi/kekeo"
 category: "Kerberos"
 ---
 
-## Overview
+# kekeo
 
-Kekeo is a Windows Kerberos security research toolkit.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Ticket, AS/TGS, PKINIT/certificate, and low-level Kerberos protocol workflows for lab interoperability and analysis.
-
-## Authorized red-team assessment and defensive use
-
-Use for authorized Kerberos lab testing or incident analysis of relevant ticket and certificate flows.
-
-## Prerequisites and operating boundaries
-
-Compatible domain/KDC, approved identities, synchronized clocks, test certificates or keys, and isolated hosts.
-
-## Observable behavior and defensive considerations
-
-KDC/DC authentication records, ticket operations, service logons, certificate authentication, and endpoint ticket/process telemetry.
-
-## Limitations
-
-Modern PAC, encryption, SPN, clock, and policy settings affect behavior. Ticket issuance alone does not prove broad privilege.
+Kerberos tooling (TGT/TGS, S4U, trust tickets). Legacy; Rubeus/Impacket preferred.
 
 ## References
 

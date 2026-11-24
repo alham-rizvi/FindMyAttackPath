@@ -6,29 +6,13 @@ repo: "improsec/ImproHound"
 category: "Graph"
 ---
 
-## Overview
+# ImproHound
 
-ImproHound is a BloodHound analysis utility for tier-boundary and Tier 0 violations.
+> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
 
-## High-level capabilities
+This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
-Compares graph relationships with a configured tier model and flags objects or paths crossing administrative boundaries.
-
-## Authorized red-team assessment and defensive use
-
-Use to validate tiering, find unintended privilege relationships, and track exceptions for remediation.
-
-## Prerequisites and operating boundaries
-
-Representative BloodHound data, reviewed tier labels, and controlled graph-data access.
-
-## Observable behavior and defensive considerations
-
-Graph import/export, database/API/report, and file-access logs; it does not collect the domain directly.
-
-## Limitations
-
-Boundary findings depend on model and graph completeness. A cross-tier relationship is not necessarily exploitable end to end.
+Improved BloodHound collection (extended edges). Use when default collection misses container/site ACLs.
 
 ## References
 
