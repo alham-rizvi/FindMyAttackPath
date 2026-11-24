@@ -30,6 +30,15 @@ flowchart LR
 
 The certificate must chain to a trusted CA and be accepted for the relevant authentication purpose. Mapping mode, certificate fields, account attributes, patch state and compatibility settings determine the outcome; a weak-mapping label alone does not prove a usable path.
 
+## Affected objects and fix
+
+```text
+Objects: Domain-controller certificate-mapping policy and mapped AD account attributes
+Settings to review: Strong-binding policy, compatibility exceptions, explicit account mappings
+Risky state: Weak or ambiguous mapping is accepted for certificate authentication
+Fix target: Current Microsoft strong-binding policy; remove stale mappings and exceptions
+```
+
 ## Defensive review
 
 Apply Microsoft's current strong-certificate-binding guidance, remove unnecessary compatibility exceptions, and review account mapping attributes and permissions. Test smart-card, VPN and service integrations in a lab before policy changes.

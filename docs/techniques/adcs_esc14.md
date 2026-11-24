@@ -30,6 +30,15 @@ flowchart LR
 
 Impact depends on the mapping type and strength, who can write the attribute, certificate issuer and fields, domain-controller patch/configuration state, and relying-party behavior. An explicit mapping is not inherently unsafe.
 
+## Affected object and fix
+
+```text
+Object: User or computer account
+Setting to review: altSecurityIdentities value and the attribute's effective write permissions
+Risky state: Weak, ambiguous, stale, or unauthorized certificate-to-account mapping
+Fix target: Strong unique mapping per Microsoft guidance; restrict writes and remove stale entries
+```
+
 ## Defensive review
 
 Inventory explicit mappings and their owners. Prefer strong, uniquely bound mapping forms supported by current Microsoft guidance, remove stale entries, and restrict writes to trusted identity administrators.

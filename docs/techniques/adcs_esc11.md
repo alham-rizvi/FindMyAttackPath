@@ -30,6 +30,15 @@ flowchart LR
 
 Reachability, authentication protocol, enforced RPC privacy, NTLM controls, template enrollment rights, approval, EKU and downstream trust all matter. Network reachability or an exposed interface alone is not evidence of certificate issuance or privilege.
 
+## Affected object and fix
+
+```text
+Object: CA RPC enrollment endpoint and its security configuration
+Setting to review: Whether RPC packet privacy is enforced for enrollment
+Risky state: Enrollment accepts a connection without the required privacy protection
+Fix target: Enforce packet privacy, disable unused enrollment interfaces, and restrict NTLM paths
+```
+
 ## Defensive review
 
 Require packet privacy for RPC enrollment, disable unused enrollment interfaces, restrict NTLM relay paths and limit template enrollment. Validate changes against legitimate enrollment clients in a lab.

@@ -30,6 +30,15 @@ flowchart LR
 
 An OID-to-group link alone does not grant access. The certificate must carry the policy, issuance must be permitted, the chain must be trusted, and the relying party must honor the mapping. Verify actual group and authorization semantics rather than relying on a scanner label.
 
+## Affected objects and fix
+
+```text
+Objects: msPKI-Enterprise-Oid object, msDS-OIDToGroupLink, and issuing templates
+Settings to review: OID-to-group association, object ACLs, and templates that issue the policy
+Risky state: Unapproved OID links to a privileged group or can be issued too broadly
+Fix target: Remove unnecessary links; restrict OID/template writes and policy issuance
+```
+
 ## Defensive review
 
 Restrict writes to OID and group-link objects, document each mapping's owner and purpose, and limit template issuance of mapped policies. Review group membership and relying-party authorization together.

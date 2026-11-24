@@ -30,6 +30,15 @@ flowchart LR
 
 Access to a public CA certificate is not private-key compromise. The key must be usable for the relevant signing chain, and relying parties must accept the resulting certificate. Revocation, expiry, strong mapping and chain changes affect impact and recovery.
 
+## Affected object and fix
+
+```text
+Object: CA signing private key and CA host
+Settings to review: Key storage/exportability, key ACLs, host administrators, backups
+Risky state: Unapproved identity can access or export signing capability
+Fix target: Protected key storage, restricted Tier-0 access, monitored key operations
+```
+
 ## Defensive review
 
 Protect CA hosts as Tier-0 systems. Store keys in appropriate HSM/TPM-backed controls where feasible, restrict export and administrative access, keep recovery material protected, and monitor key operations.

@@ -30,6 +30,15 @@ flowchart LR
 
 The template must be published and enrollable; CA and schema behavior must permit the relevant policy; and the relying party must trust the chain and accept the certificate purpose. A legacy template does not by itself prove a useful authentication path.
 
+## Affected object and fix
+
+```text
+Object: AD CS certificate template and the CA processing it
+Settings to review: Template schema version, application-policy behavior, patch state
+Risky state: Affected legacy template behavior permits an unintended certificate purpose
+Fix target: Apply vendor security updates; retire or replace affected legacy templates
+```
+
 ## Defensive review
 
 Replace unneeded schema-version-1 templates with current templates, constrain application policies to the service requirement and restrict enrollment. Review issued certificates and applications that depend on legacy templates before retiring them.

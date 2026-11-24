@@ -31,6 +31,15 @@ flowchart LR
 
 CA-wide suppression alone is not proof of account impersonation. Template identity fields, strong-binding enforcement, compatibility exceptions, certificate trust, patch state and relying-party behavior all affect the result.
 
+## Affected object and fix
+
+```text
+Object: Enterprise CA configuration
+Setting to review: Extension-suppression policy, including the NTDS security extension
+Risky state: CA omits the identity-binding extension without an approved compatibility need
+Fix target: Stop suppressing the extension; review affected templates and certificates
+```
+
 ## Defensive review
 
 Keep the security extension enabled unless a documented compatibility requirement exists. Scope and time-limit exceptions, inventory every affected CA and template, and test dependent applications before remediation.

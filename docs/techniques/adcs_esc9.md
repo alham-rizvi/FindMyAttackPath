@@ -31,6 +31,15 @@ flowchart LR
 
 An omitted extension is not sufficient by itself. Template enrollment, certificate identity, domain-controller mapping rules, patch state, strong-binding enforcement and relying-party behavior must align. Mapping policies have changed across Windows updates and can vary by deployment.
 
+## Affected object and fix
+
+```text
+Object: pKICertificateTemplate
+Setting to review: msPKI-Enrollment-Flag and CT_FLAG_NO_SECURITY_EXTENSION behavior
+Risky state: Authentication certificate is issued without the expected identity-binding extension
+Fix target: Include the security extension and enforce current strong certificate mapping
+```
+
 ## Defensive review
 
 Remove the template setting that suppresses the extension unless an approved compatibility need exists. Enforce current strong certificate binding, inventory exceptions and test affected applications in a lab before removing compatibility behavior.
