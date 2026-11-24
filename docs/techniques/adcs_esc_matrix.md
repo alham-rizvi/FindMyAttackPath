@@ -1,7 +1,7 @@
 ---
 id: adcs_esc_matrix
 type: technique
-label: "AD CS ESC1–ESC16 overview"
+label: "AD CS ESC taxonomy overview"
 phase: "privesc"
 tools: ["certipy", "certify"]
 cve: null
@@ -10,9 +10,9 @@ mitre: "T1649"
 tag: null
 ---
 
-# AD CS ESC1–ESC16 overview
+# AD CS ESC taxonomy overview
 
-The ESC labels are a commonly used taxonomy for Active Directory Certificate Services (AD CS) misconfiguration and certificate-trust paths. They group different failure families: template policy, directory permissions, CA permissions, enrollment endpoints, private-key protection, and certificate-to-account mapping. A label from a scanner is a lead to validate—not proof of issuance, impersonation, or privilege.
+The ESC labels are a commonly used taxonomy for Active Directory Certificate Services (AD CS) misconfiguration and certificate-trust paths. This page summarizes ESC1–ESC16, covering template policy, directory permissions, CA permissions, enrollment endpoints, private-key protection, and certificate-to-account mapping. Taxonomy versions can add or revise labels; a scanner label is a lead to validate—not proof of issuance, impersonation, or privilege.
 
 > **Authorized assessment only:** Use these categories to structure read-only review and defensive validation. Do not request certificates, relay authentication, alter CA/template state, or test real identities unless the owner has explicitly approved that exact action.
 
@@ -50,7 +50,7 @@ flowchart LR
 | ESC15 | Legacy schema-version-1 template behavior may allow an application policy to be supplied in a way that changes certificate purpose. | Are legacy templates still needed, and can they be replaced with current schema and constrained application policies? |
 | ESC16 | CA configuration suppresses the security extension used for strong certificate-to-account binding. | Is the CA security extension enabled, and are certificate mapping and compatibility exceptions reviewed across all issuing CAs? |
 
-These are screening categories, not a single exploit chain. Applicability depends on Windows/CA versions, effective permissions, template publication, approval and signature policy, network reachability, certificate trust, mapping behavior, and the relying party. Taxonomy wording and scanner coverage can also change; confirm current behavior against vendor documentation and a controlled lab.
+These are screening categories, not a single exploit chain. Applicability depends on Windows/CA versions, effective permissions, template publication, approval and signature policy, network reachability, certificate trust, mapping behavior, and the relying party. The current Certipy wiki index also lists ESC17; its definition is not included here because it was not independently verified for this update. Confirm the current taxonomy and behavior against vendor documentation and a controlled lab before treating this matrix as exhaustive.
 
 ## Safe validation and reporting
 
@@ -77,7 +77,7 @@ These are screening categories, not a single exploit chain. Applicability depend
 
 - [Microsoft: Active Directory Certificate Services overview](https://learn.microsoft.com/windows-server/identity/ad-cs/active-directory-certificate-services-overview)
 - [Microsoft: Certificate template concepts](https://learn.microsoft.com/windows-server/identity/ad-cs/certificate-template-concepts)
-- [Microsoft: Strong certificate binding enforcement](https://support.microsoft.com/topic/kb5014754-certificate-based-authentication-changes-on-windows-domain-controllers-1e4c2b9c-9a7a-4a56-9b18-2c7d7a09c7f4)
+- [Microsoft: KB5014754 certificate-based authentication changes](https://support.microsoft.com/kb/5014754)
 - [SpecterOps: Certified Pre-Owned](https://specterops.io/wp-content/uploads/sites/3/2022/06/Certified_Pre-Owned.pdf)
 - [Certipy project](https://github.com/ly4k/Certipy)
 - [MITRE ATT&CK: T1649](https://attack.mitre.org/techniques/T1649/)
