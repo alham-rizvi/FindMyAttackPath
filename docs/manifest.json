@@ -470,6 +470,36 @@
     "path": "docs/techniques/adcs_esc1.md"
   },
   {
+    "id": "adcs_esc2",
+    "type": "technique",
+    "path": "docs/techniques/adcs_esc2.md"
+  },
+  {
+    "id": "adcs_esc3",
+    "type": "technique",
+    "path": "docs/techniques/adcs_esc3.md"
+  },
+  {
+    "id": "adcs_esc4",
+    "type": "technique",
+    "path": "docs/techniques/adcs_esc4.md"
+  },
+  {
+    "id": "adcs_esc5",
+    "type": "technique",
+    "path": "docs/techniques/adcs_esc5.md"
+  },
+  {
+    "id": "adcs_esc6",
+    "type": "technique",
+    "path": "docs/techniques/adcs_esc6.md"
+  },
+  {
+    "id": "adcs_esc7",
+    "type": "technique",
+    "path": "docs/techniques/adcs_esc7.md"
+  },
+  {
     "id": "adcs_esc_matrix",
     "type": "technique",
     "path": "docs/techniques/adcs_esc_matrix.md"
@@ -478,6 +508,46 @@
     "id": "adcs_esc8",
     "type": "technique",
     "path": "docs/techniques/adcs_esc8.md"
+  },
+  {
+    "id": "adcs_esc9",
+    "type": "technique",
+    "path": "docs/techniques/adcs_esc9.md"
+  },
+  {
+    "id": "adcs_esc10",
+    "type": "technique",
+    "path": "docs/techniques/adcs_esc10.md"
+  },
+  {
+    "id": "adcs_esc11",
+    "type": "technique",
+    "path": "docs/techniques/adcs_esc11.md"
+  },
+  {
+    "id": "adcs_esc12",
+    "type": "technique",
+    "path": "docs/techniques/adcs_esc12.md"
+  },
+  {
+    "id": "adcs_esc13",
+    "type": "technique",
+    "path": "docs/techniques/adcs_esc13.md"
+  },
+  {
+    "id": "adcs_esc14",
+    "type": "technique",
+    "path": "docs/techniques/adcs_esc14.md"
+  },
+  {
+    "id": "adcs_esc15",
+    "type": "technique",
+    "path": "docs/techniques/adcs_esc15.md"
+  },
+  {
+    "id": "adcs_esc16",
+    "type": "technique",
+    "path": "docs/techniques/adcs_esc16.md"
   },
   {
     "id": "certighost",
