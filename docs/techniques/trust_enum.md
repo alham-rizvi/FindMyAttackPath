@@ -21,3 +21,15 @@ Enumerate inter-forest/inter-domain trusts, direction, transitivity, and **SID f
 
 ### Commands
 ```bash
+# ── Native / PowerView ──────────────────────────────────────────────
+nltest /domain_trusts /all_trusts /v
+Get-DomainTrust -Domain corp.local
+
+# ── NetExec ──────────────────────────────────────────────────────────
+nxc ldap 10.10.10.5 -u lowpriv -p 'Password123!' --trusted-for-delegation
+```
+
+### Detection
+**5136** on `trustedDomain`; baseline trusts.
+
+---

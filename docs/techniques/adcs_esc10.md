@@ -21,3 +21,15 @@ tag: null
 
 ### Commands
 ```bash
+# ── Check the registry value ─────────────────────────────────────────
+reg query "HKLM\SYSTEM\CurrentControlSet\Services\Kdc" /v StrongCertificateBindingEnforcement
+
+# ── Fix: set to 2 (full enforcement) ─────────────────────────────────
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\Kdc" \
+  /v StrongCertificateBindingEnforcement /t REG_DWORD /d 2 /f
+```
+
+### Detection
+DC registry **4657**; **4768** with mismatched certificate mapping.
+
+---

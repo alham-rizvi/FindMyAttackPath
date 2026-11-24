@@ -21,3 +21,15 @@ The SID is omitted from **all** certificates. Combine with **ESC6 URL-SAN** to b
 
 ### Commands
 ```bash
+# ── Check the disable list ───────────────────────────────────────────
+certutil -getreg CA\DisableExtensionList
+
+# ── Fix: remove the SID extension from the disable list ──────────────
+certutil -setreg CA\DisableExtensionList -1.3.6.1.4.1.311.25.2
+# Restart CertSvc.
+```
+
+### Detection
+CA registry **`DisableExtensionList`**; **4886** missing SID extension.
+
+---

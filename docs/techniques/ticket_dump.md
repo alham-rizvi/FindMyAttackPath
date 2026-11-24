@@ -21,3 +21,15 @@ Dump tickets from memory for the current session or all sessions; harvest TGTs/T
 
 ### Commands
 ```bash
+# ── Rubeus triage/dump ──────────────────────────────────────────────
+Rubeus.exe triage
+Rubeus.exe dump /nowrap
+
+# ── Linux ccache ────────────────────────────────────────────────────
+ls /tmp/krb5cc_*
+```
+
+### Detection
+**Sysmon 10** on LSASS; **4768/4769** anomalies; LSA protection.
+
+---

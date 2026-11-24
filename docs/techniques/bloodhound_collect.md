@@ -21,3 +21,24 @@ Collection method matters for OPSEC. `-c All` is comprehensive but noisy; `-c DC
 
 ### Commands
 ```bash
+# ── SharpHound (Windows) ─────────────────────────────────────────────
+SharpHound.exe -c All --zipfilename bh.zip
+SharpHound.exe -c DCOnly,ACL,Trusts,ObjectProps --zipfilename bh_stealth.zip
+
+# ── bloodhound-python (Linux) ────────────────────────────────────────
+bloodhound-python -d corp.local -u lowpriv -p 'Password123!' \
+  -c All -dc dc01.corp.local -ns 10.10.10.5
+
+# ── Key queries in the BloodHound UI ─────────────────────────────────
+# "Shortest Paths to Domain Admins"
+# "Find Principals with DCSync Rights"
+# "Shortest Paths to High Value Targets"
+```
+
+### Impact
+**Ranked attack paths** to DA/DCSync/ADCS.
+
+### Detection
+LDAP query bursts, SAMR enumeration, SharpHound/bloodhound-python user agents.
+
+---

