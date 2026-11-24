@@ -24,6 +24,15 @@ The enterprise CA, IIS web-enrollment virtual directories, HTTP/RPC enrollment s
 
 A reachable HTTP enrollment interface, an authentication/relay position authorized for the test, accepted NTLM at that interface, a published template with suitable enrollment rights and EKU, and downstream trust for the resulting certificate must all exist. Network reachability alone is not issuance or privilege.
 
+## Affected objects and fix
+
+```text
+Objects: CA Web Enrollment endpoint, IIS authentication policy, and published templates
+Settings to review: HTTPS, Extended Protection/channel binding, NTLM acceptance, enrollment ACLs
+Risky state: Unnecessary endpoint accepts authentication without the required protections
+Fix target: Disable unused endpoint; otherwise enforce supported protections and least privilege
+```
+
 ```mermaid
 flowchart LR
   A[Authentication reaches HTTP enrollment] --> B[IIS authenticates principal]

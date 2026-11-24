@@ -24,6 +24,15 @@ An enterprise CA (`pKIEnrollmentService`) publishes `pKICertificateTemplate` obj
 
 The template must be published, the assessed principal needs effective enrollment rights, name policy must permit identity outside the requester’s normal identity, issuance approval/signature controls must permit the request, the EKU and certificate chain must be accepted for authentication or a useful purpose, and a relying party must trust the issuing chain.
 
+## Affected object and fix
+
+```text
+Object: pKICertificateTemplate
+Settings to review: nTSecurityDescriptor, msPKI-Certificate-Name-Flag, EKU, approval/signatures
+Risky state: Broad enrollment plus requester-controlled identity on an authentication template
+Fix target: Directory-derived identity, narrowly scoped enrollment, and enforced issuance controls
+```
+
 ```mermaid
 flowchart TD
   A[Published pKICertificateTemplate] --> B[Effective enroll rights]

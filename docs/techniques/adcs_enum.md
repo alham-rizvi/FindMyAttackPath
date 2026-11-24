@@ -45,6 +45,16 @@ A template may exist in AD without being published by any CA. Publishing a templ
 
 Interpret attributes together. A requester-controlled SAN is not enough for unintended identity if the template is unpublished, enrollment is denied, approval or RA-signature policy blocks issuance, the EKU is not accepted for authentication, or the chain is not trusted.
 
+## Object and remediation snapshot
+
+```text
+Objects: pKIEnrollmentService, pKICertificateTemplate, CA policy, PKI OID objects
+Risky state: Unneeded publication; broad enrollment/write ACLs; weak identity or approval policy
+Review: Resolve effective ACLs, inherited rights, template flags, EKUs, CA policy, and trust
+Fix: Remove unused publication; restrict rights; use directory-derived identities; require
+     appropriate approval/signatures; protect CA hosts and signing keys
+```
+
 ## Conceptual assessment chain
 
 ```mermaid

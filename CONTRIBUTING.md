@@ -123,6 +123,9 @@ you're renaming or moving the file.
 
 - Keep descriptions factual and defensive-aware: every technique should have a `detect` line
   that's actually useful to a blue team, not just an attacker.
+- Document affected AD objects, the risky configuration, the desired state, and a safe
+  remediation/verification path. Do not include runnable exploitation or target-enumeration
+  command sequences; use non-executable configuration examples or controlled-lab context.
 - Link to a real source (advisory, blog post, repo) in the body or in `source`/`repo` wherever
   you can — unverifiable "new since 2025" claims get re-checked before merge.
 - This project is for authorized testing and study (OSCP/CRTO-style prep). Don't add anything

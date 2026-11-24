@@ -30,6 +30,16 @@ flowchart LR
 
 The policy file must remain accessible and the associated account must still be valid for the value to create current risk. A found value is not proof of successful logon or privilege. Check account status, scope, reuse and last-change history through approved administrative processes.
 
+## Affected object and fix
+
+```text
+Objects: Group Policy Preference XML files in SYSVOL and the referenced account
+Setting to review: Legacy cpassword field and SYSVOL read access
+Risky state: Reusable credential is stored in a policy file or was reused elsewhere
+Fix target: Remove the stored value, rotate the secret, investigate reuse, and migrate to
+            an approved secret-management mechanism
+```
+
 ## Defensive review
 
 Remove legacy preference passwords, rotate every affected credential, and review for reuse in services, scheduled tasks and other managed systems. Use a supported secret-management mechanism with scoped access instead of policy-file storage.

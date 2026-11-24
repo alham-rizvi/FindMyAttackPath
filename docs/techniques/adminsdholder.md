@@ -31,6 +31,15 @@ flowchart LR
 
 The affected account must be in the protected set and SDProp must process it. A changed ACL does not automatically grant useful access; identify the specific right, affected object and resulting authorization. Replication and processing timing can make observations differ between domain controllers.
 
+## Affected object and fix
+
+```text
+Objects: AdminSDHolder and protected users/groups
+Setting to review: Owner and nTSecurityDescriptor on the template and protected objects
+Risky state: Unauthorized ACE is present on the template or reappears after SDProp
+Fix target: Approved baseline ACL and owner; verify propagation after directory replication
+```
+
 ## Defensive review
 
 Restrict writes to AdminSDHolder and protected-object ACLs to tiered directory administrators. Compare the template against a known-good baseline, review protected-group membership and ensure remediation includes both the template and any already-affected objects.

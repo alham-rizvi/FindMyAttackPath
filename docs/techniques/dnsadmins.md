@@ -30,6 +30,15 @@ flowchart LR
 
 The DNS service must be present and affected by the delegated configuration. Service identity, supported extension behavior, file and registry permissions, service restart requirements and host protections all affect impact. A DNSAdmins edge in a graph is a review lead, not a universal escalation path.
 
+## Affected object and fix
+
+```text
+Objects: DNSAdmins group, DNS Server service, and service configuration
+Risky state: Unnecessary membership or delegated control over service configuration
+Fix target: Small documented administrator set; protected service configuration and host
+Review: Confirm the service role, effective rights, and business need with DNS owners
+```
+
 ## Defensive review
 
 Keep DNSAdmins membership small, role-based and reviewed. Prefer supported DNS management delegation, protect service configuration and extension-loading boundaries, and avoid unnecessary DNS Server roles on domain controllers.
