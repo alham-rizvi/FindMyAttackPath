@@ -14,7 +14,7 @@ bloodyAD is a Python LDAP/AD object and attribute administration utility.
 
 Directory inspection and, when explicitly authorized, modification of users, computers, groups, trusts, and ACL-related attributes.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use for controlled lab change exercises or authorized administration. Any write is change-management work, not routine enumeration.
 

@@ -14,7 +14,7 @@ minikerberos is a Python library for Kerberos protocol and ticket workflows.
 
 AS, TGS, SPN, ticket, key, delegation, and PKINIT-oriented operations for custom authorized clients or analysis tools.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use for lab interoperability, protocol tests, incident-response utilities, or defensive automation.
 

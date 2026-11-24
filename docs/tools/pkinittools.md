@@ -14,7 +14,7 @@ PKINITtools is a Python collection for Kerberos PKINIT and certificate-authentic
 
 Requests and processes Kerberos tickets using X.509 certificates and explores certificate-to-principal mapping.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use to validate AD CS/PKINIT integration and certificate mapping in an approved lab or incident analysis.
 

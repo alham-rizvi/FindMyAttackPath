@@ -14,7 +14,7 @@ Rubeus is a C# Kerberos ticket and authentication research suite.
 
 Ticket request/renewal/cache operations, roasting, S4U/delegation, PAC/certificate, and ticket-cache workflows.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use for authorized lab validation and incident analysis of Kerberos configuration and ticket behavior.
 

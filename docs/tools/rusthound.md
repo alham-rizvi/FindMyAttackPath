@@ -14,7 +14,7 @@ RustHound-CE is a Rust BloodHound Community Edition collector.
 
 Queries AD and emits graph-compatible collection data without the .NET runtime dependency of SharpHound.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use for authorized graph collection where its platform support and BloodHound CE schema compatibility are suitable.
 

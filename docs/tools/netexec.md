@@ -14,7 +14,7 @@ NetExec is a maintained Python framework for Windows network assessment and prot
 
 SMB, LDAP, MSSQL, WinRM, and other protocol enumeration, authentication checks, approved module execution, and reporting.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use for authorized inventory and exposure validation. Modules that execute or modify state require separate scope.
 

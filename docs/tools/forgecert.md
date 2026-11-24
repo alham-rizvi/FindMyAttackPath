@@ -14,7 +14,7 @@ ForgeCert is a C# proof-of-concept for constructing CA-signed certificate materi
 
 Demonstrates certificate subject/issuer construction and the use of CA signing material in certificate-persistence scenarios.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use only in an isolated lab or explicitly authorized CA-compromise simulation. Production trust boundaries must remain untouched.
 

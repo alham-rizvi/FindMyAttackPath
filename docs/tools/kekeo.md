@@ -14,7 +14,7 @@ Kekeo is a Windows Kerberos security research toolkit.
 
 Ticket, AS/TGS, PKINIT/certificate, and low-level Kerberos protocol workflows for lab interoperability and analysis.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use for authorized Kerberos lab testing or incident analysis of relevant ticket and certificate flows.
 

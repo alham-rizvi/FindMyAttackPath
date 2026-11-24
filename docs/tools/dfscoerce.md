@@ -14,7 +14,7 @@ DFSCoerce is a proof-of-concept for authentication coercion through the MS-DFSNM
 
 Invokes the DFS namespace RPC pattern to test whether a host initiates outbound authentication.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use only in an isolated lab or explicitly authorized relay assessment with a controlled callback.
 

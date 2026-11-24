@@ -14,7 +14,7 @@ GoodHound is a remediation-ranking utility for BloodHound graph findings.
 
 Consumes graph analyses and ranks attack paths or excessive relationships according to configurable criteria.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use to prioritize remediation work from validated graph evidence and compare which relationship changes reduce exposure.
 

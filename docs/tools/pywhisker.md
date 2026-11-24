@@ -14,7 +14,7 @@ pywhisker is a Python implementation for assessing AD Key Credential Link state.
 
 Reads or manages public-key credential metadata on test user/computer objects and checks whether the relevant LDAP write is permitted.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use only in a lab or approved incident exercise to validate object-write controls and Key Credential Link cleanup.
 

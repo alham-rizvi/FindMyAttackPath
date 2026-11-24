@@ -4,7 +4,10 @@
 
 
 An open-source, click-through map of the Active Directory attack chain — recon to domain
-dominance to hybrid/cloud pivot — built for learning and for red-team hackathon prep.
+dominance to hybrid/cloud pivot — built for authorized red-team engagements, Active Directory
+exploitation assessment practice, and job-role preparation. It is not defense-only: red-teamers
+can use it to understand and assess attack paths, while detection and mitigation notes help
+teams validate controls. Use it only within written authorization or an isolated lab.
 
 Every phase, technique, tool and CVE on the graph is backed by a markdown file under
 [`docs/`](docs/). Click a node and its connections ("wires") light up, and the detail panel

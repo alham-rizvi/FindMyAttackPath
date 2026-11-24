@@ -14,7 +14,7 @@ tag: null
 
 WMI/WinRM/SMB remote management can create CIM sessions, processes or services. The protocols and authorization boundaries are distinct and should be validated separately.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized assessment and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
 
 ## Beginner-friendly walkthrough
 

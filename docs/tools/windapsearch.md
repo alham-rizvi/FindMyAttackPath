@@ -14,7 +14,7 @@ windapsearch is an LDAP enumeration utility for Active Directory.
 
 LDAP searches for users, groups, computers, service principals, privileged groups, and common directory patterns.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use read-only searches for domain inventory and specific object or permission findings under authorization.
 

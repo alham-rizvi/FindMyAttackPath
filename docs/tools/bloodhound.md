@@ -14,7 +14,7 @@ BloodHound is an identity relationship graph platform for AD and Entra data.
 
 Graph ingestion, relationship modeling, path analysis, tier-boundary review, query views, and remediation prioritization in BloodHound CE.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use graph data to trace authorized-tier boundaries and validate whether relationships and fixes reduce exposure.
 

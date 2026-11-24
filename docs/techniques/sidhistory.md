@@ -14,7 +14,7 @@ tag: null
 
 SID history preserves migration-compatible SIDs on an account. It has impact only if the trust/PAC and resource ACL accept the extra SID.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized assessment and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
 
 ## Relevant objects and normal purpose
 

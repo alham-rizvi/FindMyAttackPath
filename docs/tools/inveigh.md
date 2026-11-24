@@ -14,7 +14,7 @@ Inveigh is a .NET and PowerShell framework for legacy name-resolution and authen
 
 LLMNR, NBNS, mDNS, WPAD/HTTP, and related listeners used to study how Windows authentication may leak in local networks.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use only in an isolated segment to test legacy-resolution and relay protections; capture and listener activity require explicit approval.
 

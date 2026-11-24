@@ -14,7 +14,7 @@ DonPAPI is a remote framework for discovering and recovering supported DPAPI-pro
 
 Coordinates remote access and decryption of DPAPI material where account, machine, or domain key context is available.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use only for authorized incident response or a tightly controlled credential-exposure assessment.
 

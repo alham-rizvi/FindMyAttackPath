@@ -14,7 +14,7 @@ Snaffler is a Windows share and sensitive-file discovery tool.
 
 Enumerates approved shares and applies heuristics to filenames and contents for likely credentials, configuration, backups, and sensitive artifacts.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use for authorized data-exposure review and incident scoping with bounded shares and controlled output.
 

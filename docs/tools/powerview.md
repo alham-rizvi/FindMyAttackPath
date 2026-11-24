@@ -14,7 +14,7 @@ PowerView is a PowerShell Active Directory enumeration and relationship-analysis
 
 Domain, user, group, computer, trust, GPO, session, share, and ACL relationship queries.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use read-only functions for authorized AD inventory and effective-rights review.
 

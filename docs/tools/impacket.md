@@ -14,7 +14,7 @@ Impacket is a Python library and tool collection implementing Windows network pr
 
 Provides SMB, RPC/MSRPC, LDAP, Kerberos, NTLM, MSSQL, WMI, and other Windows protocol clients, servers, and helpers.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use for authorized interoperability testing, protocol diagnostics, defensive lab automation, and incident-response support.
 

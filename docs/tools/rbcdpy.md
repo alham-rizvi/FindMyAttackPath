@@ -14,7 +14,7 @@ rbcd-attack is a Python resource-based constrained delegation research script.
 
 Inspects and, with rights, modifies delegation attributes on test service resources and examines the resulting RBCD relationship.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use only in an isolated lab or authorized access-control assessment.
 

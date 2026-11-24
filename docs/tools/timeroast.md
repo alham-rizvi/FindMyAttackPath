@@ -14,7 +14,7 @@ Timeroast is a proof of concept for assessing machine-account material exposed t
 
 Obtains protocol-relevant material that can be assessed offline for machine-account password or key resilience.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use to test machine-account password practices in an authorized lab or bounded assessment.
 

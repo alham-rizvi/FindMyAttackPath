@@ -14,7 +14,7 @@ Coercer is a suite of Windows RPC authentication-coercion probes.
 
 Contains modules that test whether supported RPC service interfaces can make a target initiate outbound authentication toward a controlled destination.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use only in an approved lab or scoped assessment to validate relay boundaries; prefer passive review unless coercion is explicitly authorized.
 

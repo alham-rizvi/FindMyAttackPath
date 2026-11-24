@@ -14,7 +14,7 @@ PetitPotam is a proof-of-concept for authentication coercion through the MS-EFSR
 
 Tests whether a Windows host can be induced to initiate outbound authentication via the Encrypting File System Remote protocol.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use only in a controlled lab or explicitly authorized relay/coercion assessment.
 

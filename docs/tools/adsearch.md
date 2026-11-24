@@ -14,7 +14,7 @@ ADSearch is an LDAP-focused utility for querying Active Directory objects and at
 
 Configurable LDAP searches for users, computers, groups, trusts, privilege groups, and security-relevant directory fields.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use repeatable read-only filters for inventory and finding reproduction in an authorized domain.
 

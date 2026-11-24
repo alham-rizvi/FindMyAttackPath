@@ -14,7 +14,7 @@ tag: null
 
 Coercion causes a Windows principal to authenticate, while relaying forwards that exchange to a target service rather than answering for the principal. The target must accept the exchange and authorize a meaningful operation.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized assessment and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
 
 ## Relevant objects and normal purpose
 
