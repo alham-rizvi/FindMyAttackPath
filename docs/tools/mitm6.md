@@ -8,32 +8,29 @@ category: "Coercion"
 
 ## Overview
 
-**mitm6** is a coercion tool. IPv6 DNS takeover that sets up coercion/relay chains.
-
-Dual-use: mitm6 should be used only within an approved scope. This page describes the project at a functional level and does not assert that an individual finding is exploitable.
+mitm6 is an IPv6/DNS relay-preparation and network exposure research tool.
 
 ## High-level capabilities
 
-It demonstrates or induces outbound authentication through Windows or network protocols. Its normal use is isolated, explicitly authorized relay or authentication-coercion testing. Exact feature coverage and supported protocols depend on the project release and target platform.
+Observes IPv6 state and can advertise IPv6/DHCPv6 and DNS configuration for testing whether legacy DNS/WPAD and relay controls are effective.
 
 ## Safe authorized assessment and defensive use
 
-Use mitm6 for isolated, explicitly authorized relay or authentication-coercion testing where organizational rules of engagement expressly permit it. Prefer read-only collection and recorded scope; isolate any test that changes objects, creates authentication events, modifies policy, acquires credentials or certificates, or reaches a callback or listener host. Review source code and community builds as untrusted software before deployment.
+Use only in an isolated VLAN or written network assessment with controlled relay infrastructure.
 
 ## Prerequisites and operating boundaries
 
-A valid authorized account or test identity, network reachability to the intended systems, and permissions matching the planned read or validation operation are required. Operating-system version, domain or tenant configuration, endpoint controls, signing or channel binding, licensing, and protocol support can limit behavior. Preserve evidence and secrets securely, and use a lab or non-production environment for any action that could alter or disrupt the target.
+Network authorization, VLAN isolation, test clients, controlled relay host, and rollback coordination.
 
 ## Observable behavior and defensive considerations
 
-Potentially observable activity includes RPC, SMB, DNS, NTP, EFS, DFS, VSS, IPv6, or authentication telemetry. Exact logs vary by Windows, AD, Entra, and tool configuration. Correlate collection windows, source accounts, host names, target objects, and timestamps with SIEM, directory, CA, authentication, endpoint, and network telemetry. Excessive collection or listener activity can itself create availability or detection noise.
+Router advertisements, DHCPv6, DNS/WPAD traffic, IPv6 assignment, authentication, EDR, and network IDS.
 
 ## Limitations
 
-Limitations include a callback or protocol response does not prove relay acceptance or elevated access. The tool does not prove impact by itself, cannot replace effective-ACL or trust-boundary review, and may have false positives or false negatives. Validate findings against current vendor behavior and current project documentation.
+Behavior varies across clients and operating systems. DNS configuration alone does not prove credential or privilege compromise and can disrupt hosts.
 
 ## References
 
 - [Project repository: mitm6](https://github.com/dirkjanm/mitm6)
-- [MITRE ATT&CK](https://attack.mitre.org/)
-- [Microsoft Learn: Windows Server security and identity documentation](https://learn.microsoft.com/windows-server/identity/)
+- [Microsoft Open Specifications](https://learn.microsoft.com/openspecs/windows_protocols/)

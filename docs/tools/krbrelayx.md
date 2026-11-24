@@ -8,32 +8,29 @@ category: "Kerberos"
 
 ## Overview
 
-**krbrelayx** is a kerberos tool. Kerberos relay toolkit and unconstrained-delegation abuse.
-
-Dual-use: krbrelayx should be used only within an approved scope. This page describes the project at a functional level and does not assert that an individual finding is exploitable.
+krbrelayx is a Python toolkit for Kerberos relay and delegation research.
 
 ## High-level capabilities
 
-It implements or analyzes low-level Kerberos authentication and ticket behavior. Its normal use is controlled Kerberos interoperability, incident-response, or lab validation. Exact feature coverage and supported protocols depend on the project release and target platform.
+Kerberos listeners, relay helpers, and support for studying unconstrained or constrained delegation relationships.
 
 ## Safe authorized assessment and defensive use
 
-Use krbrelayx for controlled Kerberos interoperability, incident-response, or lab validation where organizational rules of engagement expressly permit it. Prefer read-only collection and recorded scope; isolate any test that changes objects, creates authentication events, modifies policy, acquires credentials or certificates, or reaches a callback or listener host. Review source code and community builds as untrusted software before deployment.
+Use only in an isolated lab to test relay, channel, SPN, and delegation boundaries with test identities.
 
 ## Prerequisites and operating boundaries
 
-A valid authorized account or test identity, network reachability to the intended systems, and permissions matching the planned read or validation operation are required. Operating-system version, domain or tenant configuration, endpoint controls, signing or channel binding, licensing, and protocol support can limit behavior. Preserve evidence and secrets securely, and use a lab or non-production environment for any action that could alter or disrupt the target.
+Written authorization, controlled relay endpoints, reachable KDC/services, compatible delegation and SPN state, and rollback.
 
 ## Observable behavior and defensive considerations
 
-Potentially observable activity includes KDC, TGS/AS, SPN, ticket-cache, service logon, and endpoint telemetry. Exact logs vary by Windows, AD, Entra, and tool configuration. Correlate collection windows, source accounts, host names, target objects, and timestamps with SIEM, directory, CA, authentication, endpoint, and network telemetry. Excessive collection or listener activity can itself create availability or detection noise.
+KDC AS/TGS and service-logon events, SMB/HTTP/LDAP authentication, DC/endpoint logs, and listener traffic.
 
 ## Limitations
 
-Limitations include KDC policy, ticket type, clocks, SPNs, and modern PAC or encryption controls affect outcomes. The tool does not prove impact by itself, cannot replace effective-ACL or trust-boundary review, and may have false positives or false negatives. Validate findings against current vendor behavior and current project documentation.
+Success depends on protocol flags, channel protection, encryption, SPNs, account state, and service configuration.
 
 ## References
 
 - [Project repository: krbrelayx](https://github.com/dirkjanm/krbrelayx)
-- [MITRE ATT&CK](https://attack.mitre.org/)
-- [Microsoft Learn: Windows Server security and identity documentation](https://learn.microsoft.com/windows-server/identity/)
+- [Microsoft Learn: Kerberos authentication](https://learn.microsoft.com/windows-server/security/kerberos/kerberos-authentication-overview)

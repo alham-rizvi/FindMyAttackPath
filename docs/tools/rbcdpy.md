@@ -8,32 +8,29 @@ category: "Privilege Escalation"
 
 ## Overview
 
-**rbcd-attack** is a privilege escalation tool. End-to-end RBCD exploitation helper script.
-
-Dual-use: rbcd-attack should be used only within an approved scope. This page describes the project at a functional level and does not assert that an individual finding is exploitable.
+rbcd-attack is a Python resource-based constrained delegation research script.
 
 ## High-level capabilities
 
-It can manipulate security-sensitive objects or delegation relationships. Its normal use is authorized validation of write rights and privilege boundaries in a lab or controlled engagement. Exact feature coverage and supported protocols depend on the project release and target platform.
+Inspects and, with rights, modifies delegation attributes on test service resources and examines the resulting RBCD relationship.
 
 ## Safe authorized assessment and defensive use
 
-Use rbcd-attack for authorized validation of write rights and privilege boundaries in a lab or controlled engagement where organizational rules of engagement expressly permit it. Prefer read-only collection and recorded scope; isolate any test that changes objects, creates authentication events, modifies policy, acquires credentials or certificates, or reaches a callback or listener host. Review source code and community builds as untrusted software before deployment.
+Use only in an isolated lab or authorized access-control assessment.
 
 ## Prerequisites and operating boundaries
 
-A valid authorized account or test identity, network reachability to the intended systems, and permissions matching the planned read or validation operation are required. Operating-system version, domain or tenant configuration, endpoint controls, signing or channel binding, licensing, and protocol support can limit behavior. Preserve evidence and secrets securely, and use a lab or non-production environment for any action that could alter or disrupt the target.
+Rights to modify test objects, domain connectivity, test services and identities, and rollback.
 
 ## Observable behavior and defensive considerations
 
-Potentially observable activity includes directory writes, ACL changes, authentication, and endpoint policy or service activity. Exact logs vary by Windows, AD, Entra, and tool configuration. Correlate collection windows, source accounts, host names, target objects, and timestamps with SIEM, directory, CA, authentication, endpoint, and network telemetry. Excessive collection or listener activity can itself create availability or detection noise.
+LDAP ACL/attribute writes, DC audit/replication, KDC tickets, service logons, and endpoint logs.
 
 ## Limitations
 
-Limitations include object rights and replication do not prove that a full privilege path is usable. The tool does not prove impact by itself, cannot replace effective-ACL or trust-boundary review, and may have false positives or false negatives. Validate findings against current vendor behavior and current project documentation.
+Usability depends on SPNs, account state, protocol support, and KDC policy. Configuration alone does not prove end-to-end access.
 
 ## References
 
 - [Project repository: rbcd-attack](https://github.com/tothi/rbcd-attack)
-- [MITRE ATT&CK](https://attack.mitre.org/)
-- [Microsoft Learn: Windows Server security and identity documentation](https://learn.microsoft.com/windows-server/identity/)
+- [Microsoft Learn: Kerberos authentication](https://learn.microsoft.com/windows-server/security/kerberos/kerberos-authentication-overview)

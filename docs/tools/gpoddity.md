@@ -8,32 +8,29 @@ category: "Privilege Escalation"
 
 ## Overview
 
-**GPOddity** is a privilege escalation tool. GPO abuse toolkit for pushing scheduled tasks via a writable policy.
-
-Dual-use: GPOddity should be used only within an approved scope. This page describes the project at a functional level and does not assert that an individual finding is exploitable.
+GPOddity is a proof-of-concept for GPO and authentication-abuse research.
 
 ## High-level capabilities
 
-It can manipulate security-sensitive objects or delegation relationships. Its normal use is authorized validation of write rights and privilege boundaries in a lab or controlled engagement. Exact feature coverage and supported protocols depend on the project release and target platform.
+Explores writable GPO paths and how policy or authentication behavior can be induced in a lab domain.
 
 ## Safe authorized assessment and defensive use
 
-Use GPOddity for authorized validation of write rights and privilege boundaries in a lab or controlled engagement where organizational rules of engagement expressly permit it. Prefer read-only collection and recorded scope; isolate any test that changes objects, creates authentication events, modifies policy, acquires credentials or certificates, or reaches a callback or listener host. Review source code and community builds as untrusted software before deployment.
+Use only to validate GPO ACLs and detection in an isolated domain with an approved rollback.
 
 ## Prerequisites and operating boundaries
 
-A valid authorized account or test identity, network reachability to the intended systems, and permissions matching the planned read or validation operation are required. Operating-system version, domain or tenant configuration, endpoint controls, signing or channel binding, licensing, and protocol support can limit behavior. Preserve evidence and secrets securely, and use a lab or non-production environment for any action that could alter or disrupt the target.
+Test GPO/SYSVOL write rights, lab endpoints, and controlled policy replication and refresh.
 
 ## Observable behavior and defensive considerations
 
-Potentially observable activity includes directory writes, ACL changes, authentication, and endpoint policy or service activity. Exact logs vary by Windows, AD, Entra, and tool configuration. Correlate collection windows, source accounts, host names, target objects, and timestamps with SIEM, directory, CA, authentication, endpoint, and network telemetry. Excessive collection or listener activity can itself create availability or detection noise.
+GPO/SYSVOL writes, LDAP audit, policy replication and client refresh, service or task creation, and EDR.
 
 ## Limitations
 
-Limitations include object rights and replication do not prove that a full privilege path is usable. The tool does not prove impact by itself, cannot replace effective-ACL or trust-boundary review, and may have false positives or false negatives. Validate findings against current vendor behavior and current project documentation.
+Refresh, precedence, membership, OS context, and endpoint policy affect outcomes. A writable GPO does not reach every host.
 
 ## References
 
-- [Project repository: GPOddity](https://github.com/Mr-Un1k0d3r/GPOddity)
-- [MITRE ATT&CK](https://attack.mitre.org/)
-- [Microsoft Learn: Windows Server security and identity documentation](https://learn.microsoft.com/windows-server/identity/)
+- [Project repository: GPOddity](https://github.com/synacktiv/GPOddity)
+- [Microsoft Learn: Group Policy](https://learn.microsoft.com/windows-server/identity/ad-ds/manage/understand-security-groups)
