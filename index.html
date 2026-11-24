@@ -688,7 +688,6 @@ graphNodes.forEach(node=>{
   option.value = `node:${node.id}`; option.textContent = node.label;
   colorTarget.appendChild(option);
 });
-backgroundColorInput.value = colorSettings.background || defaultPalette.phase;
 backgroundColorInput.value = colorSettings.background || rootColors.getPropertyValue("--bg").trim();
 colorTarget.addEventListener("change", refreshNodeColors);
 nodeColorInput.addEventListener("input", ()=>{
@@ -727,6 +726,82 @@ document.addEventListener("click", ev=>{
     toolboxPanel.classList.remove("open");
     toolboxBtn.setAttribute("aria-expanded", "false");
   }
+});
+function selectedGraphData(){
+  const selectedPhases = new Set([...phaseChoices.querySelectorAll("input:checked")].map(input=>input.value));
+  const selectedIds = new Set(graphNodes.filter(node=>node.type==="phase" && selectedPhases.has(node.id)).map(node=>node.id));
+  const techniques = TECH.filter(technique=>selectedPhases.has(technique.phase));
+  techniques.forEach(technique=>selectedIds.add(technique.id));
+  graphLinks.forEach(link=>{
+    const source = typeof link.source === "string" ? link.source : link.source.id;
+    const target = typeof link.target === "string" ? link.target : link.target.id;
+    if(selectedIds.has(source) && ["tool","cve"].includes(nodeIndex.get(target)?.type)) selectedIds.add(target);
+  });
+  const selectedNodes = graphNodes.filter(node=>selectedIds.has(node.id));
+  const selectedLinks = graphLinks.filter(link=>{
+    const source = typeof link.source === "string" ? link.source : link.source.id;
+    const target = typeof link.target === "string" ? link.target : link.target.id;
+    return selectedIds.has(source) && selectedIds.has(target);
+  });
+  return {selectedPhases, selectedNodes, selectedLinks};
+}
+function csvCell(value){ return `"${String(value ?? "").replace(/"/g,'""')}"`; }
+function selectedSvg(nodes, selectedLinks){
+  if(!nodes.length) return "";
+  const pad = 70;
+  const minX = Math.min(...nodes.map(node=>Number.isFinite(node.x) ? node.x : 0));
+  const minY = Math.min(...nodes.map(node=>Number.isFinite(node.y) ? node.y : 0));
+  const maxX = Math.max(...nodes.map(node=>(Number.isFinite(node.x) ? node.x : 0) + node.label.length * 7 + 35));
+  const maxY = Math.max(...nodes.map(node=>(Number.isFinite(node.y) ? node.y : 0) + 35));
+  const width = Math.max(500, maxX-minX+pad*2);
+  const height = Math.max(300, maxY-minY+pad*2);
+  const nodeId = node=> typeof node === "string" ? node : node.id;
+  const lines = selectedLinks.map(link=>{
+    const source = nodeIndex.get(nodeId(link.source));
+    const target = nodeIndex.get(nodeId(link.target));
+    if(!source || !target) return "";
+    return `<line x1="${source.x-minX+pad}" y1="${source.y-minY+pad}" x2="${target.x-minX+pad}" y2="${target.y-minY+pad}" stroke="${rootColors.getPropertyValue("--edge").trim()}" stroke-width="1.5"/>`;
+  }).join("");
+  const marks = nodes.map(node=>{
+    const x = (Number.isFinite(node.x) ? node.x : 0)-minX+pad;
+    const y = (Number.isFinite(node.y) ? node.y : 0)-minY+pad;
+    const stroke = node.tag==="new" ? (colorSettings.types.cve || defaultPalette.cve) : rootColors.getPropertyValue("--bg").trim();
+    return `<g data-node-id="${escapeHtml(node.id)}"><circle cx="${x}" cy="${y}" r="${radius(node)}" fill="${nodeColor(node)}" stroke="${stroke}" stroke-width="2"/><text x="${x+radius(node)+7}" y="${y+4}" fill="${rootColors.getPropertyValue("--fg").trim()}" font-family="Inter, sans-serif" font-size="13">${escapeHtml(node.label)}</text></g>`;
+  }).join("");
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" role="img"><rect width="100%" height="100%" fill="${rootColors.getPropertyValue("--bg").trim()}"/><g>${lines}${marks}</g><text x="${width-14}" y="${height-12}" text-anchor="end" fill="${rootColors.getPropertyValue("--muted").trim()}" font-family="Inter, sans-serif" font-size="9">Created by Alham Rizvi</text></svg>`;
+}
+document.getElementById("downloadSelection").addEventListener("click", ()=>{
+  const {selectedPhases, selectedNodes, selectedLinks} = selectedGraphData();
+  const note = document.querySelector("#toolboxPanel .toolbox-note");
+  if(!selectedPhases.size){
+    note.textContent = "Select at least one phase before exporting.";
+    return;
+  }
+  const format = document.getElementById("exportFormat").value;
+  const filename = `attack-path-${[...selectedPhases].join("-")}`;
+  if(format === "json"){
+    const data = {
+      phases:[...selectedPhases],
+      background:colorSettings.background || rootColors.getPropertyValue("--bg").trim(),
+      colors:{types:palette, nodes:colorSettings.nodes},
+      nodes:selectedNodes.map(node=>({id:node.id,type:node.type,label:node.label,phase:node.data.phase||null,data:node.data})),
+      links:selectedLinks.map(link=>({source:typeof link.source==="string"?link.source:link.source.id,
+        target:typeof link.target==="string"?link.target:link.target.id,kind:link.kind}))
+    };
+    saveDiagramFile(`${filename}.json`,"application/json;charset=utf-8",JSON.stringify(data,null,2));
+  }else if(format === "csv"){
+    const rows=[["id","type","label","phase","color"],...selectedNodes.map(node=>
+      [node.id,node.type,node.label,node.data.phase||"",nodeColor(node)])];
+    saveDiagramFile(`${filename}.csv`,"text/csv;charset=utf-8",rows.map(row=>row.map(csvCell).join(",")).join("\r\n"));
+  }else if(format === "css"){
+    const vars=Object.entries(palette).map(([type,value])=>`  --${type}: ${value};`).join("\n");
+    const rules=selectedNodes.map(node=>`[data-node-id="${node.id.replace(/["\\]/g,"\\$&")}"] circle { fill: ${nodeColor(node)}; }`).join("\n");
+    saveDiagramFile(`${filename}.css`,"text/css;charset=utf-8",`:root {\n${vars}\n  --bg: ${colorSettings.background || rootColors.getPropertyValue("--bg").trim()};\n}\n${rules}\n`);
+  }else{
+    const svgContent=selectedSvg(selectedNodes,selectedLinks);
+    if(svgContent) saveDiagramFile(`${filename}.svg`,"image/svg+xml;charset=utf-8",svgContent);
+  }
+  note.textContent = `Exported ${selectedNodes.length} nodes from ${selectedPhases.size} selected phase${selectedPhases.size===1?"":"s"}.`;
 });
 
 const sim = d3.forceSimulation(graphNodes)
@@ -873,7 +948,7 @@ function extraSectionsHtml(extra){
 function showDetail(d){
   const renderToken = ++detailRenderToken;
   const t = d.data;
-  let html = `<button class="closeBtn" id="closeDetail">✕</button>`;
+  let html = `<button class="closeBtn" id="closeDetail">✕</button><div class="detail-toolbar"><button id="expandDetail" type="button" aria-expanded="false">View full size</button></div>`;
   html += `<h3>${escapeHtml(d.label)}${d.tag==='new'?'<span class="tag-new">new</span>':''}</h3><div class="type-badge">${d.type}</div>`;
   if(d.type==="phase"){
     html += `<div class="field"><label>What happens here</label><p>${mdInline(t.desc)}</p></div>`;
@@ -903,7 +978,14 @@ function showDetail(d){
   detailEl.innerHTML = html;
   detailEl.classList.add("open");
   detailEl.querySelectorAll(".tool-pill").forEach(p=> p.addEventListener("click", ()=> focusNode(p.dataset.jump)));
-  document.getElementById("closeDetail").addEventListener("click", ()=>{ detailEl.classList.remove("open"); clearHighlight(); });
+  document.getElementById("closeDetail").addEventListener("click", ()=>{
+    detailEl.classList.remove("open","detail-expanded"); clearHighlight();
+  });
+  document.getElementById("expandDetail").addEventListener("click", event=>{
+    const expanded = detailEl.classList.toggle("detail-expanded");
+    event.currentTarget.textContent = expanded ? "Exit full size" : "View full size";
+    event.currentTarget.setAttribute("aria-expanded", expanded);
+  });
   if(window.mermaid && detailEl.querySelector(".mermaid")){
     try{
       mermaid.initialize({startOnLoad:false, securityLevel:"strict",
@@ -918,7 +1000,7 @@ function showDetail(d){
   }
   highlightWiresFor(d.id);
 }
-svg.on("click", ()=>{ detailEl.classList.remove("open"); clearHighlight(); });
+svg.on("click", ()=>{ detailEl.classList.remove("open","detail-expanded"); clearHighlight(); });
 
 /* ---------- menu (search, legend, filters, actions) ---------- */
 const menuBtn = document.getElementById("menuBtn");
@@ -996,11 +1078,104 @@ TOOLS.forEach(t=>{
   tr.innerHTML = `<td class="repo"><a href="https://github.com/${t.repo}" target="_blank" rel="noopener">${escapeHtml(t.repo)}</a></td><td><span class="cat-pill">${escapeHtml(t.cat)}</span></td><td>${mdInline(t.purpose)}</td>`;
   tbody.appendChild(tr);
 });
+const referenceBody = document.querySelector("#referenceTable tbody");
+const records = [
+  ...PHASES.map(item=>({label:item.label, extra:item.extra})),
+  ...TECH.map(item=>({label:item.label, extra:item.extra})),
+  ...TOOLS.map(item=>({label:item.repo, extra:item.extra})),
+  ...CVES.map(item=>({label:item.label, extra:item.extra, source:item.source}))
+];
+const seenReferences = new Set();
+records.forEach(record=>{
+  const found = [];
+  (record.extra||[]).forEach(section=>{
+    const matches = section.text.matchAll(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g);
+    for(const match of matches) found.push({title:match[1], url:match[2]});
+  });
+  if(record.source && /^https?:\/\//i.test(record.source)) found.push({title:"Source",url:record.source});
+  found.forEach(reference=>{
+    const key = `${record.label}\n${reference.title}\n${reference.url}`;
+    if(seenReferences.has(key)) return;
+    seenReferences.add(key);
+    const row = document.createElement("tr");
+    row.dataset.search = `${record.label} ${reference.title} ${reference.url}`.toLowerCase();
+    const nameCell = document.createElement("td");
+    nameCell.textContent = reference.title;
+    const topicCell = document.createElement("td");
+    topicCell.textContent = record.label;
+    const sourceCell = document.createElement("td");
+    const anchor = document.createElement("a");
+    anchor.href = reference.url; anchor.textContent = reference.url;
+    anchor.target = "_blank"; anchor.rel = "noopener";
+    sourceCell.appendChild(anchor);
+    row.append(nameCell, topicCell, sourceCell);
+    referenceBody.appendChild(row);
+  });
+});
+let commitsLoaded = false;
+async function loadRecentCommits(){
+  if(commitsLoaded) return;
+  const list = document.getElementById("commitList");
+  list.replaceChildren();
+  const status = document.createElement("p");
+  status.className = "resource-note";
+  status.textContent = "Loading recent commits…";
+  list.appendChild(status);
+  try{
+    const response = await fetch("https://api.github.com/repos/alham-rizvi/FindMyAttackPath/commits?per_page=8",
+      {headers:{Accept:"application/vnd.github+json"}});
+    if(!response.ok) throw new Error(`GitHub returned ${response.status}`);
+    const commits = await response.json();
+    list.replaceChildren();
+    commits.forEach(commit=>{
+      const item = document.createElement("article");
+      item.className = "commit-item";
+      const message = document.createElement("p");
+      const link = document.createElement("a");
+      link.href = commit.html_url; link.target = "_blank"; link.rel = "noopener";
+      link.textContent = (commit.commit.message.split("\n")[0] || "Commit").slice(0,160);
+      message.appendChild(link);
+      const details = document.createElement("small");
+      const date = new Date(commit.commit.author.date);
+      details.textContent = `${commit.sha.slice(0,7)} · ${date.toLocaleDateString()}`;
+      item.append(message, details);
+      list.appendChild(item);
+    });
+    if(!commits.length) list.textContent = "No recent commits were returned.";
+    commitsLoaded = true;
+  }catch(error){
+    console.warn("Recent commits could not be loaded", error);
+    list.replaceChildren();
+    const message = document.createElement("p");
+    message.className = "resource-note";
+    message.textContent = `Recent commits could not be loaded (${error.message}).`;
+    const link = document.createElement("a");
+    link.href = "https://github.com/alham-rizvi/FindMyAttackPath/commits/main";
+    link.target = "_blank"; link.rel = "noopener"; link.textContent = "View commits on GitHub";
+    list.append(message, link);
+  }
+}
+document.querySelectorAll(".resource-tab").forEach(tab=>{
+  tab.addEventListener("click", ()=>{
+    document.querySelectorAll(".resource-tab").forEach(item=>{
+      const active = item===tab;
+      item.classList.toggle("active", active);
+      item.setAttribute("aria-selected", active);
+    });
+    document.querySelectorAll(".resource-panel").forEach(panel=>
+      panel.classList.toggle("active", panel.id===tab.dataset.panel));
+    const search = document.getElementById("tableSearch");
+    search.hidden = tab.dataset.panel==="commitsPanel";
+    search.placeholder = tab.dataset.panel==="referencesPanel"
+      ? "Filter by reference, topic or URL…" : "Filter by name, category or purpose…";
+    if(tab.dataset.panel==="commitsPanel") loadRecentCommits();
+  });
+});
 document.getElementById("tableSearch").addEventListener("input", (e)=>{
   const q = e.target.value.trim().toLowerCase();
-  document.querySelectorAll("#resTable tbody tr").forEach(tr=>{
-    tr.hidden = q && !tr.dataset.search.includes(q);
-  });
+  const table = document.querySelector(".resource-tab.active").dataset.panel==="referencesPanel"
+    ? "#referenceTable tbody tr" : "#resTable tbody tr";
+  document.querySelectorAll(table).forEach(tr=>{ tr.hidden = Boolean(q) && !tr.dataset.search.includes(q); });
 });
 
 } /* end buildApp */
