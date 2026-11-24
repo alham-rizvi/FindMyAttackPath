@@ -49,7 +49,7 @@ first paragraph and the Prerequisite heading is just rendered as-is.
 You can embed a Mermaid diagram anywhere in the body:
 
     ```mermaid
-    graph LR
+    graph TD
       A[Foothold] --> B[Coerce auth] --> C[Relay to ADCS]
     ```
 

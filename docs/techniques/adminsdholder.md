@@ -19,7 +19,7 @@ Active Directory uses the AdminSDHolder object as a security-descriptor template
 ## Conceptual path
 
 ```mermaid
-flowchart LR
+flowchart TD
   A[AdminSDHolder ACL differs from approved baseline]
   A --> B[SDProp processes protected objects]
   B --> C[Template permissions propagate to protected accounts]

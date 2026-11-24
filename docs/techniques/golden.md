@@ -16,6 +16,35 @@ A golden ticket is a TGT protected using KRBTGT key material or an equivalent KD
 
 > **Authorized assessment only:** This guide describes controlled, explicitly authorized assessment and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
 
+## Beginner-friendly walkthrough
+
+**In plain terms:** every Kerberos ticket (TGT) in the domain is signed with the secret key of one special account, `krbtgt`. If that key is ever recovered (usually via [DCSync](dcsync.md)), an attacker can sign their own ticket from scratch, claiming to be anyone — a brand-new "golden" ticket that the domain controller will accept as genuine, because it checks the same signature it always checks.
+
+**Objects abused / affected**
+
+| Object | Normal purpose | What this technique touches |
+| --- | --- | --- |
+| `krbtgt` account key | Signs every TGT the domain issues | Used to forge a TGT instead of receiving one from the KDC |
+| Forged TGT | Normally proves "the KDC vouches for this identity" | Crafted directly, claiming any username/SID/group membership desired |
+| SID history / group SIDs embedded in the ticket | Represent group membership for authorization | Can be set to arbitrary values (e.g. Domain Admins) in the forged ticket |
+
+```mermaid
+flowchart TD
+  A["krbtgt secret recovered (via DCSync)"] --> B["Craft a TGT offline: choose username, SID, group list"]
+  B --> C["Sign the forged TGT with the krbtgt key"]
+  C --> D["Present the ticket to any service in the domain"]
+  D --> E["Service trusts the signature → grants access as the claimed identity"]
+```
+
+**Stages, and which tool typically covers each one**
+
+1. **Prerequisite** — the `krbtgt` key must already be known; this is the direct payoff of a successful [DCSync](dcsync.md).
+2. **Forge the ticket** — `Mimikatz`'s golden-ticket functionality or `Rubeus`'s equivalent builds a TGT offline using the recovered key and chosen identity/group values.
+3. **Use it** — the forged ticket is loaded into a session and used like any normal TGT against any Kerberos-speaking service in the domain.
+
+Because this bypasses the KDC entirely for issuance, the standard defense is not "detect the ticket" but "rotate the krbtgt key (twice, with the replication interval in between) after any suspected compromise," which invalidates every previously forged ticket.
+
+
 ## Relevant objects and normal purpose
 
 KRBTGT account and key versions, KDC/DC, domain SID, TGT/PAC, ticket lifetime, clocks, account/SID fields and domain/forest scope are decisive.

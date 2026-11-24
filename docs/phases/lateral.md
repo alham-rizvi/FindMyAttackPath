@@ -8,7 +8,7 @@ Use an identity or authentication artifact from one system to access another. Co
 ## Typical progression
 
 ```mermaid
-flowchart LR
+flowchart TD
   A[Identity or ticket available] --> B[Target reachable over an allowed protocol]
   B --> C{Identity authorized for the requested action?}
   C -->|No| D[Access denied or limited]

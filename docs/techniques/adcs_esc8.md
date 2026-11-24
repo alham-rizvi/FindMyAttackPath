@@ -16,6 +16,46 @@ ESC8 describes NTLM authentication relayed to an enterprise CA HTTP enrollment e
 
 > **Authorized assessment only:** This guide is for controlled labs and explicitly authorized reviews. It provides no relay commands, coercion procedures or credential-reuse instructions.
 
+## Beginner-friendly walkthrough
+
+**In plain terms:** AD CS often exposes a web page (`certsrv`) for requesting certificates over
+HTTP, and that web enrollment endpoint typically only supports NTLM authentication — which is
+relayable. ESC8 coerces a victim machine (classically a domain controller) into authenticating
+to an attacker-controlled listener, then relays that captured NTLM authentication straight to
+the CA's web enrollment page, requesting a certificate *as the victim machine* without ever
+knowing its password.
+
+**Objects abused / affected**
+
+| Object | Normal purpose | What ESC8 touches |
+| --- | --- | --- |
+| AD CS web enrollment endpoint (`certsrv`) | Lets users/machines request certificates over HTTP | Accepts NTLM authentication, which can be relayed instead of being supplied by the real owner |
+| Coerced victim identity (often a DC's machine account) | Normally only authenticates to legitimate services | Tricked into authenticating to an attacker-controlled relay listener |
+| Issued client-auth certificate | Represents the victim's identity | Obtained by the attacker via the relayed session, not the victim |
+
+```mermaid
+flowchart TD
+  A["Attacker stands up an NTLM relay listener"] --> B["Coerce a victim machine (e.g. a DC) to authenticate to it"]
+  B --> C["Relay the captured NTLM authentication to the CA web enrollment endpoint"]
+  C --> D["CA issues a certificate representing the victim's identity"]
+  D --> E["Authenticate as the victim (e.g. a DC) via PKINIT"]
+```
+
+**Stages, and which tool typically covers each one**
+
+1. **Coerce authentication** — this reuses the same coercion techniques as [unconstrained delegation abuse](unconstrained_deleg.md) (e.g. `PetitPotam`-style primitives) to make a victim machine authenticate somewhere the attacker controls.
+2. **Relay to AD CS instead of capturing** — `Certipy`'s relay mode and `Impacket`'s relay tooling both support targeting the AD CS HTTP enrollment endpoint specifically as the relay destination.
+3. **Why this is a top-tier finding** — if the coerced identity is a domain controller, the resulting certificate effectively grants domain-controller-equivalent authentication.
+
+The direct fix is requiring Extended Protection for Authentication (EPA) and HTTPS with channel binding on the web enrollment endpoint — both close the relay, independent of any one template's configuration.
+
+**Where exact command syntax lives:** this repo deliberately keeps technique pages
+command-free (see `CONTRIBUTING.md`). For copy-pasteable enumeration/exploitation syntax for
+this exact ESC, the authoritative public sources are the [Certipy Wiki](https://github.com/ly4k/Certipy/wiki)
+(the tool that implements detection/abuse for ESC1–ESC17), [HackTricks' AD CS domain escalation page](https://book.hacktricks.xyz/windows-hardening/active-directory-methodology/ad-certificates/domain-escalation),
+and the [SpecterOps "Certificates and Pwnage and Patches, Oh My!" post](https://specterops.io/blog/2022/11/09/certificates-and-pwnage-and-patches-oh-my) that introduced several later ESCs.
+
+
 ## AD CS and IIS objects
 
 The enterprise CA, IIS web-enrollment virtual directories, HTTP/RPC enrollment services, IIS authentication settings, NTLM/EPA/channel binding, DNS/SPN identity, published `pKICertificateTemplate` objects, enrollment ACL, EKU and CA issuance policy form the relevant chain.
@@ -34,7 +74,7 @@ Fix target: Disable unused endpoint; otherwise enforce supported protections and
 ```
 
 ```mermaid
-flowchart LR
+flowchart TD
   A[Authentication reaches HTTP enrollment] --> B[IIS authenticates principal]
   B --> C[Template policy permits request]
   C --> D[CA issues certificate]

@@ -16,6 +16,48 @@ AD object ACLs can grant an identity rights to alter another object or its authe
 
 > **Authorized assessment only:** This guide describes controlled, explicitly authorized assessment and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
 
+## Beginner-friendly walkthrough
+
+**In plain terms:** Active Directory objects each have a permission list (an ACL), just like a file or folder. Most people only check "is this account a member of a privileged group?" — but a non-privileged account that merely has *write* rights over a privileged user, group, or computer object can often get to the same place indirectly: change that object's password, add itself to a group, or alter its authentication material.
+
+**Objects abused / affected**
+
+| Right | Normal purpose | How it's abused |
+| --- | --- | --- |
+| `GenericAll` | Full control over the object | Can reset the target's password, add it to groups, edit any attribute |
+| `GenericWrite` | Write most attributes | Can write a new SPN (→ targeted Kerberoast) or a Shadow Credential |
+| `WriteDACL` | Modify the object's own permission list | Can grant itself `GenericAll` afterward, even without having it directly |
+| `ForceChangePassword` | Reset the target's password without knowing the old one | Direct account takeover |
+| `WriteOwner` | Change who owns the object | New owner can then grant itself further rights |
+
+```mermaid
+flowchart TD
+  A["Recon finds: low-priv account has a write-type ACE on a privileged object"] --> B{"Which right?"}
+  B -->|GenericAll / ForceChangePassword| C["Reset the target account's password directly"]
+  B -->|GenericWrite| D["Add an SPN or Shadow Credential to the target"]
+  B -->|WriteDACL / WriteOwner| E["Grant self further rights on the object first"]
+  C --> F["Authenticate as the target identity"]
+  D --> F
+  E --> C
+```
+
+**Stages, and which tool typically covers each one**
+
+1. **Find the edge** — this is the direct payoff of [LDAP enumeration](ldap_enum.md); `PowerView`'s ACL-focused cmdlets and `ADCollector` are built specifically to surface these relationships.
+2. **Exercise the right** — `BloodyAD` is a cross-platform tool purpose-built for acting on exactly these AD rights (password resets, group writes, attribute writes) once BloodHound/PowerView has identified the edge.
+3. **Fallback/scripted path** — `Impacket`'s relevant helper scripts can perform the same password-reset/attribute-write operations from Linux.
+
+Reference shape of the finding (not a live query result):
+
+```text
+Principal: CORP\helpdesk-svc
+Target:    CN=Domain Admins,CN=Users,DC=corp,DC=local
+Right:     WriteDACL
+```
+
+A help-desk service account with `WriteDACL` over Domain Admins is a textbook example of a "quiet" privilege-escalation path that group-membership review alone would never catch.
+
+
 ## Relevant objects and normal purpose
 
 Security descriptors contain owners and DACL/SACL ACEs. Relevant rights include WriteProperty, GenericWrite, GenericAll, WriteDacl, WriteOwner, and group/attribute-specific write. Object type, inheritance, ACE type, group nesting, and target state determine whether a right is usable.

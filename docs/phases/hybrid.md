@@ -8,7 +8,7 @@ Follow an identity relationship beyond one domain: across a forest trust, from A
 ## Typical progression
 
 ```mermaid
-flowchart LR
+flowchart TD
   A[On-prem identity, trust, or managed endpoint] --> B[Identify linked trust or sync boundary]
   B --> C[Assess credentials, tokens, and effective cloud roles]
   C --> D{Additional authorization and policy checks}

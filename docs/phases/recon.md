@@ -14,7 +14,7 @@ Build a picture of the directory and its relationships before attempting to chan
 ## Typical progression
 
 ```mermaid
-flowchart LR
+flowchart TD
   A[Authorized foothold or account] --> B[Directory and host inventory]
   B --> C[Map privileges, trusts, sessions, and services]
   C --> D[Validate candidate paths]
