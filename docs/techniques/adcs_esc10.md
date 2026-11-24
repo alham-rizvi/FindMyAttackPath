@@ -10,21 +10,26 @@ mitre: "T1649"
 tag: null
 ---
 
+
 # AD CS ESC10 (weak certificate mapping)
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Affected object / attribute
+### Affected object / attribute
 **DC registry `StrongCertificateBindingEnforcement = 0`**.
 
-## Detection
+### Concept (deep)
+**Weak certificate mapping** on the DC. Same UPN-spoof chain as ESC9, **template-independent**. The root cause is the registry value, not the template.
+
+### Commands
+```bash
+# ── Check the registry value ─────────────────────────────────────────
+reg query "HKLM\SYSTEM\CurrentControlSet\Services\Kdc" /v StrongCertificateBindingEnforcement
+
+# ── Fix: set to 2 (full enforcement) ─────────────────────────────────
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\Kdc" \
+  /v StrongCertificateBindingEnforcement /t REG_DWORD /d 2 /f
+```
+
+### Detection
 DC registry **4657**; **4768** with mismatched certificate mapping.
 
 ---
-
-## References
-
-- [Microsoft: KB5014754 certificate-based authentication changes](https://support.microsoft.com/kb/5014754)
-- [MITRE ATT&CK: T1649](https://attack.mitre.org/techniques/T1649/)

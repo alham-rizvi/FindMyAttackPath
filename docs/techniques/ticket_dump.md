@@ -10,23 +10,26 @@ mitre: "T1558"
 tag: null
 ---
 
+
 # Kerberos ticket extraction
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Affected object / attribute
+### Affected object / attribute
 **Kerberos tickets** in LSASS memory.
 
-## Detection
+### Concept (deep)
+Dump tickets from memory for the current session or all sessions; harvest TGTs/TGSs for PTT.
+
+### Commands
+```bash
+# ── Rubeus triage/dump ──────────────────────────────────────────────
+Rubeus.exe triage
+Rubeus.exe dump /nowrap
+
+# ── Linux ccache ────────────────────────────────────────────────────
+ls /tmp/krb5cc_*
+```
+
+### Detection
 **Sysmon 10** on LSASS; **4768/4769** anomalies; LSA protection.
 
 ---
-
-## References
-
-- [Microsoft: Kerberos authentication overview](https://learn.microsoft.com/windows-server/security/kerberos/kerberos-authentication-overview)
-- [Microsoft: Credential protection](https://learn.microsoft.com/windows-server/security/credentials-protection-and-management/credential-protection-and-management)
-- [Microsoft: Credential Guard](https://learn.microsoft.com/windows/security/identity-protection/credential-guard/credential-guard)
-- [MITRE ATT&CK: T1558](https://attack.mitre.org/techniques/T1558/)

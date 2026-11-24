@@ -6,15 +6,7 @@ repo: "p0dalirius/Coercer"
 category: "Coercion"
 ---
 
+
 # Coercer
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-Tool reference for authorized Active Directory assessment; consult the upstream project documentation for supported features, scope controls, and safe configuration.
-
-## References
-
-- [Project repository: Coercer](https://github.com/p0dalirius/Coercer)
-- [Microsoft Open Specifications](https://learn.microsoft.com/openspecs/windows_protocols/)
+Multi-protocol coercion. `coercer coerce -u u -p p -t <victim> -l <listener>`. Use before relay; logs heavily.

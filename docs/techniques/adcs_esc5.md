@@ -10,21 +10,22 @@ mitre: "T1649"
 tag: null
 ---
 
+
 # AD CS ESC5 (PKI object permissions)
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Affected object / attribute
+### Affected object / attribute
 **PKI objects**: CA object, OID containers, **`NTAuthCertificates`**, and the `CN=Public Key Services` subtree.
 
-## Detection
+### Concept (deep)
+Weak ACLs on PKI objects allow the attacker to **alter trust** or enrol as anyone. The discipline is the same as ESC4: **modify → exploit → restore**.
+
+### Commands
+```bash
+# Enumerate ACLs on the PKI container
+Get-DomainObjectAcl -SearchBase "CN=Public Key Services,CN=Services,CN=Configuration,DC=corp,DC=local" -ResolveGUIDs
+```
+
+### Detection
 **5136** on `CN=Public Key Services` subtree; restrict write rights to Tier-0.
 
 ---
-
-## References
-
-- [Microsoft: Active Directory Certificate Services overview](https://learn.microsoft.com/windows-server/identity/ad-cs/active-directory-certificate-services-overview)
-- [MITRE ATT&CK: T1649](https://attack.mitre.org/techniques/T1649/)

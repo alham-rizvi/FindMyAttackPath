@@ -10,27 +10,41 @@ mitre: "T1649 (precursor)"
 tag: null
 ---
 
+
 # ADCS template & CA enumeration
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Affected object / attribute
+### Affected object / attribute
 **`pKIEnrollmentService`** (CA objects), **`pKICertificateTemplate`** (templates), **CA registry flags**, **web enrolment endpoints**, and **`msDS-OIDToGroupLink`**.
 
-## Impact
+### Concept (deep)
+ADCS enumeration is the foundation of every ESC finding. A single `certipy find` reports CA flags, template settings, enrolment rights, and vulnerable ESC paths. The key is to review **CA-level flags independently of template flags** — a CA flag overrides every template on that CA.
+
+### Exhaustive commands
+```bash
+# ── Certipy full enumeration ─────────────────────────────────────────
+certipy find -u lowpriv@corp.local -p 'Password123!' \
+  -dc-ip 10.10.10.5 -enabled -vulnerable -text -stdout
+
+# ── Hide admin-only findings (cleaner output) ───────────────────────
+certipy find -u lowpriv@corp.local -p 'Password123!' \
+  -dc-ip 10.10.10.5 -hide-admins
+
+# ── Windows Certify ──────────────────────────────────────────────────
+Certify.exe find /vulnerable
+
+# ── Raw CA flag check ────────────────────────────────────────────────
+certutil -config "CORP-CA\dc01.corp.local" -getreg policy\EditFlags
+
+# ── LDAP CA object query ─────────────────────────────────────────────
+ldapsearch -H ldap://10.10.10.5 -x -D 'lowpriv@corp.local' -w 'Password123!' \
+  -b "CN=Enrollment Services,CN=Public Key Services,CN=Services,CN=Configuration,DC=corp,DC=local" \
+  "(objectClass=pKIEnrollmentService)" cn editFlags
+```
+
+### Impact
 - A **matrix of ESC findings** (see `adcs_esc_matrix.md`) that determines the exploitation path.
 
-## Detection
+### Detection
 LDAP reads of `pKIEnrollmentService`/`msPKI-*` attributes; Certipy user-agent in IIS logs.
 
 ---
-
-## References
-
-- [Microsoft: Active Directory Certificate Services overview](https://learn.microsoft.com/windows-server/identity/ad-cs/active-directory-certificate-services-overview)
-- [Microsoft: Certificate template concepts](https://learn.microsoft.com/windows-server/identity/ad-cs/certificate-template-concepts)
-- [Microsoft Open Specifications: MS-WCCE Certificate Enrollment](https://learn.microsoft.com/openspecs/windows_protocols/ms-wcce/)
-- [SpecterOps: Certified Pre-Owned](https://specterops.io/wp-content/uploads/sites/3/2022/06/Certified_Pre-Owned.pdf)
-- [MITRE ATT&CK: T1649](https://attack.mitre.org/techniques/T1649/)

