@@ -9,10 +9,10 @@ exploitation assessment practice, and job-role preparation. It is not defense-on
 can use it to understand and assess attack paths, while detection and mitigation notes help
 teams validate controls. Use it only within written authorization or an isolated lab.
 
-Every phase, technique, tool and CVE on the graph is backed by a markdown file under
-[`docs/`](docs/). Click a node and its connections ("wires") light up, and the detail panel
-shows the prerequisite, the detection artifact a blue team would actually see, and the
-tool(s) used to run it.
+Every phase, technique, tool and CVE on the graph is backed by a Markdown file under
+[`docs/`](docs/). Click a node and its connections ("wires") light up. The detail panel shows
+the available context, such as affected objects, potential impact, detection and defensive
+measures, plus related tools where listed.
 
 > Compiled for authorized testing and study (OSCP/CRTO-style prep). Reverify current patch
 > status before relying on anything tagged "new."
@@ -21,9 +21,10 @@ tool(s) used to run it.
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/alham-rizvi/FindMyAttackPath)
 
-When importing on Vercel: **Framework Preset → Other**, **Build Command → empty**, and set
-**Root Directory** to wherever `index.html` and `docs/` live if they're not at the repo root.
-No build step — it's a static page.
+For Vercel, use **Framework Preset → Other**, leave **Build Command** blank, and set the output
+directory to `.` (as specified in `vercel.json`). Keep **Root Directory** set to the project
+directory containing `index.html`, `docs/` and `vercel.json`; in a monorepo, select that project
+directory. No build step is required because this is a static site.
 
 ## Run it locally
 
@@ -34,8 +35,8 @@ python3 -m http.server 8000
 # open http://localhost:8000
 ```
 
-`index.html` reads its data with `fetch()`, so it has to be served over http(s) — opening the
-file directly (`file://`) will fail with a CORS error. Any static server works.
+`index.html` loads its data with `fetch()`, so serve it over HTTP(S). Browsers restrict fetches
+from local `file://` URLs; use a local HTTP server instead. Any static server works.
 
 ## How it's wired together
 
@@ -55,10 +56,10 @@ flowchart TD
   GRAPH -->|"click a node"| DETAIL["detail panel, wires highlighted"]
 ```
 
-`index.html` never needs to change when someone adds an attack vector — add a markdown file,
-list it in `docs/manifest.json`, open a PR. If you also want the single-file fallback to carry
-your change (useful for hosts that only take one file), run `python3 scripts/embed-docs.py`
-before deploying — see [`scripts/embed-docs.py`](scripts/embed-docs.py).
+The graph loads its documentation from `docs/manifest.json`, so adding a node does not require a
+code change to `index.html`: add the Markdown file, list it in the manifest, and open a PR. To
+refresh the embedded fallback in `index.html` as well (for single-file hosting), run
+`python3 scripts/embed-docs.py` before deploying; see [`scripts/embed-docs.py`](scripts/embed-docs.py).
 
 The resource index includes searchable tool and reference tabs plus recent project commits.
 Use the lower-right toolbox to recolor the graph or download selected phases as JSON, CSV,
@@ -77,8 +78,8 @@ flowchart TD
   persist --> hybrid["Hybrid and Cloud Pivot"]
 ```
 
-Each phase branches into the techniques that belong to it; each technique links to the
-tool(s) that run it and, where one applies, the CVE it exploits.
+Each phase branches into its techniques. Techniques connect to related tools where listed and
+to an associated CVE where applicable.
 
 ## Project structure
 
