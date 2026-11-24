@@ -17,7 +17,7 @@ flowchart LR
   D --> E[Validate scope and contain the path]
 ```
 
-The graph includes ACL and GPO abuse, machine-account creation, delegation variants, Shadow Credentials, AD CS ESC1 / ESC8, and named vulnerabilities such as noPac and ResetNightmare.
+The graph includes ACL and GPO abuse, DNSAdmins, machine-account creation, delegation variants, Shadow Credentials, AD CS ESC1–ESC16, and named vulnerabilities such as noPac and ResetNightmare.
 
 ## Defensive view
 

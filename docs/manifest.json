@@ -440,6 +440,16 @@
     "path": "docs/techniques/gpo_abuse.md"
   },
   {
+    "id": "dnsadmins",
+    "type": "technique",
+    "path": "docs/techniques/dnsadmins.md"
+  },
+  {
+    "id": "gpp_cpassword",
+    "type": "technique",
+    "path": "docs/techniques/gpp_cpassword.md"
+  },
+  {
     "id": "machineaccountquota",
     "type": "technique",
     "path": "docs/techniques/machineaccountquota.md"
@@ -598,6 +608,11 @@
     "id": "dcsync",
     "type": "technique",
     "path": "docs/techniques/dcsync.md"
+  },
+  {
+    "id": "adminsdholder",
+    "type": "technique",
+    "path": "docs/techniques/adminsdholder.md"
   },
   {
     "id": "golden",
