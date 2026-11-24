@@ -45,4 +45,4 @@ Validate an impact hypothesis by correlating the relevant identity, directory, a
 
 - [Microsoft: Kerberos authentication overview](https://learn.microsoft.com/windows-server/security/kerberos/kerberos-authentication-overview)
 - [Microsoft: Credential protection](https://learn.microsoft.com/windows-server/security/credentials-protection-and-management/credential-protection-and-management)
-- [MITRE ATT&CK: T1558.004](https://attack.mitre.org/techniques/T1558.004/)
+- [MITRE ATT&CK: T1558.004](https://attack.mitre.org/techniques/T1558/004/)

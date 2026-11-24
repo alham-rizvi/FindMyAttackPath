@@ -5,7 +5,7 @@ label: "NTLM reflection"
 phase: "initial"
 tools: ["impacket", "petitpotam"]
 cve: "cve-2025-33073"
-detect: "Correlate SMB access-control, authentication, network-logon, endpoint, and patch telemetry; do not treat loopback or relay events as proof of CVE-2025-33073."
+detect: "Loopback-pattern 4624 type 3; anomalous local relay traffic."
 mitre: "T1557.001"
 tag: "new"
 ---
@@ -47,4 +47,4 @@ Validate an impact hypothesis by correlating the relevant identity, directory, a
 - [Microsoft Security Update Guide: CVE-2025-33073](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2025-33073)
 - [Microsoft: Windows authentication overview](https://learn.microsoft.com/windows-server/security/windows-authentication/windows-authentication-overview)
 - [Microsoft: SMB security](https://learn.microsoft.com/windows-server/storage/file-server/smb-security)
-- [MITRE ATT&CK: T1557.001](https://attack.mitre.org/techniques/T1557.001/)
+- [MITRE ATT&CK: T1557.001](https://attack.mitre.org/techniques/T1557/001/)

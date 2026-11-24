@@ -45,4 +45,4 @@ Validate an impact hypothesis by correlating the relevant identity, directory, a
 
 - [Microsoft: Active Directory Domain Services](https://learn.microsoft.com/windows-server/identity/ad-ds/)
 - [Microsoft: Security auditing](https://learn.microsoft.com/windows/security/threat-protection/auditing/security-auditing-overview)
-- [MITRE ATT&CK: T1087.002](https://attack.mitre.org/techniques/T1087.002/)
+- [MITRE ATT&CK: T1087.002](https://attack.mitre.org/techniques/T1087/002/)

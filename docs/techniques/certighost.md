@@ -5,7 +5,7 @@ label: "Certighost"
 phase: "privesc"
 tools: ["certipy"]
 cve: "cve-2026-54121"
-detect: "Correlate AD CS authorization changes, certificate requests and issuance, template use, authentication, and certificate-trust anomalies; do not treat a DC identity request as proof of CVE-2026-54121."
+detect: "Certificate request carrying a DC identity from a low-privileged requester."
 mitre: "T1649"
 tag: "new"
 ---

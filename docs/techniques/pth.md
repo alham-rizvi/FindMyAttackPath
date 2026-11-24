@@ -47,4 +47,4 @@ Validate an impact hypothesis by correlating the relevant identity, directory, a
 - [Microsoft: SMB security](https://learn.microsoft.com/windows-server/storage/file-server/smb-security)
 - [Microsoft: Credential Guard](https://learn.microsoft.com/windows/security/identity-protection/credential-guard/credential-guard)
 - [Microsoft: Credential protection](https://learn.microsoft.com/windows-server/security/credentials-protection-and-management/credential-protection-and-management)
-- [MITRE ATT&CK: T1550.002](https://attack.mitre.org/techniques/T1550.002/)
+- [MITRE ATT&CK: T1550.002](https://attack.mitre.org/techniques/T1550/002/)

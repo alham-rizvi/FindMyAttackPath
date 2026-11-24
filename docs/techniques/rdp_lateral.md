@@ -45,5 +45,5 @@ Validate an impact hypothesis by correlating the relevant identity, directory, a
 
 - [Microsoft: Windows authentication overview](https://learn.microsoft.com/windows-server/security/windows-authentication/windows-authentication-overview)
 - [Microsoft: SMB security](https://learn.microsoft.com/windows-server/storage/file-server/smb-security)
-- [MITRE ATT&CK: T1021.001](https://attack.mitre.org/techniques/T1021.001/)
-- [MITRE ATT&CK: T1563.002](https://attack.mitre.org/techniques/T1563.002/)
+- [MITRE ATT&CK: T1021.001](https://attack.mitre.org/techniques/T1021/001/)
+- [MITRE ATT&CK: T1563.002](https://attack.mitre.org/techniques/T1563/002/)

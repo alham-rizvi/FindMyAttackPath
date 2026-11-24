@@ -47,4 +47,4 @@ Validate an impact hypothesis by correlating the relevant identity, directory, a
 - [Microsoft Entra Connect staging server](https://learn.microsoft.com/entra/identity/hybrid/connect/how-to-connect-sync-staging-server)
 - [Microsoft: Microsoft Entra identity documentation](https://learn.microsoft.com/entra/identity/)
 - [Microsoft: Conditional Access](https://learn.microsoft.com/entra/identity/conditional-access/overview)
-- [MITRE ATT&CK: T1552.001](https://attack.mitre.org/techniques/T1552.001/)
+- [MITRE ATT&CK: T1552.001](https://attack.mitre.org/techniques/T1552/001/)
