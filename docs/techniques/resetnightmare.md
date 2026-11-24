@@ -5,7 +5,7 @@ label: "ResetNightmare"
 phase: "privesc"
 tools: []
 cve: "cve-2026-27912"
-detect: "4724 password-reset events correlated with anomalous kpasswd traffic."
+detect: "Correlate Kerberos authorization, account-change, DC/endpoint and adjacent-network telemetry; do not treat 4724 or kpasswd activity as CVE proof."
 mitre: "T1098"
 tag: "new"
 ---

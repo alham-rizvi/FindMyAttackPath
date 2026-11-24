@@ -5,7 +5,7 @@ label: "NTLM reflection"
 phase: "initial"
 tools: ["impacket", "petitpotam"]
 cve: "cve-2025-33073"
-detect: "Loopback-pattern 4624 type 3; anomalous local relay traffic."
+detect: "Correlate SMB access-control, network-logon, share/endpoint authorization and patch telemetry; do not use loopback or relay patterns as CVE proof."
 mitre: "T1557.001"
 tag: "new"
 ---
