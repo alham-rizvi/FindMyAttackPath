@@ -100,7 +100,7 @@ a{color:var(--accent)}
   padding:5px 10px; border-radius:999px; cursor:pointer}
 .chip.active{color:var(--fg); border-color:var(--accent)}
 .menu-action{
-  width:100%; text-align:left; background:var(--code-bg); border:1px solid var(--glass-border); color:var(--fg);
+  display:block; width:100%; text-align:left; text-decoration:none; background:var(--code-bg); border:1px solid var(--glass-border); color:var(--fg);
   padding:10px 12px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer; margin-bottom:8px;
 }
 .menu-action:hover, .chip:hover{border-color:var(--accent)}
@@ -260,6 +260,7 @@ tr[hidden]{display:none}
     <button class="menu-action" id="openIndex">Tool &amp; resource index</button>
     <button class="menu-action" id="openToolbox">Graph viewer &amp; export</button>
     <button class="menu-action" id="openAbout">About &amp; how to contribute</button>
+    <a class="menu-action" href="https://github.com/alham-rizvi/FindMyAttackPath" target="_blank" rel="noopener">Original repository ↗</a>
   </div>
   <p class="menu-foot">Compiled for authorized testing and study (OSCP/CRTO-style prep). Reverify current patch status before relying on any "new since 2025" item.</p>
 </div>
@@ -269,7 +270,7 @@ tr[hidden]{display:none}
 </aside>
 
 <div class="hint-overlay" id="hintOverlay">loading attack graph…</div>
-<div id="watermark">Created by Alham Rizvi</div>
+<div id="watermark">Created by alham rizvi</div>
 <button id="toolboxBtn" class="glass" type="button" aria-label="Open graph toolbox" aria-expanded="false" title="Graph toolbox">
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5h16M4 12h16M4 16.5h16"/><circle cx="8" cy="7.5" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="10" cy="16.5" r="2"/></svg>
 </button>
