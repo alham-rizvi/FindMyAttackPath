@@ -40,6 +40,5 @@ Alert on DNSAdmins membership changes, DNS service configuration changes, unexpe
 
 ## References
 
-- [Microsoft: DNS Server security guidance](https://learn.microsoft.com/windows-server/networking/dns/dns-security)
+- [Microsoft: Domain Name System in Windows Server](https://learn.microsoft.com/en-us/windows-server/networking/dns/dns-overview)
 - [BloodHound documentation](https://bloodhound.specterops.io/)
-- [MITRE ATT&CK: Account Manipulation](https://attack.mitre.org/techniques/T1098/)
