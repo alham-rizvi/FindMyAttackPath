@@ -14,7 +14,7 @@ tag: null
 
 LSASS credential dumping seeks secret/ticket material from LSASS process or logon state rather than directory or file stores.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized assessment and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
 
 ## Beginner-friendly walkthrough
 

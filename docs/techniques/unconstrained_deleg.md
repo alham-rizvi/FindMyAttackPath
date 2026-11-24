@@ -14,7 +14,7 @@ tag: null
 
 Unconstrained delegation lets a configured host cache TGTs for users who authenticate to it, creating a sensitive host trust boundary.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized assessment and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
 
 ## Beginner-friendly walkthrough
 

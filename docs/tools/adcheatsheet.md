@@ -14,7 +14,7 @@ The Active Directory Exploitation Cheat Sheet is a community-maintained index of
 
 It organizes concepts and examples for enumeration, credentials, Kerberos, ACLs, AD CS, lateral movement, persistence, and defenses.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use it to plan defensive tests and map findings, with every procedure validated against official documentation and written authorization.
 

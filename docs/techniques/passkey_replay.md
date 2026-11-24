@@ -14,7 +14,7 @@ tag: "new"
 
 “Pass-the-passkey” is often imprecise: FIDO2/WebAuthn assertions are origin/challenge-bound, while PRT or broker session artifacts represent a separate device authentication context.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized assessment and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
 
 ## Relevant objects and normal purpose
 

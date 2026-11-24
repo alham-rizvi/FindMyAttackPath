@@ -14,7 +14,7 @@ certsync is a proof-of-concept connecting certificate authentication to director
 
 Explores whether a valid certificate and identity context can use directory replication interfaces to recover domain secret material.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use only for tightly authorized incident-response or lab validation of certificate trust and replication exposure.
 

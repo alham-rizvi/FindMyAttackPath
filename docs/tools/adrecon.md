@@ -14,7 +14,7 @@ ADRecon is a PowerShell-based Active Directory inventory and reporting utility.
 
 Structured reports for users, groups, computers, trusts, GPOs, ACLs, and other implemented directory areas.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use for authorized baseline collection, evidence preservation, and remediation planning.
 

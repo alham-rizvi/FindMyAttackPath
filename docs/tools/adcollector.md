@@ -14,7 +14,7 @@ ADCollector is a Windows-oriented utility that collects Active Directory configu
 
 Selected inventory of users, computers, groups, trusts, permissions, policies, sessions, or related AD objects implemented by the release.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use read-oriented collection for an authorized domain baseline, then verify effective ACLs and business context before remediation.
 

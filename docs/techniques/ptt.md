@@ -14,7 +14,7 @@ tag: null
 
 Pass-the-ticket reuses a cached or acquired TGT/TGS within a compatible realm and service context.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized assessment and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
 
 ## Relevant objects and normal purpose
 

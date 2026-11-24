@@ -14,7 +14,7 @@ SharpHound is the official C# BloodHound collector for Active Directory.
 
 Collects objects, ACLs, trusts, sessions, GPO relationships, and optional local/domain relationship data for BloodHound.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use for authorized graph collection, baseline assessment, tier-boundary review, and remediation planning.
 

@@ -14,7 +14,7 @@ tag: null
 
 A Primary Refresh Token represents a joined-device/user sign-in context and can be exchanged by a supported broker for resource tokens under tenant policy.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized assessment and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
 
 ## Beginner-friendly walkthrough
 

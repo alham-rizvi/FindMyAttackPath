@@ -14,7 +14,7 @@ tag: null
 
 Microsoft Entra Connect is the synchronization bridge between selected on-premises AD objects and a Microsoft Entra tenant. “Credential extraction” is meaningful only within the actual sync mode and host trust boundary.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized assessment and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
 
 ## Beginner-friendly walkthrough
 

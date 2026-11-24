@@ -14,7 +14,7 @@ mitm6 is an IPv6/DNS relay-preparation and network exposure research tool.
 
 Observes IPv6 state and can advertise IPv6/DHCPv6 and DNS configuration for testing whether legacy DNS/WPAD and relay controls are effective.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use only in an isolated VLAN or written network assessment with controlled relay infrastructure.
 

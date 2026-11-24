@@ -14,7 +14,7 @@ GPOddity is a proof-of-concept for GPO and authentication-abuse research.
 
 Explores writable GPO paths and how policy or authentication behavior can be induced in a lab domain.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use only to validate GPO ACLs and detection in an isolated domain with an approved rollback.
 

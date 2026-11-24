@@ -14,7 +14,7 @@ CrackMapExec is the archived predecessor of the NetExec network assessment suite
 
 Historically combined SMB, LDAP, MSSQL, WinRM, authentication, enumeration, and module reporting.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use only for historical findings or legacy comparisons. Prefer maintained NetExec or a purpose-built tool in current assessments.
 

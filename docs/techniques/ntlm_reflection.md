@@ -14,7 +14,7 @@ tag: "new"
 
 CVE-2025-33073 is publicly described as improper access control in Windows SMB that can allow an authorized network attacker to elevate privileges. The NVD/MSRC summary does not establish reflection or loopback mechanics by itself.
 
-> **Authorized assessment only:** This guide describes controlled, explicitly authorized assessment and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
+> **Authorized assessment only:** This guide describes controlled, explicitly authorized red-team assessment, lab practice, and defensive validation. It contains no target commands, exploit recipes, payloads, guessing parameters or real-target procedure.
 
 ## Relevant objects and normal purpose
 

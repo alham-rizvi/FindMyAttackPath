@@ -14,7 +14,7 @@ Whisker is a C# tool for assessing and modifying AD Key Credential Link state.
 
 Creates, lists, or removes public-key credential metadata on test AD objects and checks whether the LDAP write is permitted.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use only in an isolated lab or approved incident exercise to validate write controls and then remove test state.
 

@@ -14,7 +14,7 @@ mimikatz is a Windows security research tool for credentials, tickets, certifica
 
 Inspects or dumps credential/ticket material, exercises LSASS and token concepts, and includes DCSync, ticket, certificate, and persistence research features.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use only for authorized incident response, credential-risk labs, or tightly scoped validation with synthetic or owned data.
 

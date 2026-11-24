@@ -14,7 +14,7 @@ Powermad is a PowerShell module for machine-account and computer-object research
 
 Inventories or, with rights, creates or modifies computer objects and MachineAccountQuota-related state.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use in a lab or approved domain-change review to verify restrictions on computer-object creation and attributes.
 

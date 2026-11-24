@@ -14,7 +14,7 @@ AD-Attack-Defense is a community knowledge repository mapping Active Directory a
 
 Attack-and-defense checklists, monitoring ideas, and links covering credentials, Kerberos, ACLs, AD CS, and lateral movement.
 
-## Safe authorized assessment and defensive use
+## Authorized red-team assessment and defensive use
 
 Use for control-gap and purple-team planning; confirm controls and test only in authorized, isolated scenarios.
 
