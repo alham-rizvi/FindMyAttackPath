@@ -1,582 +1,753 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px "IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f7f8fa;color:#111827}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>AD Attack Path Graph</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.gstatic.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
 <style>
 /*
-  Layout: the graph IS the page — svg fills the full viewport. Every other
-  surface (legend, filters, search, resource index, node detail) lives in
-  floating glass panels that open from a single corner control, so nothing
-  but the graph is ever on screen at rest.
+  Clean GitBook-inspired technical workspace: restrained neutral surfaces,
+  1px hairline borders, IBM Plex Sans + IBM Plex Mono typography, and
+  minimizable floating/windowed surfaces over the live attack-path graph.
 */
 :root{
-  --bg:#f2f4f2; --fg:#141a1d; --muted:#5c6b70;
-  --edge:#a7b6b1; --edge-dim:#dde3e0;
-  --phase:#3d6b66; --tech:#0f8a8a; --tool:#b4790f; --cve:#b2402f; --new:#b4790f;
-  --accent:#0f8a8a; --code-bg:#ffffffb3;
-  --glass-bg:rgba(255,255,255,0.62); --glass-bg-solid:rgba(255,255,255,0.92);
-  --glass-border:rgba(20,26,29,0.10); --glass-shadow:0 8px 32px rgba(20,26,29,0.14);
-  --reader-bg:#ffffff; --reader-sidebar:#f5f7f6; --reader-surface:#edf2f1;
-  --reader-border:rgba(20,26,29,0.11); --reader-font-size:15px;
-  --inline-code-bg:rgba(15,138,138,0.09); --inline-code-border:rgba(15,138,138,0.20); --inline-code-fg:#0b5e5e;
-  --code-block-bg:#11191e; --code-block-head:#18232a; --code-block-border:rgba(255,255,255,0.09); --code-block-fg:#e6eff0;
-  --callout-warn-bg:rgba(180,121,15,0.09); --callout-warn-border:#c47f14;
-  --callout-note-bg:rgba(15,138,138,0.08); --callout-note-border:#0f8a8a;
-  --table-head:#eef3f2; --table-stripe:rgba(20,26,29,0.025); --table-hover:rgba(15,138,138,0.06);
-  font-family: Inter, system-ui, sans-serif;
+  --font-sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --bg:#f7f8fa; --fg:#111827; --muted:#64748b;
+  --edge:#cbd5e1; --edge-dim:#e2e8f0;
+  --phase:#334155; --tech:#2563eb; --tool:#b45309; --cve:#dc2626; --new:#d97706; --custom:#7c3aed;
+  --accent:#2563eb; --accent-soft:rgba(37,99,235,0.08); --accent-border:rgba(37,99,235,0.24);
+  --code-bg:#f1f5f9;
+  --glass-bg:rgba(255,255,255,0.94); --glass-bg-solid:#ffffff;
+  --glass-border:#e2e8f0;
+  --glass-shadow:0 1px 2px rgba(15,23,42,0.05), 0 8px 24px rgba(15,23,42,0.08);
+
+  --reader-bg:#ffffff; --reader-sidebar:#f8f9fb; --reader-surface:#f1f5f9;
+  --reader-border:#e2e8f0; --reader-font-size:15px;
+  --inline-code-bg:#f1f5f9; --inline-code-border:#e2e8f0; --inline-code-fg:#0f172a;
+  --code-block-bg:#0f172a; --code-block-head:#162033; --code-block-border:#1e293b; --code-block-fg:#e2e8f0;
+  --callout-warn-bg:#fffbeb; --callout-warn-border:#d97706;
+  --callout-note-bg:#eff6ff; --callout-note-border:#2563eb;
+  --table-head:#f8fafc; --table-stripe:rgba(15,23,42,0.018); --table-hover:rgba(37,99,235,0.045);
+
+  font-family: var(--font-sans);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#0b1012; --fg:#eef3f1; --muted:#90a3a0;
-    --edge:#45544f; --edge-dim:#232c2a;
-    --phase:#6fb3ab; --tech:#5fe6db; --tool:#ecb968; --cve:#f0735f; --new:#ecb968;
-    --accent:#5fe6db; --code-bg:#ffffff0d;
-    --glass-bg:rgba(20,28,31,0.58); --glass-bg-solid:rgba(16,23,26,0.94);
-    --glass-border:rgba(255,255,255,0.10); --glass-shadow:0 8px 36px rgba(0,0,0,0.5);
-    --reader-bg:#0d1316; --reader-sidebar:#11191d; --reader-surface:#162025;
-    --reader-border:rgba(255,255,255,0.10);
-    --inline-code-bg:rgba(95,230,219,0.11); --inline-code-border:rgba(95,230,219,0.22); --inline-code-fg:#8af2e8;
-    --code-block-bg:#070c0e; --code-block-head:#0e171b; --code-block-border:rgba(255,255,255,0.10); --code-block-fg:#e6f0ef;
-    --callout-warn-bg:rgba(236,185,104,0.10); --callout-warn-border:#ecb968;
-    --callout-note-bg:rgba(95,230,219,0.09); --callout-note-border:#5fe6db;
-    --table-head:#141e22; --table-stripe:rgba(255,255,255,0.025); --table-hover:rgba(95,230,219,0.07);
+    --bg:#0d1015; --fg:#e6edf3; --muted:#8b949e;
+    --edge:#30363d; --edge-dim:#1c2128;
+    --phase:#94a3b8; --tech:#58a6ff; --tool:#e3b341; --cve:#f85149; --new:#e3b341; --custom:#a78bfa;
+    --accent:#58a6ff; --accent-soft:rgba(88,166,255,0.11); --accent-border:rgba(88,166,255,0.28);
+    --code-bg:#161b22;
+    --glass-bg:rgba(17,21,28,0.95); --glass-bg-solid:#11151c;
+    --glass-border:#262c36;
+    --glass-shadow:0 2px 6px rgba(0,0,0,0.35), 0 12px 32px rgba(0,0,0,0.45);
+
+    --reader-bg:#0f1319; --reader-sidebar:#131820; --reader-surface:#19202a;
+    --reader-border:#252c37;
+    --inline-code-bg:#1b222c; --inline-code-border:#2c3543; --inline-code-fg:#c9d8e8;
+    --code-block-bg:#090d12; --code-block-head:#111720; --code-block-border:#222a35; --code-block-fg:#e6edf3;
+    --callout-warn-bg:rgba(217,119,6,0.11); --callout-warn-border:#e3b341;
+    --callout-note-bg:rgba(88,166,255,0.09); --callout-note-border:#58a6ff;
+    --table-head:#151b24; --table-stripe:rgba(255,255,255,0.02); --table-hover:rgba(88,166,255,0.07);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#0b1012; --fg:#eef3f1; --muted:#90a3a0;
-  --edge:#45544f; --edge-dim:#232c2a;
-  --phase:#6fb3ab; --tech:#5fe6db; --tool:#ecb968; --cve:#f0735f; --new:#ecb968;
-  --accent:#5fe6db; --code-bg:#ffffff0d;
-  --glass-bg:rgba(20,28,31,0.58); --glass-bg-solid:rgba(16,23,26,0.94);
-  --glass-border:rgba(255,255,255,0.10); --glass-shadow:0 8px 36px rgba(0,0,0,0.5);
-  --reader-bg:#0d1316; --reader-sidebar:#11191d; --reader-surface:#162025;
-  --reader-border:rgba(255,255,255,0.10);
-  --inline-code-bg:rgba(95,230,219,0.11); --inline-code-border:rgba(95,230,219,0.22); --inline-code-fg:#8af2e8;
-  --code-block-bg:#070c0e; --code-block-head:#0e171b; --code-block-border:rgba(255,255,255,0.10); --code-block-fg:#e6f0ef;
-  --callout-warn-bg:rgba(236,185,104,0.10); --callout-warn-border:#ecb968;
-  --callout-note-bg:rgba(95,230,219,0.09); --callout-note-border:#5fe6db;
-  --table-head:#141e22; --table-stripe:rgba(255,255,255,0.025); --table-hover:rgba(95,230,219,0.07);
+  --bg:#0d1015; --fg:#e6edf3; --muted:#8b949e;
+  --edge:#30363d; --edge-dim:#1c2128;
+  --phase:#94a3b8; --tech:#58a6ff; --tool:#e3b341; --cve:#f85149; --new:#e3b341; --custom:#a78bfa;
+  --accent:#58a6ff; --accent-soft:rgba(88,166,255,0.11); --accent-border:rgba(88,166,255,0.28);
+  --code-bg:#161b22;
+  --glass-bg:rgba(17,21,28,0.95); --glass-bg-solid:#11151c;
+  --glass-border:#262c36;
+  --glass-shadow:0 2px 6px rgba(0,0,0,0.35), 0 12px 32px rgba(0,0,0,0.45);
+
+  --reader-bg:#0f1319; --reader-sidebar:#131820; --reader-surface:#19202a;
+  --reader-border:#252c37;
+  --inline-code-bg:#1b222c; --inline-code-border:#2c3543; --inline-code-fg:#c9d8e8;
+  --code-block-bg:#090d12; --code-block-head:#111720; --code-block-border:#222a35; --code-block-fg:#e6edf3;
+  --callout-warn-bg:rgba(217,119,6,0.11); --callout-warn-border:#e3b341;
+  --callout-note-bg:rgba(88,166,255,0.09); --callout-note-border:#58a6ff;
+  --table-head:#151b24; --table-stripe:rgba(255,255,255,0.02); --table-hover:rgba(88,166,255,0.07);
   color-scheme: dark;
 }
+
 *{box-sizing:border-box}
 html,body{height:100%}
-body{margin:0; background:var(--bg); color:var(--fg); overflow:hidden;
+body{
+  margin:0; background:var(--bg); color:var(--fg); overflow:hidden;
+  font-family:var(--font-sans); -webkit-font-smoothing:antialiased;
   padding-left:max(0px, env(safe-area-inset-left,0px));
   padding-right:max(0px, env(safe-area-inset-right,0px));
 }
-code,.mono{font-family:"JetBrains Mono", ui-monospace, monospace}
-em.accent{font-family:"Instrument Serif", Georgia, serif; font-style:italic; font-weight:400}
+button,input,select,textarea{font-family:inherit}
+code,.mono{font-family:var(--font-mono)}
+em.accent{font-style:normal; font-weight:600; color:var(--accent)}
 a{color:var(--accent)}
 
 #stage{position:fixed; inset:0}
 #graph{width:100%; height:100%; display:block; cursor:grab}
 #graph:active{cursor:grabbing}
 
-/* glass primitives */
+/* clean surface primitives (flat hairline borders, no frosted-glass clutter) */
 .glass{
-  background:var(--glass-bg); backdrop-filter:blur(18px) saturate(160%); -webkit-backdrop-filter:blur(18px) saturate(160%);
-  border:1px solid var(--glass-border); box-shadow:var(--glass-shadow); border-radius:16px;
+  background:var(--glass-bg);
+  border:1px solid var(--glass-border);
+  box-shadow:var(--glass-shadow);
+  border-radius:10px;
 }
-.glass-solid{background:var(--glass-bg-solid); backdrop-filter:blur(18px) saturate(160%); -webkit-backdrop-filter:blur(18px) saturate(160%);
-  border:1px solid var(--glass-border); box-shadow:var(--glass-shadow);}
+.glass-solid{
+  background:var(--glass-bg-solid);
+  border:1px solid var(--glass-border);
+  box-shadow:var(--glass-shadow);
+  border-radius:10px;
+}
 
 /* title badge, top-left */
 #titleBadge{
-  position:fixed; top:max(16px, env(safe-area-inset-top,0px)); left:max(16px, env(safe-area-inset-left,0px));
-  padding:9px 16px; z-index:20; pointer-events:none;
+  position:fixed; top:max(14px, env(safe-area-inset-top,0px)); left:max(14px, env(safe-area-inset-left,0px));
+  padding:8px 13px; z-index:20; pointer-events:none;
 }
-#titleBadge .k{font-size:13.5px; font-weight:700; letter-spacing:-0.01em}
-#titleBadge .k em.accent{font-size:16px}
-#titleBadge .s{font-size:10.5px; color:var(--muted); margin-top:1px}
+#titleBadge .k{font-size:13px; font-weight:600; letter-spacing:-0.015em; color:var(--fg)}
+#titleBadge .k em.accent{font-weight:600; color:var(--muted)}
+#titleBadge .s{font-size:11px; color:var(--muted); margin-top:1px}
 
-/* the single corner control */
+/* top-right controls */
 #menuBtn{
-  position:fixed; top:max(16px, env(safe-area-inset-top,0px)); right:max(16px, env(safe-area-inset-right,0px));
-  width:44px; height:44px; border-radius:50%; z-index:30; cursor:pointer;
-  display:flex; align-items:center; justify-content:center; border:none;
+  position:fixed; top:max(14px, env(safe-area-inset-top,0px)); right:max(14px, env(safe-area-inset-right,0px));
+  width:38px; height:38px; border-radius:8px; z-index:30; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
 }
-#menuBtn svg{width:18px; height:18px}
-#menuBtn circle{fill:var(--fg)}
+#menuBtn:hover,#docsBtn:hover,#toolboxBtn:hover{border-color:var(--accent); color:var(--accent)}
+#menuBtn svg{width:17px; height:17px}
+#menuBtn circle{fill:currentColor}
 #docsBtn{
-  position:fixed; top:max(16px, env(safe-area-inset-top,0px)); right:max(68px, calc(env(safe-area-inset-right,0px) + 68px));
-  height:44px; border-radius:22px; z-index:30; cursor:pointer; border:none;
-  display:flex; align-items:center; gap:7px; padding:0 13px; color:var(--fg); font-size:12px; font-weight:700;
+  position:fixed; top:max(14px, env(safe-area-inset-top,0px)); right:max(60px, calc(env(safe-area-inset-right,0px) + 60px));
+  height:38px; border-radius:8px; z-index:30; cursor:pointer;
+  display:flex; align-items:center; gap:7px; padding:0 12px; color:var(--fg); font-size:12.5px; font-weight:600;
 }
-#docsBtn svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#docsBtn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 
 #menuPanel{
-  position:fixed; top:calc(max(16px, env(safe-area-inset-top,0px)) + 54px); right:max(16px, env(safe-area-inset-right,0px));
-  width:300px; max-width:calc(100vw - 32px); z-index:29; padding:16px; display:none; max-height:calc(100vh - 100px); overflow-y:auto;
+  position:fixed; top:calc(max(14px, env(safe-area-inset-top,0px)) + 46px); right:max(14px, env(safe-area-inset-right,0px));
+  width:292px; max-width:calc(100vw - 28px); z-index:29; padding:14px; display:none; max-height:calc(100vh - 90px); overflow-y:auto;
 }
 #menuPanel.open{display:block}
-#menuPanel h4{margin:0 0 10px; font-size:13px; font-weight:700}
-#menuPanel .row{margin-bottom:14px}
+#menuPanel h4{margin:0 0 8px; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--muted)}
+#menuPanel .row{margin-bottom:13px}
 #menuPanel input{
-  width:100%; background:var(--code-bg); border:1px solid var(--glass-border); color:var(--fg);
-  padding:9px 11px; border-radius:9px; font-size:13.5px;
+  width:100%; background:var(--reader-sidebar); border:1px solid var(--glass-border); color:var(--fg);
+  padding:8px 10px; border-radius:7px; font-size:13px;
 }
-#menuPanel input:focus{outline:2px solid var(--accent); outline-offset:1px}
+#menuPanel input:focus{outline:2px solid var(--accent); outline-offset:-1px}
 .legend-row{display:flex; gap:10px; flex-wrap:wrap; font-size:11.5px; color:var(--muted)}
 .dot{width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:4px; vertical-align:-1px}
-.chip-row{display:flex; gap:6px; flex-wrap:wrap}
-.chip{font-size:11px; background:var(--code-bg); border:1px solid var(--glass-border); color:var(--muted);
-  padding:5px 10px; border-radius:999px; cursor:pointer}
-.chip.active{color:var(--fg); border-color:var(--accent)}
+.chip-row{display:flex; gap:5px; flex-wrap:wrap}
+.chip{font-size:11.5px; font-weight:500; background:var(--reader-sidebar); border:1px solid var(--glass-border); color:var(--muted);
+  padding:4px 9px; border-radius:6px; cursor:pointer}
+.chip.active{color:var(--accent); border-color:var(--accent-border); background:var(--accent-soft)}
 .menu-action{
-  width:100%; text-align:left; background:var(--code-bg); border:1px solid var(--glass-border); color:var(--fg);
-  padding:10px 12px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer; margin-bottom:8px;
+  width:100%; text-align:left; background:var(--reader-sidebar); border:1px solid var(--glass-border); color:var(--fg);
+  padding:8px 11px; border-radius:7px; font-size:12.5px; font-weight:500; cursor:pointer; margin-bottom:6px;
 }
-.menu-action:hover, .chip:hover{border-color:var(--accent)}
-.menu-foot{font-size:10.5px; color:var(--muted); line-height:1.5; margin-top:4px}
+.menu-action:hover, .chip:hover{border-color:var(--accent); color:var(--accent)}
+.menu-foot{font-size:11px; color:var(--muted); line-height:1.5; margin-top:4px}
 
-/* node detail — floating card, bottom-right on desktop, bottom sheet on phone */
+/* node detail card */
 #detail{
-  position:fixed; z-index:28; width:410px; max-width:calc(100vw - 32px);
-  bottom:max(16px, env(safe-area-inset-bottom,0px)); right:max(16px, env(safe-area-inset-right,0px));
-  padding:18px; display:none; max-height:min(74vh,640px); overflow-y:auto;
+  position:fixed; z-index:28; width:400px; max-width:calc(100vw - 28px);
+  bottom:max(14px, env(safe-area-inset-bottom,0px)); left:max(14px, env(safe-area-inset-left,0px));
+  padding:16px 18px; display:none; max-height:min(74vh,640px); overflow-y:auto;
   -webkit-overflow-scrolling:touch;
 }
 #detail.open{display:block}
-#detail.detail-expanded{inset:4vh 4vw; width:auto; max-width:none; max-height:92vh; z-index:50; background:var(--reader-bg); padding:24px 28px}
-#detail .detail-toolbar{display:flex; justify-content:flex-end; align-items:center; gap:6px; margin:-4px 30px 10px 0; flex-wrap:wrap}
-#detail .detail-toolbar button{background:var(--code-bg); border:1px solid var(--glass-border); color:var(--fg);
-  border-radius:8px; padding:5px 10px; cursor:pointer; font-size:11.5px; font-weight:600; display:inline-flex; align-items:center; gap:5px}
-#detail .detail-toolbar button:hover{border-color:var(--accent); color:var(--accent)}
-#detail .detail-toolbar button.btn-primary{background:var(--accent); color:#ffffff; border-color:transparent}
-:root[data-theme="dark"] #detail .detail-toolbar button.btn-primary{color:#061212}
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) #detail .detail-toolbar button.btn-primary{color:#061212} }
-#detail .detail-toolbar button.btn-primary:hover{filter:brightness(1.08); color:#ffffff}
-:root[data-theme="dark"] #detail .detail-toolbar button.btn-primary:hover{color:#061212}
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) #detail .detail-toolbar button.btn-primary:hover{color:#061212} }
-#detail .closeBtn{position:absolute; top:12px; right:12px; width:28px; height:28px; border-radius:50%; border:none;
-  background:var(--code-bg); color:var(--muted); cursor:pointer; font-size:14px; line-height:1; display:grid; place-items:center}
-#detail .closeBtn:hover{color:var(--fg)}
-#detail > h3{font-size:17px; margin:0 0 6px; padding-right:28px; font-weight:750; letter-spacing:-0.015em; line-height:1.25}
-#detail .type-badge{
-  font-family:"JetBrains Mono",monospace; font-size:10px; text-transform:uppercase; letter-spacing:.06em;
-  border:1px solid var(--glass-border); border-radius:5px; padding:2px 7px; color:var(--muted); display:inline-block; margin-bottom:10px;
+#detail.detail-expanded{inset:3vh 4vw; width:auto; max-width:none; max-height:94vh; z-index:50; background:var(--reader-bg); padding:24px 28px}
+#detail .detail-toolbar{display:flex; justify-content:flex-end; align-items:center; gap:5px; margin:-2px 0 10px; flex-wrap:wrap}
+#detail .detail-toolbar button{
+  background:var(--reader-sidebar); border:1px solid var(--glass-border); color:var(--fg);
+  border-radius:6px; padding:4px 9px; cursor:pointer; font-size:11.5px; font-weight:500;
+  display:inline-flex; align-items:center; gap:4px; height:27px;
 }
-#detail .type-badge[data-type="phase"]{color:var(--phase); border-color:var(--phase)}
-#detail .type-badge[data-type="technique"]{color:var(--tech); border-color:var(--tech)}
-#detail .type-badge[data-type="tool"]{color:var(--tool); border-color:var(--tool)}
-#detail .type-badge[data-type="cve"]{color:var(--cve); border-color:var(--cve)}
-#detail .phase-of{font-size:12px; color:var(--muted); margin-bottom:12px}
+#detail .detail-toolbar button:hover{border-color:var(--accent); color:var(--accent)}
+#detail .detail-toolbar button.primary{background:var(--accent); color:#ffffff; border-color:transparent; font-weight:600}
+#detail .detail-toolbar button.primary:hover{filter:brightness(1.06); color:#ffffff}
+#detail .detail-toolbar button.icon-sm{width:27px; padding:0; justify-content:center; color:var(--muted)}
+#detail .detail-toolbar button.icon-sm:hover{color:var(--fg)}
+#detail .detail-toolbar button.starred{color:#d97706; border-color:rgba(217,119,6,0.45)}
+#detail > h3{font-size:16.5px; margin:0 0 6px; font-weight:700; letter-spacing:-0.015em; line-height:1.28}
+.type-badge{
+  font-family:var(--font-mono); font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.05em;
+  border:1px solid var(--glass-border); border-radius:4px; padding:2px 6px; color:var(--muted); display:inline-block; margin-bottom:10px;
+  background:var(--reader-sidebar);
+}
+.type-badge.type-phase{color:var(--phase); border-color:color-mix(in srgb, var(--phase) 35%, transparent)}
+.type-badge.type-technique{color:var(--tech); border-color:color-mix(in srgb, var(--tech) 35%, transparent)}
+.type-badge.type-tool{color:var(--tool); border-color:color-mix(in srgb, var(--tool) 35%, transparent)}
+.type-badge.type-cve{color:var(--cve); border-color:color-mix(in srgb, var(--cve) 35%, transparent)}
+.type-badge.type-custom{color:var(--custom); border-color:color-mix(in srgb, var(--custom) 35%, transparent)}
+#detail .phase-of{font-size:12px; color:var(--muted); margin-bottom:10px; display:flex; align-items:center; flex-wrap:wrap; gap:5px}
 #detail .field{margin-bottom:12px}
-#detail .field > label{display:block; font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:5px; font-weight:700}
+#detail .field > label{display:block; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:5px; font-weight:600}
 #detail .field > p{font-size:13.5px; line-height:1.6; margin:0}
-#detail .detect-strip{background:var(--callout-note-bg); border-left:3px solid var(--callout-note-border); border-radius:0 8px 8px 0; padding:8px 10px; font-size:12.5px; line-height:1.55}
-#detail .toollist{display:flex; flex-wrap:wrap; gap:6px}
-#detail .tool-pill{font-family:"JetBrains Mono",monospace; font-size:11px; background:var(--code-bg); border:1px solid var(--glass-border);
-  border-radius:6px; padding:3px 8px; cursor:pointer; color:var(--fg)}
+#detail .detail-detect{
+  background:var(--callout-note-bg); border:1px solid var(--accent-border); border-left:3px solid var(--accent);
+  border-radius:6px; padding:8px 10px; font-size:12.5px; line-height:1.55; margin-bottom:12px;
+}
+#detail .toollist{display:flex; flex-wrap:wrap; gap:5px}
+#detail .tool-pill{
+  font-family:var(--font-mono); font-size:11px; background:var(--reader-sidebar); border:1px solid var(--glass-border);
+  border-radius:5px; padding:2px 7px; cursor:pointer; color:var(--fg);
+}
 #detail .tool-pill:hover{border-color:var(--accent); color:var(--accent)}
-#detail .empty{font-size:13.5px; color:var(--muted); line-height:1.6}
-.tag-new{font-family:"JetBrains Mono",monospace; font-size:10px; color:var(--new); border:1px solid var(--new);
-  border-radius:5px; padding:1px 6px; margin-left:7px; vertical-align:2px; text-transform:uppercase; font-weight:700}
+#detail .empty{font-size:13px; color:var(--muted); line-height:1.6; margin:0}
+.tag-new{
+  font-family:var(--font-mono); font-size:9.5px; color:var(--new); border:1px solid color-mix(in srgb, var(--new) 45%, transparent);
+  background:var(--callout-warn-bg); border-radius:4px; padding:1px 5px; margin-left:6px; vertical-align:1px; text-transform:uppercase; font-weight:600;
+}
 
-/* ---------- shared markdown prose renderer (.md-prose) ---------- */
+/* ---------- shared GitBook-style markdown prose (.md-prose) ---------- */
 .md-prose{
   font-size:var(--reader-font-size, 15px); line-height:1.72; color:var(--fg);
   overflow-wrap:break-word; word-break:normal;
 }
 .md-prose > :first-child{margin-top:0}
 .md-prose > :last-child{margin-bottom:0}
-.md-prose h1{font-size:1.75em; font-weight:800; letter-spacing:-0.025em; line-height:1.22; margin:0 0 0.7em}
-.md-prose h2{font-size:1.30em; font-weight:750; letter-spacing:-0.015em; line-height:1.3; margin:1.75em 0 0.6em; padding-bottom:0.35em; border-bottom:1px solid var(--reader-border)}
-.md-prose h3{font-size:1.06em; font-weight:700; letter-spacing:-0.01em; line-height:1.35; margin:1.45em 0 0.45em; display:flex; align-items:center; gap:8px}
-.md-prose h3::before{content:""; width:3px; height:1em; border-radius:2px; background:var(--accent); flex:none; opacity:.85}
-.md-prose h4,.md-prose h5,.md-prose h6{font-size:0.95em; font-weight:700; margin:1.2em 0 0.4em; color:var(--muted); text-transform:uppercase; letter-spacing:.04em}
-.md-prose p{margin:0.65em 0; line-height:1.72}
-.md-prose strong{font-weight:700; color:var(--fg)}
+.md-prose h1{font-size:1.75em; font-weight:700; letter-spacing:-0.025em; line-height:1.24; margin:0 0 0.7em}
+.md-prose h2{font-size:1.3em; font-weight:700; letter-spacing:-0.018em; line-height:1.3; margin:1.85em 0 0.6em; padding-bottom:0.35em; border-bottom:1px solid var(--reader-border)}
+.md-prose h3{font-size:1.06em; font-weight:600; letter-spacing:-0.012em; line-height:1.38; margin:1.55em 0 0.45em; color:var(--fg)}
+.md-prose h4,.md-prose h5,.md-prose h6{font-size:0.9em; font-weight:600; margin:1.25em 0 0.4em; color:var(--muted); text-transform:uppercase; letter-spacing:.04em}
+.md-prose p{margin:0.7em 0; line-height:1.72}
+.md-prose strong{font-weight:600; color:var(--fg)}
 .md-prose em{font-style:italic}
-.md-prose del{opacity:.68}
-.md-prose a{color:var(--accent); text-decoration:underline; text-underline-offset:2px; text-decoration-thickness:1px}
-.md-prose a:hover{text-decoration-thickness:2px}
-.md-prose ul,.md-prose ol{margin:0.6em 0 0.9em; padding-left:1.5em}
+.md-prose del{opacity:.65}
+.md-prose a{color:var(--accent); text-decoration:underline; text-decoration-color:color-mix(in srgb, var(--accent) 40%, transparent); text-underline-offset:3px}
+.md-prose a:hover{text-decoration-color:var(--accent)}
+.md-prose ul,.md-prose ol{margin:0.65em 0 1em; padding-left:1.45em}
 .md-prose li{margin:0.35em 0; line-height:1.68}
 .md-prose li > ul,.md-prose li > ol{margin:0.25em 0}
-.md-prose li.md-task-item{list-style:none; margin-left:-1.35em; display:flex; align-items:flex-start; gap:8px}
-.md-prose li.md-task-item input[type=checkbox]{margin-top:0.35em; accent-color:var(--accent); flex:none}
-.md-prose hr.md-hr{border:0; height:1px; background:var(--reader-border); margin:1.5em 0}
-.md-inline-code{
-  font-family:"JetBrains Mono", ui-monospace, monospace; font-size:0.86em; font-weight:500;
+.md-prose li.task-item{list-style:none; margin-left:-1.35em; display:flex; align-items:flex-start; gap:8px}
+.md-prose li.task-item input[type=checkbox]{margin-top:0.35em; accent-color:var(--accent); flex:none}
+.md-prose hr{border:0; height:1px; background:var(--reader-border); margin:1.75em 0}
+.md-prose code{
+  font-family:var(--font-mono); font-size:0.86em; font-weight:500;
   background:var(--inline-code-bg); border:1px solid var(--inline-code-border); color:var(--inline-code-fg);
-  border-radius:5px; padding:0.1em 0.4em; word-break:break-word;
+  border-radius:4px; padding:0.08em 0.36em; word-break:break-word;
 }
-.md-doc-link{text-decoration:none!important}
-.md-doc-link .md-inline-code{cursor:pointer; transition:border-color .15s, background .15s}
-.md-doc-link:hover .md-inline-code{border-color:var(--accent); background:var(--callout-note-bg)}
+.md-prose a.md-internal-link{text-decoration:none}
+.md-prose a.md-internal-link code{color:var(--accent); border-color:var(--accent-border); background:var(--accent-soft)}
+.md-prose a.md-internal-link:hover code{border-color:var(--accent)}
 .md-prose blockquote{
-  margin:1em 0; padding:11px 15px; border-radius:0 10px 10px 0;
-  border-left:3.5px solid var(--reader-border); background:var(--reader-surface);
+  margin:1.1em 0; padding:12px 16px; border-radius:6px;
+  border:1px solid var(--reader-border); border-left:3px solid var(--muted);
+  background:var(--reader-sidebar); font-size:0.95em;
 }
 .md-prose blockquote > :first-child{margin-top:0}
 .md-prose blockquote > :last-child{margin-bottom:0}
-.md-prose blockquote.md-callout-warn{background:var(--callout-warn-bg); border-left-color:var(--callout-warn-border)}
-.md-prose blockquote.md-callout-note,.md-prose blockquote.md-callout-tip{background:var(--callout-note-bg); border-left-color:var(--callout-note-border)}
+.md-prose blockquote.md-callout-warn{background:var(--callout-warn-bg); border-color:color-mix(in srgb, var(--callout-warn-border) 30%, transparent); border-left-color:var(--callout-warn-border)}
 
-/* code blocks with language header, syntax highlighting, wrap & copy */
+/* GitBook-style code blocks */
 .md-code-block{
-  margin:0.95em 0 1.15em; border-radius:10px; overflow:hidden;
+  margin:1.05em 0 1.25em; border-radius:8px; overflow:hidden;
   background:var(--code-block-bg); border:1px solid var(--code-block-border);
-  box-shadow:0 2px 10px rgba(0,0,0,0.14);
 }
 .md-code-head{
   display:flex; align-items:center; justify-content:space-between; gap:8px;
   padding:6px 10px 6px 13px; background:var(--code-block-head);
-  border-bottom:1px solid rgba(255,255,255,0.07);
+  border-bottom:1px solid rgba(255,255,255,0.06);
 }
 .md-code-lang{
-  font-family:"JetBrains Mono",monospace; font-size:10px; font-weight:700;
-  text-transform:uppercase; letter-spacing:.08em; color:#8ba6a8;
+  font-family:var(--font-mono); font-size:10.5px; font-weight:500;
+  letter-spacing:.03em; color:#94a3b8;
 }
-.md-code-actions{display:flex; align-items:center; gap:5px}
+.md-code-actions{display:flex; align-items:center; gap:4px}
 .md-code-btn{
-  background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#c7d8da;
-  font-family:Inter,sans-serif; font-size:11px; font-weight:600;
-  padding:3px 9px; border-radius:6px; cursor:pointer; transition:background .15s, border-color .15s, color .15s;
+  background:transparent; border:1px solid rgba(255,255,255,0.12); color:#cbd5e1;
+  font-size:11px; font-weight:500; padding:2px 8px; border-radius:5px; cursor:pointer;
 }
-.md-code-btn:hover{background:rgba(255,255,255,0.13); border-color:rgba(95,230,219,0.5); color:#fff}
-.md-code-btn.copied{background:rgba(38,166,120,0.22); border-color:#45d49c; color:#8bf5c8}
-.md-code-btn.active{background:rgba(95,230,219,0.18); border-color:#5fe6db; color:#8af2e8}
-.md-code-pre{
+.md-code-btn:hover{background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.28); color:#fff}
+.md-code-btn.copied{background:rgba(16,185,129,0.18); border-color:#34d399; color:#a7f3d0}
+.md-code-btn.active{background:rgba(88,166,255,0.18); border-color:#58a6ff; color:#bfdbfe}
+.md-code-block pre{
   margin:0; padding:13px 15px; overflow-x:auto; color:var(--code-block-fg);
-  font:12.5px/1.62 "JetBrains Mono", ui-monospace, monospace; tab-size:2;
+  font:12.5px/1.64 var(--font-mono); tab-size:2;
   white-space:pre; -webkit-overflow-scrolling:touch;
 }
-.md-code-block.wrapped .md-code-pre{white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word}
-.md-code-pre code{font:inherit; background:none; border:0; padding:0; color:inherit}
-/* syntax highlighting palette (dark terminal surface) */
-.hl-comment{color:#7a9396; font-style:italic}
-.hl-banner{color:#6fd4c9; font-weight:600}
-.hl-str{color:#a8e6a3}
-.hl-flag{color:#f0c475}
-.hl-cmd{color:#7cc7ff; font-weight:600}
-.hl-var{color:#ff9b82}
-.hl-op{color:#9db4b8}
-.hl-prompt{color:#f0936f; font-weight:700}
-.hl-key{color:#7cc7ff}
-.hl-num{color:#e6b8ff}
-.hl-bool{color:#f0c475}
+.md-code-block.wrapped pre{white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word}
+.md-code-block pre code{font:inherit; background:none; border:0; padding:0; color:inherit; word-break:normal}
+/* syntax highlighting tokens (matched 1:1 with highlightShellLine) */
+.hl-com{color:#64748b; font-style:italic}
+.hl-str{color:#86efac}
+.hl-flag{color:#fcd34d}
+.hl-cmd{color:#7dd3fc; font-weight:500}
+.hl-var{color:#fda4af}
+.hl-op{color:#94a3b8}
+.hl-prompt{color:#fb923c; font-weight:600}
+.hl-num{color:#c4b5fd}
 
-/* tables inside markdown */
+/* GFM tables */
 .md-table-wrap{
-  margin:1em 0; overflow-x:auto; border:1px solid var(--reader-border);
-  border-radius:10px; background:var(--reader-bg); -webkit-overflow-scrolling:touch;
+  margin:1.1em 0; overflow-x:auto; border:1px solid var(--reader-border);
+  border-radius:8px; background:var(--reader-bg); -webkit-overflow-scrolling:touch;
 }
 table.md-table{width:100%; border-collapse:collapse; font-size:0.88em; min-width:480px}
 table.md-table thead th{
-  background:var(--table-head); color:var(--fg); font-family:Inter,sans-serif;
-  font-size:0.82em; text-transform:uppercase; letter-spacing:.04em; font-weight:700;
-  padding:10px 12px; border-bottom:1.5px solid var(--reader-border); position:static; white-space:nowrap;
+  background:var(--table-head); color:var(--muted); font-family:var(--font-sans);
+  font-size:0.82em; text-transform:uppercase; letter-spacing:.04em; font-weight:600;
+  padding:9px 12px; border-bottom:1px solid var(--reader-border); position:static; white-space:nowrap;
 }
 table.md-table tbody td{padding:9px 12px; border-bottom:1px solid var(--reader-border); vertical-align:top; line-height:1.5}
 table.md-table tbody tr:last-child td{border-bottom:0}
 table.md-table tbody tr:nth-child(even){background:var(--table-stripe)}
 table.md-table tbody tr:hover{background:var(--table-hover)}
 
-/* compact prose variant for floating node detail card */
+/* compact prose inside #detail */
 .md-prose-compact{font-size:13.2px; line-height:1.6}
 .md-prose-compact h2{font-size:14.5px; margin:1.25em 0 0.45em}
 .md-prose-compact h3{font-size:13px; margin:1.1em 0 0.35em}
-.md-prose-compact .md-code-pre{font-size:11.5px; padding:10px 12px; line-height:1.55}
+.md-prose-compact .md-code-block pre{font-size:11.5px; padding:10px 12px; line-height:1.55}
 .md-prose-compact table.md-table{font-size:11.5px; min-width:420px}
 .md-prose-compact table.md-table th,.md-prose-compact table.md-table td{padding:6px 8px}
 
 /* mermaid containers */
-.mermaid-wrap{margin:12px 0; padding:12px; background:var(--reader-surface); border:1px solid var(--reader-border); border-radius:10px; overflow:auto}
-.mermaid-canvas{display:flex; justify-content:center; align-items:center; min-height:48px; overflow-x:auto}
-.mermaid-canvas svg{max-width:100%; height:auto}
-.mermaid-fallback{margin:0; font:12px/1.55 "JetBrains Mono",monospace; white-space:pre-wrap; color:var(--muted)}
-.mermaid-actions{display:flex; flex-wrap:wrap; justify-content:flex-end; gap:6px; margin-bottom:8px}
-.mermaid-action{background:var(--reader-bg); border:1px solid var(--reader-border); color:var(--fg); padding:5px 9px;
-  border-radius:7px; font-size:11px; font-weight:600; cursor:pointer}
+.mermaid-wrap{margin:14px 0; padding:14px; background:var(--reader-sidebar); border:1px solid var(--reader-border); border-radius:8px; overflow:auto}
+.mermaid-wrap svg{display:block; margin:0 auto; max-width:100%; height:auto}
+.mermaid-fallback{font:12px/1.55 var(--font-mono); color:var(--muted)}
+.mermaid-fallback-label{font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; margin-bottom:6px; font-weight:600}
+.mermaid-actions{display:flex; flex-wrap:wrap; justify-content:flex-end; gap:5px; margin-bottom:10px}
+.mermaid-action{
+  background:var(--reader-bg); border:1px solid var(--reader-border); color:var(--muted);
+  padding:3px 8px; border-radius:5px; font-size:11px; font-weight:500; cursor:pointer;
+}
 .mermaid-action:hover{border-color:var(--accent); color:var(--accent)}
 
-/* ---------- dedicated full-screen markdown writeup reader ---------- */
+/* ---------- GitBook-style Markdown Writeup Window (#readerOverlay) ---------- */
 #readerOverlay{
   position:fixed; inset:0; z-index:55; display:none;
-  background:rgba(8,12,14,0.56); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
-  padding:14px;
+  background:rgba(15,23,42,0.34);
+  padding:18px;
 }
-#readerOverlay.open{display:flex; align-items:stretch; justify-content:center}
+#readerOverlay.open{display:flex; align-items:center; justify-content:center}
+#readerOverlay.maximized{padding:0; background:var(--reader-bg)}
 #readerShell{
-  width:min(1440px, 100%); height:100%; margin:0 auto;
+  width:min(1320px, 100%); height:min(90vh, 100%);
   background:var(--reader-bg); color:var(--fg);
-  border:1px solid var(--reader-border); border-radius:16px;
-  box-shadow:0 22px 64px rgba(0,0,0,0.34);
+  border:1px solid var(--reader-border); border-radius:10px;
+  box-shadow:0 4px 12px rgba(15,23,42,0.08), 0 24px 64px rgba(15,23,42,0.22);
   display:flex; flex-direction:column; min-height:0; overflow:hidden;
+}
+#readerOverlay.maximized #readerShell{
+  width:100%; height:100%; border-radius:0; border:0; box-shadow:none;
 }
 #readerHeader{
   flex:none; display:flex; align-items:center; justify-content:space-between; gap:10px;
-  padding:10px 14px; border-bottom:1px solid var(--reader-border);
-  background:var(--reader-sidebar); min-height:54px;
+  padding:0 12px; height:48px; border-bottom:1px solid var(--reader-border);
+  background:var(--reader-bg);
 }
-.reader-head-left{display:flex; align-items:center; gap:9px; min-width:0; flex:1}
-.reader-head-right{display:flex; align-items:center; gap:6px; flex-wrap:nowrap; flex:none}
+.reader-head-left{display:flex; align-items:center; gap:8px; min-width:0; flex:1}
+.reader-head-right{display:flex; align-items:center; gap:5px; flex-wrap:nowrap; flex:none}
+.reader-head-sep{width:1px; height:18px; background:var(--reader-border); margin:0 3px; flex:none}
 .reader-icon-btn{
-  height:32px; padding:0 10px; border-radius:8px; border:1px solid var(--reader-border);
-  background:var(--reader-bg); color:var(--fg); font:600 12px Inter,sans-serif;
+  height:30px; padding:0 9px; border-radius:6px; border:1px solid transparent;
+  background:transparent; color:var(--muted); font:500 12px var(--font-sans);
   display:inline-flex; align-items:center; justify-content:center; gap:5px; cursor:pointer; white-space:nowrap;
 }
-.reader-icon-btn svg{width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; flex:none}
-.reader-icon-btn:hover{border-color:var(--accent); color:var(--accent)}
-.reader-icon-btn.primary{background:var(--accent); border-color:transparent; color:#fff}
-:root[data-theme="dark"] .reader-icon-btn.primary{color:#061212}
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .reader-icon-btn.primary{color:#061212} }
-.reader-icon-btn.primary:hover{filter:brightness(1.08); color:#fff}
-:root[data-theme="dark"] .reader-icon-btn.primary:hover{color:#061212}
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .reader-icon-btn.primary:hover{color:#061212} }
-.reader-icon-btn.icon-only{width:32px; padding:0}
-.reader-crumb{display:flex; align-items:center; gap:6px; min-width:0; font-size:13px; color:var(--muted)}
-.reader-crumb .crumb-cat{font-weight:600; white-space:nowrap; cursor:pointer}
-.reader-crumb .crumb-cat:hover{color:var(--accent)}
-.reader-crumb .crumb-sep{opacity:.45}
-.reader-crumb .crumb-title{color:var(--fg); font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.reader-icon-btn svg{width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:none}
+.reader-icon-btn:hover{background:var(--reader-surface); color:var(--fg)}
+.reader-icon-btn.bordered{border-color:var(--reader-border); background:var(--reader-bg); color:var(--fg)}
+.reader-icon-btn.bordered:hover{border-color:var(--accent); color:var(--accent)}
+.reader-icon-btn.primary{background:var(--accent); border-color:transparent; color:#fff; font-weight:600}
+.reader-icon-btn.primary:hover{filter:brightness(1.07); color:#fff}
+.reader-icon-btn.icon-only{width:30px; padding:0}
+.reader-icon-btn.starred{color:#d97706}
+.reader-icon-btn.copied{color:#059669; border-color:rgba(5,150,105,0.4)}
+.reader-crumb{display:flex; align-items:center; gap:6px; min-width:0; font-size:12.5px; color:var(--muted)}
+.reader-crumb .crumb-cat{font-weight:500; white-space:nowrap}
+.reader-crumb .crumb-sep{opacity:.45; font-size:13px}
+.reader-crumb .crumb-title{color:var(--fg); font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .reader-seg{
   display:inline-flex; background:var(--reader-surface); border:1px solid var(--reader-border);
-  border-radius:8px; padding:2px; gap:2px;
+  border-radius:6px; padding:2px; gap:1px;
 }
 .reader-seg button{
-  border:0; background:transparent; color:var(--muted); font:600 11.5px Inter,sans-serif;
-  padding:4px 9px; border-radius:6px; cursor:pointer;
+  border:0; background:transparent; color:var(--muted); font:500 11.5px var(--font-sans);
+  padding:3px 8px; border-radius:4px; cursor:pointer;
 }
-.reader-seg button.active{background:var(--reader-bg); color:var(--fg); box-shadow:0 1px 2px rgba(0,0,0,0.08)}
+.reader-seg button.active{background:var(--reader-bg); color:var(--fg); font-weight:600; box-shadow:0 1px 2px rgba(15,23,42,0.08)}
 
 #readerBody{
-  flex:1; min-height:0; display:grid; grid-template-columns:280px minmax(0, 1fr) 215px;
+  flex:1; min-height:0; display:grid; grid-template-columns:264px minmax(0, 1fr) 212px;
   position:relative; overflow:hidden;
 }
-#readerShell.sidebar-collapsed #readerBody{grid-template-columns:0 minmax(0, 1fr) 215px}
-#readerShell.sidebar-collapsed #readerSidebar{border-right:0; overflow:hidden; opacity:0; pointer-events:none}
-#readerShell.no-toc #readerBody{grid-template-columns:280px minmax(0, 1fr)}
-#readerShell.sidebar-collapsed.no-toc #readerBody{grid-template-columns:0 minmax(0, 1fr)}
-#readerShell.no-toc #readerToc{display:none}
+#readerBody.sidebar-collapsed{grid-template-columns:0 minmax(0, 1fr) 212px}
+#readerBody.toc-hidden{grid-template-columns:264px minmax(0, 1fr)}
+#readerBody.sidebar-collapsed.toc-hidden{grid-template-columns:0 minmax(0, 1fr)}
 
 #readerSidebar{
   display:flex; flex-direction:column; min-height:0; overflow:hidden;
   background:var(--reader-sidebar); border-right:1px solid var(--reader-border);
-  transition:opacity .15s;
 }
-.reader-side-top{flex:none; padding:12px 12px 9px; border-bottom:1px solid var(--reader-border)}
+#readerSidebar.collapsed{border-right:0; opacity:0; pointer-events:none}
+.reader-side-top{flex:none; padding:10px 10px 8px; border-bottom:1px solid var(--reader-border)}
 .reader-search-wrap{position:relative; display:flex; align-items:center}
 #readerSearch{
   width:100%; background:var(--reader-bg); border:1px solid var(--reader-border); color:var(--fg);
-  padding:8px 28px 8px 30px; border-radius:9px; font-size:12.5px;
+  padding:7px 26px 7px 28px; border-radius:6px; font-size:12.5px;
 }
-#readerSearch:focus{outline:2px solid var(--accent); outline-offset:1px}
-.reader-search-ico{position:absolute; left:9px; width:14px; height:14px; color:var(--muted); pointer-events:none}
+#readerSearch:focus{outline:2px solid var(--accent); outline-offset:-1px}
+.reader-search-ico{position:absolute; left:8px; width:13px; height:13px; color:var(--muted); pointer-events:none}
 #readerSearchClear{
-  position:absolute; right:6px; width:20px; height:20px; border:0; border-radius:50%;
-  background:transparent; color:var(--muted); cursor:pointer; font-size:12px; display:none; place-items:center;
+  position:absolute; right:5px; width:20px; height:20px; border:0; border-radius:4px;
+  background:transparent; color:var(--muted); cursor:pointer; font-size:11px; display:none; place-items:center;
 }
-#readerSearchClear.show{display:grid}
-.reader-cats{display:flex; gap:5px; flex-wrap:wrap; margin-top:9px}
+#readerSearchClear.visible{display:grid}
+#readerSearchClear:hover{background:var(--reader-surface); color:var(--fg)}
+.reader-cats{display:flex; gap:3px; flex-wrap:wrap; margin-top:8px}
 .reader-cat-chip{
-  font:600 11px Inter,sans-serif; padding:4px 8px; border-radius:999px;
-  border:1px solid var(--reader-border); background:var(--reader-bg); color:var(--muted); cursor:pointer;
+  font:500 11px var(--font-sans); padding:3px 7px; border-radius:5px;
+  border:1px solid transparent; background:transparent; color:var(--muted); cursor:pointer;
 }
-.reader-cat-chip:hover{border-color:var(--accent); color:var(--fg)}
-.reader-cat-chip.active{background:var(--accent); border-color:transparent; color:#fff}
-:root[data-theme="dark"] .reader-cat-chip.active{color:#061212}
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .reader-cat-chip.active{color:#061212} }
-.reader-side-meta{display:flex; justify-content:space-between; align-items:center; margin-top:7px; font-size:10.5px; color:var(--muted)}
-#readerList{flex:1; min-height:0; overflow-y:auto; padding:8px; -webkit-overflow-scrolling:touch}
-.reader-group{margin-bottom:8px}
-.reader-group-head{
+.reader-cat-chip:hover{background:var(--reader-surface); color:var(--fg)}
+.reader-cat-chip.active{background:var(--accent-soft); border-color:var(--accent-border); color:var(--accent); font-weight:600}
+.reader-side-meta{display:flex; justify-content:space-between; align-items:center; margin-top:7px; padding:0 2px; font-size:10.5px; color:var(--muted)}
+
+#readerList{flex:1; min-height:0; overflow-y:auto; padding:6px 8px 18px; -webkit-overflow-scrolling:touch}
+.reader-group-title{
   width:100%; display:flex; align-items:center; justify-content:space-between; gap:6px;
-  background:transparent; border:0; padding:6px 8px; cursor:pointer;
-  font:700 10.5px "JetBrains Mono",monospace; text-transform:uppercase; letter-spacing:.07em; color:var(--muted);
+  padding:8px 6px 4px; margin-top:4px; border:0; background:transparent; cursor:pointer;
+  font:600 11px var(--font-sans); color:var(--muted); text-align:left;
 }
-.reader-group-head:hover{color:var(--fg)}
-.reader-group-count{font-size:10px; padding:1px 6px; border-radius:999px; background:var(--reader-surface); color:var(--muted)}
-.reader-group.collapsed .reader-group-items{display:none}
+.reader-group-title:hover{color:var(--fg)}
+.reader-group-title .grp-left{display:inline-flex; align-items:center; gap:5px; text-transform:uppercase; letter-spacing:.05em; font-size:10.5px}
+.reader-group-title .grp-caret{display:inline-block; transition:transform .12s; font-size:9px; width:10px}
+.reader-group-title.collapsed .grp-caret{transform:rotate(-90deg)}
+.reader-group-title .grp-count{font-family:var(--font-mono); font-size:10px; opacity:.75}
+.reader-group-items.collapsed{display:none}
 .reader-item{
-  width:100%; text-align:left; border:0; border-radius:8px; background:transparent;
-  color:var(--fg); padding:7px 9px; margin-bottom:2px; cursor:pointer;
-  display:flex; align-items:flex-start; gap:8px; transition:background .12s;
+  width:100%; text-align:left; border:0; border-left:2px solid transparent; border-radius:0 6px 6px 0;
+  background:transparent; color:var(--fg); padding:6px 8px 6px 9px; margin:1px 0; cursor:pointer;
+  display:block; transition:background .1s;
 }
 .reader-item:hover{background:var(--reader-surface)}
-.reader-item.active{background:var(--callout-note-bg); color:var(--accent)}
-.reader-item-dot{width:7px; height:7px; border-radius:50%; margin-top:5px; flex:none}
-.reader-item-body{min-width:0; flex:1}
-.reader-item-title{display:block; font-size:12.5px; font-weight:600; line-height:1.35; overflow-wrap:break-word}
-.reader-item-sub{display:flex; align-items:center; gap:5px; flex-wrap:wrap; margin-top:2px; font:10px "JetBrains Mono",monospace; color:var(--muted)}
-.reader-item-new{color:var(--new); font-weight:700}
+.reader-item.active{background:var(--accent-soft); border-left-color:var(--accent); color:var(--accent)}
+.reader-item-row{display:flex; align-items:center; gap:7px; min-width:0}
+.reader-item-dot{width:6px; height:6px; border-radius:50%; flex:none}
+.dot-phase{background:var(--phase)}
+.dot-technique{background:var(--tech)}
+.dot-cve{background:var(--cve)}
+.dot-tool{background:var(--tool)}
+.dot-root{background:var(--muted)}
+.dot-custom{background:var(--custom)}
+.reader-item-title{font-size:12.5px; font-weight:500; line-height:1.35; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1}
+.reader-item.active .reader-item-title{font-weight:600}
+.reader-item-sub{margin-top:1px; padding-left:13px; font:10.5px var(--font-mono); color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.reader-item-star{color:#d97706; font-size:11px; flex:none}
+.reader-empty{padding:20px 10px; font-size:12.5px; color:var(--muted); line-height:1.55; text-align:center}
 
-#readerSidebarBackdrop{display:none; position:absolute; inset:0; background:rgba(0,0,0,0.42); z-index:4}
+#readerSidebarBackdrop{display:none; position:absolute; inset:0; background:rgba(15,23,42,0.38); z-index:4}
+#readerSidebarBackdrop.open{display:block}
 
 #readerMain{
-  min-width:0; min-height:0; overflow-y:auto; padding:28px 36px 48px;
+  min-width:0; min-height:0; overflow-y:auto; padding:34px 44px 64px;
   scroll-behavior:smooth; -webkit-overflow-scrolling:touch;
 }
-#readerArticle{max-width:78ch; margin:0 auto}
+#readerArticle{max-width:740px; margin:0 auto}
 
 #readerDocHeader{
-  padding-bottom:18px; margin-bottom:22px; border-bottom:1px solid var(--reader-border);
+  padding-bottom:20px; margin-bottom:24px; border-bottom:1px solid var(--reader-border);
 }
-.doc-eyebrow{display:flex; align-items:center; flex-wrap:wrap; gap:7px; margin-bottom:10px}
-.doc-type-pill{
-  font:700 10.5px "JetBrains Mono",monospace; text-transform:uppercase; letter-spacing:.07em;
-  padding:2px 8px; border-radius:999px; border:1px solid currentColor;
-}
-.doc-type-pill[data-type="phase"]{color:var(--phase)}
-.doc-type-pill[data-type="technique"]{color:var(--tech)}
-.doc-type-pill[data-type="tool"]{color:var(--tool)}
-.doc-type-pill[data-type="cve"]{color:var(--cve)}
-.doc-type-pill[data-type="root"]{color:var(--muted)}
+.doc-eyebrow{display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:10px}
 .doc-meta-pill{
-  font:500 11px "JetBrains Mono",monospace; padding:2px 8px; border-radius:999px;
-  background:var(--reader-surface); border:1px solid var(--reader-border); color:var(--muted);
+  font:500 11px var(--font-mono); padding:2px 7px; border-radius:4px;
+  background:var(--reader-sidebar); border:1px solid var(--reader-border); color:var(--muted);
 }
-.doc-title{font-size:clamp(22px, 3vw, 31px); font-weight:800; letter-spacing:-0.028em; line-height:1.18; margin:0 0 12px}
-.doc-relations{display:flex; flex-direction:column; gap:8px; margin-top:10px}
-.doc-rel-row{display:flex; align-items:center; flex-wrap:wrap; gap:6px; font-size:12px}
-.doc-rel-label{font:700 10px "JetBrains Mono",monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-right:2px}
+.doc-path-pill{font:400 11px var(--font-mono); color:var(--muted); margin-left:auto}
+.doc-title{font-size:clamp(22px, 2.8vw, 29px); font-weight:700; letter-spacing:-0.025em; line-height:1.2; margin:0 0 12px}
+.doc-relations{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px}
 .doc-chip{
   display:inline-flex; align-items:center; gap:5px;
-  font:600 11.5px "JetBrains Mono",monospace; padding:3px 9px; border-radius:7px;
-  background:var(--reader-surface); border:1px solid var(--reader-border); color:var(--fg);
+  font:500 11.5px var(--font-sans); padding:3px 9px; border-radius:5px;
+  background:var(--reader-sidebar); border:1px solid var(--reader-border); color:var(--fg);
   text-decoration:none; cursor:pointer;
 }
+.doc-chip .chip-k{font-family:var(--font-mono); font-size:10px; color:var(--muted); text-transform:uppercase}
 .doc-chip:hover{border-color:var(--accent); color:var(--accent)}
-.doc-chip .dot{width:6px; height:6px; margin-right:0}
 .doc-detect-box{
-  margin-top:14px; padding:10px 13px; border-radius:10px;
-  background:var(--callout-note-bg); border:1px solid var(--inline-code-border);
-  border-left:3.5px solid var(--accent); font-size:13px; line-height:1.55;
+  margin-top:14px; padding:10px 14px; border-radius:6px;
+  background:var(--callout-note-bg); border:1px solid var(--accent-border);
+  border-left:3px solid var(--accent); font-size:13px; line-height:1.58;
 }
-.doc-detect-box strong{font-size:10.5px; font-family:"JetBrains Mono",monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--accent); display:block; margin-bottom:2px}
+.doc-detect-box .detect-k{font-weight:600; color:var(--accent)}
 
 #readerRawWrap{display:none}
-#readerRawWrap.show{display:block}
+#readerRawWrap.open{display:block}
 #readerRawPre{
-  margin:0; padding:18px; border-radius:12px; background:var(--code-block-bg);
+  margin:0; padding:18px; border-radius:8px; background:var(--code-block-bg);
   color:var(--code-block-fg); border:1px solid var(--code-block-border);
-  font:12.5px/1.62 "JetBrains Mono",monospace; white-space:pre-wrap; overflow-wrap:anywhere;
+  font:12.5px/1.64 var(--font-mono); white-space:pre-wrap; overflow-wrap:anywhere;
 }
 
 #readerNav{
-  margin-top:36px; padding-top:20px; border-top:1px solid var(--reader-border);
+  margin-top:42px; padding-top:20px; border-top:1px solid var(--reader-border);
   display:grid; grid-template-columns:1fr 1fr; gap:12px;
 }
 .reader-nav-btn{
-  display:flex; flex-direction:column; gap:3px; padding:12px 14px; border-radius:11px;
-  border:1px solid var(--reader-border); background:var(--reader-sidebar); color:var(--fg);
-  text-align:left; cursor:pointer; min-width:0;
+  display:flex; flex-direction:column; gap:3px; padding:12px 14px; border-radius:8px;
+  border:1px solid var(--reader-border); background:var(--reader-bg); color:var(--fg);
+  text-align:left; cursor:pointer; min-width:0; transition:border-color .12s;
 }
 .reader-nav-btn.next{text-align:right; align-items:flex-end}
 .reader-nav-btn:hover{border-color:var(--accent)}
-.reader-nav-btn small{font:700 10px "JetBrains Mono",monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--muted)}
-.reader-nav-btn span{font-size:13px; font-weight:650; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%}
+.reader-nav-btn .nav-dir{font-size:11px; font-weight:500; color:var(--muted)}
+.reader-nav-btn .nav-title{font-size:13.5px; font-weight:600; color:var(--accent); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%}
 
+/* GitBook-style right TOC rail */
 #readerToc{
-  border-left:1px solid var(--reader-border); padding:20px 14px; overflow-y:auto; min-height:0;
+  padding:24px 16px 24px 0; overflow-y:auto; min-height:0;
 }
+#readerToc.empty{display:none}
 #readerToc h4{
-  margin:0 0 10px; font:700 10px "JetBrains Mono",monospace; text-transform:uppercase;
-  letter-spacing:.08em; color:var(--muted);
+  margin:0 0 10px; padding-left:14px; font:600 11px var(--font-sans);
+  text-transform:uppercase; letter-spacing:.05em; color:var(--muted);
 }
+#readerTocList{border-left:1px solid var(--reader-border); padding-left:0}
 .toc-link{
-  display:block; padding:5px 8px; margin-bottom:2px; border-radius:6px; border-left:2px solid transparent;
-  font-size:12px; line-height:1.38; color:var(--muted); text-decoration:none; cursor:pointer;
+  display:block; padding:4px 8px 4px 13px; margin-left:-1px; border-left:2px solid transparent;
+  font-size:12px; line-height:1.42; color:var(--muted); text-decoration:none; cursor:pointer;
 }
-.toc-link.lvl-3{padding-left:14px; font-size:11.5px}
-.toc-link:hover{color:var(--fg); background:var(--reader-surface)}
-.toc-link.active{color:var(--accent); border-left-color:var(--accent); background:var(--callout-note-bg); font-weight:600}
+.toc-link.toc-l3{padding-left:22px; font-size:11.5px}
+.toc-link.toc-l4{padding-left:30px; font-size:11px}
+.toc-link:hover{color:var(--fg)}
+.toc-link.active{color:var(--accent); border-left-color:var(--accent); font-weight:600}
 
-/* resource index modal */
-#indexOverlay{position:fixed; inset:0; z-index:40; display:none; align-items:center; justify-content:center; padding:20px;
-  background:rgba(10,14,15,0.35); backdrop-filter:blur(2px);}
+/* ---------- minimized window dock (bottom-center) ---------- */
+#windowDock{
+  position:fixed; bottom:max(22px, calc(env(safe-area-inset-bottom,0px) + 16px)); left:50%; transform:translateX(-50%);
+  z-index:46; display:none; align-items:center; gap:6px; padding:5px 7px;
+  max-width:calc(100vw - 140px); overflow-x:auto;
+  background:var(--glass-bg-solid); border:1px solid var(--glass-border);
+  border-radius:10px; box-shadow:0 4px 18px rgba(15,23,42,0.16);
+}
+#windowDock.has-items{display:flex}
+.dock-pill{
+  display:inline-flex; align-items:center; gap:7px; padding:5px 8px 5px 10px;
+  border-radius:7px; border:1px solid var(--reader-border); background:var(--reader-sidebar);
+  color:var(--fg); font-size:12px; font-weight:500; cursor:pointer; white-space:nowrap; max-width:240px;
+}
+.dock-pill:hover{border-color:var(--accent); background:var(--accent-soft)}
+.dock-pill-label{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.dock-pill-k{font-family:var(--font-mono); font-size:10px; color:var(--muted); text-transform:uppercase}
+.dock-pill-close{
+  border:0; background:transparent; color:var(--muted); cursor:pointer; width:18px; height:18px;
+  border-radius:4px; display:grid; place-items:center; font-size:11px; padding:0; flex:none;
+}
+.dock-pill-close:hover{background:var(--reader-surface); color:var(--fg)}
+
+/* resource index & about & diagram modals */
+#indexOverlay{position:fixed; inset:0; z-index:40; display:none; align-items:center; justify-content:center; padding:18px;
+  background:rgba(15,23,42,0.34);}
 #indexOverlay.open{display:flex}
-#indexModal{width:min(1180px, calc(100vw - 40px)); height:min(88vh, 900px); max-height:calc(100vh - 40px); padding:22px; display:flex; flex-direction:column; min-height:0}
-#aboutOverlay{position:fixed; inset:0; z-index:40; display:none; align-items:center; justify-content:center; padding:20px;
-  background:rgba(10,14,15,0.35); backdrop-filter:blur(2px);}
+#indexModal{width:min(1180px, calc(100vw - 36px)); height:min(88vh, 900px); max-height:calc(100vh - 36px); padding:20px; display:flex; flex-direction:column; min-height:0}
+#aboutOverlay{position:fixed; inset:0; z-index:40; display:none; align-items:center; justify-content:center; padding:18px;
+  background:rgba(15,23,42,0.34);}
 #aboutOverlay.open{display:flex}
-#aboutModal{width:min(760px, 100%); max-height:min(82vh, 760px); padding:22px; overflow-y:auto}
-#aboutModal code{font-family:"JetBrains Mono",monospace; font-size:.92em; background:var(--code-bg); border:1px solid var(--glass-border); border-radius:4px; padding:0 4px}
+#aboutModal{width:min(740px, 100%); max-height:min(84vh, 760px); padding:22px; overflow-y:auto}
+#aboutModal code{font-family:var(--font-mono); font-size:.9em; background:var(--inline-code-bg); border:1px solid var(--inline-code-border); border-radius:4px; padding:0 4px}
 #diagramOverlay{position:fixed; inset:0; z-index:70; display:none; align-items:center; justify-content:center; padding:2vh 2vw;
-  background:rgba(10,14,15,0.78); backdrop-filter:blur(5px)}
+  background:rgba(15,23,42,0.72)}
 #diagramOverlay.open{display:flex}
 #diagramModal{width:min(1400px, 100%); height:min(94vh, 100%); padding:16px; display:flex; flex-direction:column; min-height:0}
 #diagramModal .modal-head{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px}
-#diagramModal h2{font-size:16px; margin:0; font-weight:700}
-#diagramModal .diagram-modal-actions{display:flex; align-items:center; gap:7px}
-#diagramModal .closeBtn{width:30px; height:30px; border-radius:50%; border:none; background:var(--code-bg); color:var(--muted); cursor:pointer; font-size:15px}
+#diagramModal h2{font-size:15.5px; margin:0; font-weight:600}
+#diagramModal .diagram-modal-actions{display:flex; align-items:center; gap:6px}
+.modal-head-actions{display:flex; align-items:center; gap:5px; flex:none}
+.closeBtn{width:28px; height:28px; border-radius:6px; border:1px solid var(--reader-border); background:var(--reader-sidebar); color:var(--muted); cursor:pointer; font-size:13px; display:grid; place-items:center; flex:none}
+.closeBtn:hover{border-color:var(--accent); color:var(--fg)}
 #diagramStage{flex:1; min-height:0; overflow:auto; display:flex; align-items:center; justify-content:center; padding:12px;
-  border:1px solid var(--glass-border); border-radius:12px; background:var(--code-bg)}
+  border:1px solid var(--reader-border); border-radius:8px; background:var(--reader-sidebar)}
 #diagramStage svg{max-width:100%; height:auto}
-#indexModal .modal-head{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:4px}
-#indexModal h2{font-size:19px; margin:0; font-weight:700}
-#indexModal p.sub{font-size:13px; color:var(--muted); margin:6px 0 14px; max-width:68ch}
-#indexModal .closeBtn{width:28px; height:28px; border-radius:50%; border:none; background:var(--code-bg); color:var(--muted); cursor:pointer; font-size:15px; flex:none}
-#tableSearch{width:100%; background:var(--code-bg); border:1px solid var(--glass-border); color:var(--fg);
-  padding:9px 11px; border-radius:9px; font-size:13.5px; margin-bottom:12px}
-#tableSearch:focus{outline:2px solid var(--accent); outline-offset:1px}
+#indexModal .modal-head,#aboutModal .modal-head{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:4px}
+#indexModal h2,#aboutModal h2{font-size:18px; margin:0; font-weight:700; letter-spacing:-0.015em}
+#indexModal p.sub,#aboutModal p.sub{font-size:13px; color:var(--muted); margin:5px 0 12px; max-width:68ch; line-height:1.5}
+#tableSearch{width:100%; background:var(--reader-sidebar); border:1px solid var(--reader-border); color:var(--fg);
+  padding:8px 10px; border-radius:7px; font-size:13px; margin-bottom:10px}
+#tableSearch:focus{outline:2px solid var(--accent); outline-offset:-1px}
 #referenceTable td:last-child{overflow-wrap:anywhere}
-.resource-tabs{display:flex; gap:7px; margin:4px 0 12px; border-bottom:1px solid var(--glass-border)}
+.resource-tabs{display:flex; gap:4px; margin:4px 0 12px; border-bottom:1px solid var(--reader-border)}
 .resource-tab{padding:8px 11px; border:0; border-bottom:2px solid transparent; background:transparent;
-  color:var(--muted); cursor:pointer; font:600 12px Inter, sans-serif}
-.resource-tab.active{color:var(--fg); border-color:var(--accent)}
+  color:var(--muted); cursor:pointer; font:500 12.5px var(--font-sans)}
+.resource-tab.active{color:var(--accent); border-color:var(--accent); font-weight:600}
 .resource-panel{display:none; min-height:0; flex:1}
 .resource-panel.active{display:flex; flex-direction:column}
 .resource-note{font-size:12px; color:var(--muted); line-height:1.5; margin:0 0 10px}
 .resource-note-bar{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; flex-wrap:wrap}
 .resource-note-bar .resource-note{margin:0}
-.markdown-browser{display:grid; grid-template-columns:minmax(200px, 270px) minmax(0, 1fr); gap:12px; min-height:0; flex:1; overflow:hidden}
+.markdown-browser{display:grid; grid-template-columns:minmax(200px, 265px) minmax(0, 1fr); gap:12px; min-height:0; flex:1; overflow:hidden}
 .markdown-browser > div{display:flex; flex-direction:column; min-height:0; overflow:hidden}
-.markdown-list{flex:1; min-height:0; overflow:auto; border:1px solid var(--glass-border); border-radius:12px; padding:6px; background:var(--reader-sidebar)}
-.markdown-search{flex:none; width:100%; background:var(--reader-bg); border:1px solid var(--glass-border); color:var(--fg);
-  padding:8px 10px; border-radius:8px; font-size:12px; margin-bottom:8px}
-.markdown-search:focus{outline:2px solid var(--accent); outline-offset:1px}
-.markdown-file{display:block; width:100%; text-align:left; border:0; border-bottom:1px solid var(--glass-border);
-  background:transparent; color:var(--fg); padding:9px 8px; cursor:pointer; font-size:12px; line-height:1.35; border-radius:6px}
-.markdown-file:last-child{border-bottom:0}
-.markdown-file:hover,.markdown-file.active{background:var(--callout-note-bg); color:var(--accent)}
-.markdown-file small{display:block; color:var(--muted); font-family:"JetBrains Mono",monospace; font-size:9.5px; margin-top:3px}
-.markdown-viewer{overflow:auto; border:1px solid var(--glass-border); border-radius:12px; padding:22px 26px;
+.markdown-list{flex:1; min-height:0; overflow:auto; border:1px solid var(--reader-border); border-radius:8px; padding:6px; background:var(--reader-sidebar)}
+.markdown-search{flex:none; width:100%; background:var(--reader-bg); border:1px solid var(--reader-border); color:var(--fg);
+  padding:7px 10px; border-radius:6px; font-size:12px; margin-bottom:8px}
+.markdown-search:focus{outline:2px solid var(--accent); outline-offset:-1px}
+.markdown-file{display:block; width:100%; text-align:left; border:0; border-left:2px solid transparent;
+  background:transparent; color:var(--fg); padding:7px 8px; cursor:pointer; font-size:12px; line-height:1.35; border-radius:0 6px 6px 0}
+.markdown-file:hover{background:var(--reader-surface)}
+.markdown-file.active{background:var(--accent-soft); border-left-color:var(--accent); color:var(--accent)}
+.markdown-file small{display:block; color:var(--muted); font-family:var(--font-mono); font-size:10px; margin-top:2px}
+.markdown-viewer{overflow:auto; border:1px solid var(--reader-border); border-radius:8px; padding:22px 26px;
   min-height:0; background:var(--reader-bg)}
-.text-browser{display:grid; grid-template-columns:minmax(180px, 260px) minmax(0, 1fr); gap:12px; min-height:0; flex:1; overflow:hidden}
+.text-browser{display:grid; grid-template-columns:minmax(180px, 250px) minmax(0, 1fr); gap:12px; min-height:0; flex:1; overflow:hidden}
 .text-browser > div{display:flex; flex-direction:column; min-height:0; overflow:hidden}
-.text-list{flex:1; min-height:0; overflow:auto; border:1px solid var(--glass-border); border-radius:12px; padding:6px}
-.text-file{display:block; width:100%; text-align:left; border:0; border-bottom:1px solid var(--glass-border);
-  background:transparent; color:var(--fg); padding:9px 8px; cursor:pointer; font-size:12px}
-.text-file:last-child{border-bottom:0}
-.text-file:hover,.text-file.active{background:var(--code-bg); color:var(--accent)}
-.text-viewer{overflow:auto; border:1px solid var(--glass-border); border-radius:12px; padding:16px;
+.text-list{flex:1; min-height:0; overflow:auto; border:1px solid var(--reader-border); border-radius:8px; padding:6px; background:var(--reader-sidebar)}
+.text-file{display:block; width:100%; text-align:left; border:0; border-radius:5px;
+  background:transparent; color:var(--fg); padding:7px 8px; cursor:pointer; font-size:12px; font-family:var(--font-mono)}
+.text-file:hover,.text-file.active{background:var(--accent-soft); color:var(--accent)}
+.text-viewer{overflow:auto; border:1px solid var(--reader-border); border-radius:8px; padding:16px;
   min-height:0; background:var(--reader-bg)}
-.text-viewer pre{margin:0; white-space:pre-wrap; overflow-wrap:anywhere; font:12px/1.6 "JetBrains Mono",monospace}
-.text-path{flex:none; width:100%; background:var(--code-bg); border:1px solid var(--glass-border); color:var(--fg);
-  padding:8px 10px; border-radius:8px; font-size:12px; margin-bottom:8px}
+.text-viewer pre{margin:0; white-space:pre-wrap; overflow-wrap:anywhere; font:12px/1.6 var(--font-mono)}
+.text-path{flex:none; width:100%; background:var(--reader-bg); border:1px solid var(--reader-border); color:var(--fg);
+  padding:7px 10px; border-radius:6px; font-size:12px; margin-bottom:8px}
+
+.commit-list{overflow:auto; border:1px solid var(--reader-border); border-radius:8px; padding:8px 12px}
+.commit-item{padding:10px 2px; border-bottom:1px solid var(--reader-border)}
+.commit-item:last-child{border-bottom:0}
+.commit-item p{margin:0 0 4px; font-size:13px; line-height:1.45}
+.commit-item small{color:var(--muted); font:10.5px var(--font-mono)}
+.table-wrap{overflow:auto; border:1px solid var(--reader-border); border-radius:8px; min-height:0; flex:1}
+table{width:100%; border-collapse:collapse; font-size:13px}
+th,td{text-align:left; padding:9px 11px; border-bottom:1px solid var(--reader-border); vertical-align:top}
+th{font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); font-weight:600;
+  position:sticky; top:0; background:var(--table-head)}
+td.repo{font-family:var(--font-mono); white-space:nowrap}
+tr[hidden]{display:none}
+.cat-pill{font-family:var(--font-mono); font-size:10.5px; background:var(--reader-sidebar); border:1px solid var(--reader-border); border-radius:4px; padding:1px 6px; white-space:nowrap}
+
+/* footer chrome */
+.hint-overlay{position:fixed; bottom:max(14px, env(safe-area-inset-bottom,0px)); left:max(14px, env(safe-area-inset-left,0px));
+  font-size:11px; color:var(--muted); pointer-events:none; z-index:5}
+#watermark{position:fixed; bottom:max(4px, env(safe-area-inset-bottom,0px)); left:50%; transform:translateX(-50%);
+  z-index:5; color:var(--muted); font-size:9.5px; letter-spacing:.02em; opacity:.65; pointer-events:none; white-space:nowrap}
+
+/* ---------- expanded custom Workspace Toolbox ---------- */
+#toolboxBtn{
+  position:fixed; right:max(14px, env(safe-area-inset-right,0px)); bottom:max(14px, env(safe-area-inset-bottom,0px));
+  z-index:31; height:38px; padding:0 12px; border-radius:8px; display:inline-flex; align-items:center; gap:6px;
+  cursor:pointer; color:var(--fg); font-size:12px; font-weight:600;
+}
+#toolboxBtn svg{width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+#toolboxPanel{
+  position:fixed; right:max(14px, env(safe-area-inset-right,0px)); bottom:max(60px, calc(env(safe-area-inset-bottom,0px) + 48px));
+  width:348px; max-width:calc(100vw - 28px); max-height:min(78vh, 660px); z-index:30; display:none;
+  flex-direction:column; overflow:hidden;
+}
+#toolboxPanel.open{display:flex}
+.tb-head{
+  flex:none; display:flex; align-items:center; justify-content:space-between; gap:8px;
+  padding:10px 12px; border-bottom:1px solid var(--reader-border); background:var(--reader-sidebar);
+}
+.tb-head h3{margin:0; font-size:13px; font-weight:600; letter-spacing:-0.01em}
+.tb-head-btns{display:flex; align-items:center; gap:4px}
+.tb-tabs{
+  flex:none; display:grid; grid-template-columns:repeat(3, 1fr); gap:2px;
+  padding:6px 10px; border-bottom:1px solid var(--reader-border); background:var(--reader-bg);
+}
+.tb-tab{
+  border:0; background:transparent; color:var(--muted); font-size:12px; font-weight:500;
+  padding:6px 4px; border-radius:6px; cursor:pointer;
+}
+.tb-tab:hover{color:var(--fg); background:var(--reader-sidebar)}
+.tb-tab.active{background:var(--accent-soft); color:var(--accent); font-weight:600}
+.tb-body{flex:1; min-height:0; overflow-y:auto; padding:12px}
+.tb-pane{display:none}
+.tb-pane.active{display:block}
+.tb-sec{margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid var(--reader-border)}
+.tb-sec:last-child{margin-bottom:0; padding-bottom:0; border-bottom:0}
+.tb-sec-title{
+  display:flex; align-items:center; justify-content:space-between;
+  font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:0 0 8px;
+}
+.tb-seg{display:grid; grid-template-columns:repeat(3, 1fr); gap:4px; margin-bottom:8px}
+.tb-seg button,.tb-btn{
+  border:1px solid var(--reader-border); background:var(--reader-sidebar); color:var(--fg);
+  border-radius:6px; padding:6px 8px; font-size:11.5px; font-weight:500; cursor:pointer; text-align:center;
+}
+.tb-seg button:hover,.tb-btn:hover{border-color:var(--accent); color:var(--accent)}
+.tb-seg button.active{background:var(--accent); border-color:transparent; color:#fff; font-weight:600}
+.tb-btn.primary{background:var(--accent); border-color:transparent; color:#fff; font-weight:600}
+.tb-btn.primary:hover{filter:brightness(1.06); color:#fff}
+.tb-btn.active{background:var(--accent-soft); border-color:var(--accent-border); color:var(--accent); font-weight:600}
+.tb-row{display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:7px}
+.tb-row > *{flex:1}
+.tb-row > .tb-fit{flex:none}
+.tb-slider-row{display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:11.5px; color:var(--muted); margin-top:4px}
+.tb-slider-row input[type=range]{flex:1; accent-color:var(--accent)}
+#toolboxPanel label.tb-lbl{display:block; font-size:11px; color:var(--muted); font-weight:500; margin:7px 0 4px}
+#toolboxPanel select,#toolboxPanel input[type=text],#toolboxPanel input[type=color],#toolboxPanel textarea{
+  width:100%; background:var(--reader-bg); color:var(--fg);
+  border:1px solid var(--reader-border); border-radius:6px; padding:6px 8px; font-size:12px;
+}
+#toolboxPanel select,#toolboxPanel input[type=color]{min-height:32px}
+#toolboxPanel input[type=color]{padding:2px; cursor:pointer}
+#toolboxPanel textarea{min-height:110px; resize:vertical; font-family:var(--font-mono); font-size:11.5px; line-height:1.5}
+#toolboxPanel details summary{cursor:pointer; font-size:11.5px; font-weight:600; color:var(--muted); padding:2px 0; list-style:none}
+#toolboxPanel details summary::-webkit-details-marker{display:none}
+#toolboxPanel details summary::before{content:"▸ "; font-size:10px}
+#toolboxPanel details[open] summary::before{content:"▾ "}
+#phaseChoices{display:grid; grid-template-columns:1fr 1fr; gap:5px; max-height:140px; overflow:auto;
+  border:1px solid var(--reader-border); border-radius:6px; padding:8px; background:var(--reader-sidebar)}
+#phaseChoices label{display:flex; align-items:center; gap:6px; margin:0; font-size:11.5px; font-weight:400; color:var(--fg); cursor:pointer}
+#phaseChoices input{accent-color:var(--accent)}
+#toolboxPanel .toolbox-note{font-size:11px; line-height:1.45; color:var(--muted); margin:8px 0 0}
+.tb-link-btn{border:0; background:transparent; color:var(--accent); font-size:11px; font-weight:500; cursor:pointer; padding:0}
+.tb-link-btn:hover{text-decoration:underline}
+.tb-list{display:flex; flex-direction:column; gap:4px; max-height:160px; overflow-y:auto}
+.tb-list-item{
+  display:flex; align-items:center; justify-content:space-between; gap:6px;
+  padding:5px 8px; border-radius:6px; border:1px solid var(--reader-border); background:var(--reader-sidebar);
+  font-size:11.5px;
+}
+.tb-list-main{display:flex; align-items:center; gap:6px; min-width:0; flex:1; cursor:pointer}
+.tb-list-main span{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.tb-list-main:hover{color:var(--accent)}
+.tb-hop-chain{display:flex; flex-wrap:wrap; align-items:center; gap:4px; margin-top:7px}
+.tb-hop{
+  font-size:11px; font-weight:500; padding:2px 7px; border-radius:5px;
+  border:1px solid var(--accent-border); background:var(--accent-soft); color:var(--accent); cursor:pointer;
+}
+.tb-hop:hover{background:var(--accent); color:#fff}
+.tb-hop-arrow{font-size:10px; color:var(--muted)}
+#scratchPreview{
+  display:none; border:1px solid var(--reader-border); border-radius:6px; padding:10px 12px;
+  background:var(--reader-bg); max-height:200px; overflow:auto;
+}
+#scratchPreview.open{display:block}
 
 @media (max-width: 1180px){
-  #readerBody{grid-template-columns:260px minmax(0, 1fr)}
-  #readerShell.sidebar-collapsed #readerBody{grid-template-columns:0 minmax(0, 1fr)}
+  #readerBody{grid-template-columns:248px minmax(0, 1fr)}
+  #readerBody.sidebar-collapsed{grid-template-columns:0 minmax(0, 1fr)}
   #readerToc{display:none}
-  #readerMain{padding:24px 26px 40px}
+  #readerMain{padding:26px 28px 48px}
 }
 @media (max-width: 880px){
   #readerOverlay{padding:0}
-  #readerShell{border-radius:0; border:0}
-  #readerBody,#readerShell.sidebar-collapsed #readerBody,#readerShell.no-toc #readerBody,#readerShell.sidebar-collapsed.no-toc #readerBody{
+  #readerShell{width:100%; height:100%; border-radius:0; border:0}
+  #readerBody,#readerBody.sidebar-collapsed,#readerBody.toc-hidden,#readerBody.sidebar-collapsed.toc-hidden{
     grid-template-columns:minmax(0, 1fr)
   }
   #readerSidebar{
-    position:absolute; top:0; bottom:0; left:0; width:min(310px, 86vw); z-index:6;
-    box-shadow:8px 0 32px rgba(0,0,0,0.35); transform:translateX(-104%); transition:transform .2s ease;
+    position:absolute; top:0; bottom:0; left:0; width:min(300px, 86vw); z-index:6;
+    box-shadow:6px 0 28px rgba(15,23,42,0.28); transform:translateX(-104%); transition:transform .18s ease;
     opacity:1!important; pointer-events:auto!important; border-right:1px solid var(--reader-border)!important;
   }
-  #readerShell.mobile-nav-open #readerSidebar{transform:translateX(0)}
-  #readerShell.mobile-nav-open #readerSidebarBackdrop{display:block}
-  #readerMain{padding:18px 16px 36px}
+  #readerSidebar.mobile-open{transform:translateX(0)}
+  #readerMain{padding:20px 16px 40px}
   .reader-hide-sm{display:none!important}
 }
 @media (max-width: 700px){
-  .markdown-browser{grid-template-columns:1fr; grid-template-rows:minmax(130px, 200px) minmax(0, 1fr)}
-  .text-browser{grid-template-columns:1fr; grid-template-rows:minmax(130px, 200px) minmax(0, 1fr)}
+  .markdown-browser{grid-template-columns:1fr; grid-template-rows:minmax(130px, 195px) minmax(0, 1fr)}
+  .text-browser{grid-template-columns:1fr; grid-template-rows:minmax(130px, 195px) minmax(0, 1fr)}
   #readerNav{grid-template-columns:1fr}
 }
 @media (max-width: 760px){
@@ -584,47 +755,12 @@ table.md-table tbody tr:hover{background:var(--table-hover)}
   #indexModal{width:calc(100vw - 16px); height:calc(100vh - 16px); max-height:none; padding:14px}
   .resource-tabs{overflow-x:auto; flex-wrap:nowrap}
   .resource-tab{white-space:nowrap}
-  #docsBtn span{display:none}
-  #docsBtn{width:44px;padding:0;justify-content:center}
+  #docsBtn span,#toolboxBtn span{display:none}
+  #docsBtn,#toolboxBtn{width:38px; padding:0; justify-content:center}
+  #windowDock{max-width:calc(100vw - 24px)}
 }
-.commit-list{overflow:auto; border:1px solid var(--glass-border); border-radius:12px; padding:8px 12px}
-.commit-item{padding:10px 2px; border-bottom:1px solid var(--glass-border)}
-.commit-item:last-child{border-bottom:0}
-.commit-item p{margin:0 0 4px; font-size:13px; line-height:1.45}
-.commit-item small{color:var(--muted); font:10px "JetBrains Mono",monospace}
-.table-wrap{overflow:auto; border:1px solid var(--glass-border); border-radius:12px; min-height:0; flex:1}
-table{width:100%; border-collapse:collapse; font-size:13px}
-th,td{text-align:left; padding:9px 11px; border-bottom:1px solid var(--glass-border); vertical-align:top}
-th{font-family:"JetBrains Mono",monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); font-weight:600;
-  position:sticky; top:0; background:var(--glass-bg-solid)}
-td.repo{font-family:"JetBrains Mono",monospace; white-space:nowrap}
-tr[hidden]{display:none}
-.cat-pill{font-family:"JetBrains Mono",monospace; font-size:10.5px; background:var(--code-bg); border:1px solid var(--glass-border); border-radius:5px; padding:1px 7px; white-space:nowrap}
-
-.hint-overlay{position:fixed; bottom:max(14px, env(safe-area-inset-bottom,0px)); left:max(16px, env(safe-area-inset-left,0px));
-  font-size:11px; color:var(--muted); pointer-events:none; z-index:5;}
-#watermark{position:fixed; bottom:max(5px, env(safe-area-inset-bottom,0px)); left:50%; transform:translateX(-50%);
-  z-index:5; color:var(--muted); font-size:9px; letter-spacing:.03em; opacity:.72; pointer-events:none; white-space:nowrap}
-#toolboxBtn{position:fixed; right:max(16px, env(safe-area-inset-right,0px)); bottom:max(48px, env(safe-area-inset-bottom,0px));
-  z-index:31; width:46px; height:46px; border-radius:50%; display:grid; place-items:center; cursor:pointer; color:var(--fg)}
-#toolboxBtn svg{width:21px; height:21px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
-#toolboxPanel{position:fixed; right:max(16px, env(safe-area-inset-right,0px)); bottom:max(102px, calc(env(safe-area-inset-bottom,0px) + 54px));
-  width:310px; max-width:calc(100vw - 32px); max-height:min(75vh,620px); overflow:auto; z-index:30; display:none; padding:16px}
-#toolboxPanel.open{display:block}
-#toolboxPanel h3{margin:0 0 12px; font-size:15px}
-#toolboxPanel label{display:block; font-size:11px; color:var(--muted); font-weight:600; margin:10px 0 5px}
-#toolboxPanel select,#toolboxPanel input[type=color]{width:100%; min-height:34px; background:var(--code-bg); color:var(--fg);
-  border:1px solid var(--glass-border); border-radius:8px; padding:6px 8px}
-#toolboxPanel input[type=color]{padding:3px; cursor:pointer}
-#phaseChoices{display:grid; grid-template-columns:1fr 1fr; gap:5px; max-height:140px; overflow:auto;
-  border:1px solid var(--glass-border); border-radius:8px; padding:8px}
-#phaseChoices label{display:flex; align-items:center; gap:6px; margin:0; font-size:11px; font-weight:400; color:var(--fg)}
-#phaseChoices input{accent-color:var(--accent)}
-#toolboxPanel .menu-action{margin-top:11px; margin-bottom:0; text-align:center}
-#toolboxPanel .toolbox-note{font-size:10px; line-height:1.45; color:var(--muted); margin:8px 0 0}
-
 @media (max-width: 640px){
-  #detail{left:max(16px, env(safe-area-inset-left,0px)); right:max(16px, env(safe-area-inset-right,0px)); width:auto; max-height:min(76vh, 620px)}
+  #detail{left:max(12px, env(safe-area-inset-left,0px)); right:max(12px, env(safe-area-inset-right,0px)); width:auto; max-height:min(76vh, 620px)}
   #detail.detail-expanded{inset:2vh 2vw; max-height:96vh; padding:16px}
   #titleBadge .s{display:none}
 }
@@ -685,29 +821,148 @@ tr[hidden]{display:none}
 
 <div class="hint-overlay" id="hintOverlay">loading attack graph…</div>
 <div id="watermark">Created by Alham Rizvi</div>
-<button id="toolboxBtn" class="glass" type="button" aria-label="Open graph toolbox" aria-expanded="false" title="Graph toolbox">
+<button id="toolboxBtn" class="glass" type="button" aria-label="Open workspace toolbox" aria-expanded="false" title="Workspace toolbox">
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5h16M4 12h16M4 16.5h16"/><circle cx="8" cy="7.5" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="10" cy="16.5" r="2"/></svg>
+  <span>Toolbox</span>
 </button>
-<section id="toolboxPanel" class="glass" aria-label="Graph toolbox">
-  <h3>Graph toolbox</h3>
-  <label for="exportPhases">Include phases</label>
-  <div id="phaseChoices"></div>
-  <label for="exportFormat">Download selection as</label>
-  <select id="exportFormat">
-    <option value="json">JSON data</option>
-    <option value="csv">CSV node list</option>
-    <option value="css">CSS color theme</option>
-    <option value="svg">SVG graph</option>
-  </select>
-  <button class="menu-action" id="downloadSelection" type="button">Download selected phases</button>
-  <label for="colorTarget">Customize colors for</label>
-  <select id="colorTarget"></select>
-  <label for="nodeColor">Node color</label>
-  <input id="nodeColor" type="color" value="#0f8a8a">
-  <label for="backgroundColor">Graph background</label>
-  <input id="backgroundColor" type="color" value="#f2f4f2">
-  <button class="menu-action" id="resetColors" type="button">Reset colors</button>
-  <p class="toolbox-note">Color choices are saved in this browser. Select one or more phases to export just that part of the graph.</p>
+<section id="toolboxPanel" class="glass-solid" aria-label="Workspace toolbox">
+  <div class="tb-head">
+    <h3>Workspace toolbox</h3>
+    <div class="tb-head-btns">
+      <button class="closeBtn" id="minimizeToolbox" type="button" title="Minimize toolbox" aria-label="Minimize toolbox">—</button>
+      <button class="closeBtn" id="closeToolbox" type="button" title="Close toolbox" aria-label="Close toolbox">✕</button>
+    </div>
+  </div>
+  <div class="tb-tabs" role="tablist" aria-label="Toolbox sections">
+    <button class="tb-tab active" type="button" role="tab" aria-selected="true" data-pane="tbGraphPane">Graph</button>
+    <button class="tb-tab" type="button" role="tab" aria-selected="false" data-pane="tbToolsPane">Tools</button>
+    <button class="tb-tab" type="button" role="tab" aria-selected="false" data-pane="tbExportPane">Export</button>
+  </div>
+  <div class="tb-body">
+    <!-- TAB 1: GRAPH CONTROLS -->
+    <div class="tb-pane active" id="tbGraphPane" role="tabpanel">
+      <div class="tb-sec">
+        <div class="tb-sec-title"><span>Layout preset</span></div>
+        <div class="tb-seg" id="layoutPresets">
+          <button type="button" data-layout="force" class="active">Force</button>
+          <button type="button" data-layout="chain">Kill-chain</button>
+          <button type="button" data-layout="radial">Radial</button>
+        </div>
+        <div class="tb-row">
+          <button class="tb-btn" id="toggleFreeze" type="button" aria-pressed="false">Freeze layout</button>
+          <button class="tb-btn" id="fitGraph" type="button">Fit to screen</button>
+        </div>
+        <div class="tb-row">
+          <button class="tb-btn" id="unpinNodes" type="button">Unpin nodes</button>
+          <button class="tb-btn" id="cycleLabels" type="button">Labels: All</button>
+        </div>
+        <div class="tb-slider-row">
+          <span>Spacing</span>
+          <input id="spacingSlider" type="range" min="120" max="440" step="20" value="240" aria-label="Node repulsion spacing">
+          <span class="mono" id="spacingVal">240</span>
+        </div>
+      </div>
+
+      <div class="tb-sec">
+        <details id="colorsDetails">
+          <summary>Node &amp; canvas colors</summary>
+          <label class="tb-lbl" for="colorTarget">Customize colors for</label>
+          <select id="colorTarget"></select>
+          <div class="tb-row" style="margin-top:6px">
+            <div>
+              <label class="tb-lbl" for="nodeColor" style="margin-top:0">Node color</label>
+              <input id="nodeColor" type="color" value="#2563eb">
+            </div>
+            <div>
+              <label class="tb-lbl" for="backgroundColor" style="margin-top:0">Canvas background</label>
+              <input id="backgroundColor" type="color" value="#f7f8fa">
+            </div>
+          </div>
+          <button class="tb-btn" id="resetColors" type="button" style="width:100%;margin-top:4px">Reset colors</button>
+        </details>
+      </div>
+    </div>
+
+    <!-- TAB 2: CUSTOM WORKSPACE TOOLS -->
+    <div class="tb-pane" id="tbToolsPane" role="tabpanel">
+      <div class="tb-sec">
+        <div class="tb-sec-title">
+          <span>Shortest path finder</span>
+          <button class="tb-link-btn" id="clearPathBtn" type="button">Clear</button>
+        </div>
+        <label class="tb-lbl" for="pathFrom">From node</label>
+        <select id="pathFrom"></select>
+        <label class="tb-lbl" for="pathTo">To node</label>
+        <select id="pathTo"></select>
+        <div class="tb-row" style="margin-top:7px">
+          <button class="tb-btn primary" id="findPathBtn" type="button">Highlight path</button>
+          <button class="tb-btn tb-fit" id="useCurrentFrom" type="button" title="Use selected node as start">Use selected</button>
+        </div>
+        <div id="pathResult" class="toolbox-note"></div>
+      </div>
+
+      <div class="tb-sec">
+        <div class="tb-sec-title">
+          <span>Saved bookmarks (<span id="bookmarkCount">0</span>)</span>
+          <button class="tb-link-btn" id="clearBookmarksBtn" type="button">Clear</button>
+        </div>
+        <div class="tb-list" id="bookmarkList"></div>
+      </div>
+
+      <div class="tb-sec">
+        <div class="tb-sec-title">
+          <span>Scratchpad (Markdown)</span>
+          <div style="display:flex;gap:8px">
+            <button class="tb-link-btn" id="toggleScratchPreview" type="button">Preview</button>
+            <button class="tb-link-btn" id="copyScratchBtn" type="button">Copy</button>
+            <button class="tb-link-btn" id="exportScratchBtn" type="button">Save .md</button>
+          </div>
+        </div>
+        <textarea id="scratchInput" placeholder="# Study / lab notes&#10;- Check `ms-DS-MachineAccountQuota`&#10;- Review ADCS templates..."></textarea>
+        <div id="scratchPreview" class="md-prose md-prose-compact"></div>
+      </div>
+
+      <div class="tb-sec">
+        <div class="tb-sec-title">
+          <span>Custom graph nodes</span>
+          <button class="tb-link-btn" id="clearCustomNodesBtn" type="button">Clear all</button>
+        </div>
+        <label class="tb-lbl" for="customNodeLabel">Node label</label>
+        <input id="customNodeLabel" type="text" placeholder="e.g. DC01.corp.local or Lab finding" autocomplete="off">
+        <label class="tb-lbl" for="customNodeParent">Link to phase</label>
+        <select id="customNodeParent"></select>
+        <label class="tb-lbl" for="customNodeNote">Notes (optional, supports Markdown)</label>
+        <input id="customNodeNote" type="text" placeholder="Short note or observation" autocomplete="off">
+        <button class="tb-btn primary" id="addCustomNodeBtn" type="button" style="width:100%;margin-top:7px">Add custom node</button>
+        <div class="tb-list" id="customNodeList" style="margin-top:7px"></div>
+      </div>
+    </div>
+
+    <!-- TAB 3: EXPORT -->
+    <div class="tb-pane" id="tbExportPane" role="tabpanel">
+      <div class="tb-sec">
+        <div class="tb-sec-title">
+          <span>Include phases</span>
+          <div style="display:flex;gap:8px">
+            <button class="tb-link-btn" id="selectAllPhases" type="button">All</button>
+            <button class="tb-link-btn" id="selectNoPhases" type="button">None</button>
+          </div>
+        </div>
+        <div id="phaseChoices"></div>
+        <label class="tb-lbl" for="exportFormat">Download selection as</label>
+        <select id="exportFormat">
+          <option value="json">JSON data</option>
+          <option value="csv">CSV node list</option>
+          <option value="css">CSS color theme</option>
+          <option value="svg">SVG vector graph</option>
+          <option value="png">PNG high-DPI snapshot</option>
+          <option value="md">Markdown briefing (.md)</option>
+        </select>
+        <button class="tb-btn primary" id="downloadSelection" type="button" style="width:100%;margin-top:8px">Download selected phases</button>
+        <p class="toolbox-note">Color choices, bookmarks, scratchpad, and custom nodes are saved locally in this browser.</p>
+      </div>
+    </div>
+  </div>
 </section>
 
 <div id="aboutOverlay">
@@ -773,7 +1028,10 @@ tr[hidden]{display:none}
         <h2>Tool &amp; resource index</h2>
         <p class="sub">52 repositories behind the graph's tool nodes, plus reference material. Repo locations and maintenance shift — verify before cloning into anything but a lab.</p>
       </div>
-      <button class="closeBtn" id="closeIndex">✕</button>
+      <div class="modal-head-actions">
+        <button class="closeBtn" id="minimizeIndex" type="button" title="Minimize index" aria-label="Minimize index">—</button>
+        <button class="closeBtn" id="closeIndex" type="button" title="Close index" aria-label="Close index">✕</button>
+      </div>
     </div>
     <div class="resource-tabs" role="tablist" aria-label="Resource sections">
       <button class="resource-tab active" id="toolsTab" type="button" role="tab" aria-selected="true" data-panel="toolsPanel">Tools</button>
@@ -850,27 +1108,33 @@ tr[hidden]{display:none}
     <header id="readerHeader">
       <div class="reader-head-left">
         <button class="reader-icon-btn icon-only" id="readerSidebarToggle" type="button" aria-label="Toggle writeup navigation" title="Toggle sidebar">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg>
         </button>
         <nav class="reader-crumb" aria-label="Breadcrumb">
           <span class="crumb-cat" id="readerCrumbCat">Writeups</span>
-          <span class="crumb-sep">/</span>
+          <span class="crumb-sep">›</span>
           <span class="crumb-title" id="readerCrumbTitle">Select a writeup</span>
         </nav>
       </div>
       <div class="reader-head-right">
         <div class="reader-seg" role="group" aria-label="View mode">
-          <button type="button" id="readerModeRendered" class="active">Reader</button>
-          <button type="button" id="readerModeRaw">Raw .md</button>
+          <button type="button" id="readerModeRendered" class="active">Page</button>
+          <button type="button" id="readerModeRaw">Raw</button>
         </div>
+        <button class="reader-icon-btn icon-only" id="readerBookmarkBtn" type="button" title="Bookmark writeup" aria-label="Bookmark writeup">☆</button>
         <button class="reader-icon-btn reader-hide-sm" id="readerFontDown" type="button" title="Decrease font size" aria-label="Decrease font size">A-</button>
         <button class="reader-icon-btn reader-hide-sm" id="readerFontUp" type="button" title="Increase font size" aria-label="Increase font size">A+</button>
         <button class="reader-icon-btn icon-only" id="readerThemeToggle" type="button" title="Toggle light or dark theme" aria-label="Toggle theme">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
         </button>
-        <button class="reader-icon-btn reader-hide-sm" id="readerCopyMd" type="button" title="Copy raw Markdown">Copy .md</button>
+        <button class="reader-icon-btn reader-hide-sm" id="readerCopyMd" type="button" title="Copy raw Markdown">Copy</button>
         <button class="reader-icon-btn reader-hide-sm" id="readerDownloadMd" type="button" title="Download Markdown file">Download</button>
-        <button class="reader-icon-btn primary" id="readerLocateGraph" type="button" hidden title="Focus this node on the attack graph">On graph</button>
+        <button class="reader-icon-btn primary" id="readerLocateGraph" type="button" hidden title="Focus this node on the attack graph">Locate</button>
+        <span class="reader-head-sep" aria-hidden="true"></span>
+        <button class="reader-icon-btn icon-only" id="minimizeReader" type="button" aria-label="Minimize writeup window" title="Minimize to dock">—</button>
+        <button class="reader-icon-btn icon-only reader-hide-sm" id="maximizeReader" type="button" aria-label="Toggle fullscreen window" title="Maximize / restore window">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+        </button>
         <button class="reader-icon-btn icon-only" id="closeReader" type="button" aria-label="Close writeup reader" title="Close (Esc)">✕</button>
       </div>
     </header>
@@ -880,20 +1144,20 @@ tr[hidden]{display:none}
         <div class="reader-side-top">
           <div class="reader-search-wrap">
             <svg class="reader-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-            <input id="readerSearch" type="search" placeholder="Search writeups, MITRE, commands… (/)" autocomplete="off">
+            <input id="readerSearch" type="search" placeholder="Search writeups… (/)" autocomplete="off">
             <button id="readerSearchClear" type="button" aria-label="Clear search">✕</button>
           </div>
           <div class="reader-cats" id="readerCatFilters" role="group" aria-label="Filter by category">
             <button class="reader-cat-chip active" type="button" data-cat="all">All</button>
             <button class="reader-cat-chip" type="button" data-cat="phase">Phases</button>
-            <button class="reader-cat-chip" type="button" data-cat="technique">Techniques</button>
+            <button class="reader-cat-chip" type="button" data-cat="technique">Tech</button>
             <button class="reader-cat-chip" type="button" data-cat="cve">CVEs</button>
             <button class="reader-cat-chip" type="button" data-cat="tool">Tools</button>
             <button class="reader-cat-chip" type="button" data-cat="root">Guides</button>
           </div>
           <div class="reader-side-meta">
             <span id="readerMatchCount">Loading…</span>
-            <span>Esc to close</span>
+            <span>⌘K · Esc</span>
           </div>
         </div>
         <div id="readerList" role="navigation" aria-label="Markdown files"></div>
@@ -918,6 +1182,8 @@ tr[hidden]{display:none}
     </div>
   </section>
 </div>
+
+<div id="windowDock" aria-label="Minimized windows"></div>
 
 <div id="diagramOverlay" aria-hidden="true">
   <section id="diagramModal" class="glass-solid" role="dialog" aria-modal="true" aria-labelledby="diagramTitle">
@@ -1575,12 +1841,12 @@ const graphNodes = nodes.filter(n=> n.type!=="tool" || usedToolIds.has(n.id));
 const graphIds = new Set(graphNodes.map(n=>n.id));
 const graphLinks = links.filter(l=> graphIds.has(l.source) && graphIds.has(l.target));
 const rootStyle = document.documentElement.style;
-const rootColors = getComputedStyle(document.documentElement);
+const getLiveVar = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const defaultPalette = {
-  phase: rootColors.getPropertyValue("--phase").trim(),
-  technique: rootColors.getPropertyValue("--tech").trim(),
-  tool: rootColors.getPropertyValue("--tool").trim(),
-  cve: rootColors.getPropertyValue("--cve").trim()
+  phase: getLiveVar("--phase"),
+  technique: getLiveVar("--tech"),
+  tool: getLiveVar("--tool"),
+  cve: getLiveVar("--cve")
 };
 const validColor = value=> typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value);
 let colorSettings = {background:"", types:{}, nodes:{}};
@@ -1599,7 +1865,26 @@ const palette = {...defaultPalette, ...colorSettings.types};
 Object.entries(colorSettings.types).forEach(([type,value])=>{
   rootStyle.setProperty(`--${type==="technique"?"tech":type}`, value);
 });
-const nodeColor = d=> colorSettings.nodes[d.id] || palette[d.type];
+const nodeColor = d=> colorSettings.nodes[d.id] || (d.type === "custom" ? getLiveVar("--custom") : palette[d.type]);
+
+/* ---------- load saved custom nodes ---------- */
+let customNodesData = [];
+try{
+  const rawCustom = JSON.parse(localStorage.getItem("findmyattackpath-custom-nodes") || "[]");
+  if(Array.isArray(rawCustom)) customNodesData = rawCustom.filter(c=> c && c.id && c.label);
+}catch{}
+function attachCustomNodeToGraph(c){
+  if(nodeIndex.has(c.id)) return;
+  const phaseId = PHASES.some(p=> p.id === c.phase) ? c.phase : (PHASES[0]?.id || null);
+  const n = { id: c.id, type: "custom", label: c.label, data: { phase: phaseId, note: c.note || "", custom: true } };
+  nodeIndex.set(n.id, n);
+  graphNodes.push(n);
+  graphIds.add(n.id);
+  if(phaseId && nodeIndex.has(phaseId)){
+    graphLinks.push({ source: phaseId, target: n.id, kind: "belongs", custom: true });
+  }
+}
+customNodesData.forEach(attachCustomNodeToGraph);
 
 /* ---------- render: force graph, full viewport ---------- */
 const svg = d3.select("#graph");
@@ -1608,57 +1893,395 @@ let W = window.innerWidth, H = window.innerHeight;
 svg.attr("viewBox", [0,0,W,H]);
 
 const g = svg.append("g");
-const linkSel = g.append("g").attr("class","links").selectAll("line")
-  .data(graphLinks).join("line")
-  .attr("stroke","var(--edge)").attr("stroke-width", d=> d.kind==="chain"?2:1)
-  .attr("stroke-dasharray", d=> d.kind==="uses" ? "2,3" : null)
-  .attr("opacity", 0.7);
+const linkLayer = g.append("g").attr("class","links");
+const nodeLayer = g.append("g").attr("class","nodes");
+let linkSel = linkLayer.selectAll("line");
+let nodeSel = nodeLayer.selectAll("g.node");
 
-const radius = d => d.type==="phase" ? 16 : d.type==="cve" ? 9 : d.type==="tool" ? 6.5 : 11;
+const radius = d => d.type==="phase" ? 16 : d.type==="cve" ? 9 : d.type==="tool" ? 6.5 : d.type==="custom" ? 10.5 : 11;
 const color = nodeColor;
+const GRAPH_FONT = "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
 
-const nodeSel = g.append("g").attr("class","nodes").selectAll("g.node")
-  .data(graphNodes, d=>d.id).join("g").attr("class","node")
-  .style("cursor","pointer")
-  .call(d3.drag()
-    .on("start", (ev,d)=>{ if(!ev.active) sim.alphaTarget(0.25).restart(); d.fx=d.x; d.fy=d.y; })
-    .on("drag", (ev,d)=>{ d.fx=ev.x; d.fy=ev.y; })
-    .on("end", (ev,d)=>{ if(!ev.active) sim.alphaTarget(0); d.fx=null; d.fy=null; }));
+let isSimFrozen = false;
+let currentLayout = "force";
+let labelMode = "all"; /* "all" | "key" | "off" */
+let activePathIds = null;
+let activePathEdges = null;
+let simSpacing = 240;
+let currentDetailNode = null;
+let activeReaderFile = null;
+const TYPES = [["phase","phases"],["technique","techniques"],["tool","tools"],["cve","CVEs"]];
+const activeTypes = new Set(["phase","technique","tool","cve","custom"]);
 
-nodeSel.append("circle")
-  .attr("r", radius)
-  .attr("fill", color)
-  .attr("fill-opacity", d=> d.type==="phase" ? 0.92 : 0.85)
-  .attr("stroke", d=> d.tag==="new" ? "var(--new)" : "var(--bg)")
-  .attr("stroke-width", d=> d.tag==="new" ? 2.6 : 1.4);
+function updatePositions(){
+  linkSel.attr("x1",d=>d.source.x).attr("y1",d=>d.source.y).attr("x2",d=>d.target.x).attr("y2",d=>d.target.y);
+  nodeSel.attr("transform", d=>`translate(${d.x},${d.y})`);
+}
 
-nodeSel.append("text")
-  .text(d=> d.label.length>24 ? d.label.slice(0,22)+"…" : d.label)
-  .attr("x", d=> radius(d)+5).attr("y", 4)
-  .attr("font-size", d=> d.type==="phase" ? 12 : 10)
-  .attr("font-family", "Inter, system-ui, sans-serif")
-  .attr("font-weight", d=> d.type==="phase" ? 700 : 500)
-  .attr("fill","var(--fg)")
-  .style("paint-order","stroke").style("stroke","var(--bg)").style("stroke-width","3px").style("stroke-opacity",0.85);
+const sim = d3.forceSimulation(graphNodes)
+  .force("link", d3.forceLink(graphLinks).id(d=>d.id).distance(d=> d.kind==="chain" ? 155 : d.kind==="belongs" ? 66 : 52).strength(0.5))
+  .force("charge", d3.forceManyBody().strength(-simSpacing))
+  .force("center", d3.forceCenter(W/2, H/2))
+  .force("collide", d3.forceCollide().radius(d=>radius(d)+15))
+  .on("tick", updatePositions);
 
-nodeSel.append("title").text(d=>d.label);
-nodeSel.on("click", (ev,d)=>{ ev.stopPropagation(); showDetail(d); });
+function applyLabelVisibility(){
+  nodeSel.select("text").style("display", d=>{
+    if(activePathIds && activePathIds.has(d.id)) return null;
+    if(currentDetailNode && currentDetailNode.id === d.id) return null;
+    if(labelMode === "off") return "none";
+    if(labelMode === "key") return (d.type === "tool") ? "none" : null;
+    return null;
+  });
+}
 
+function syncGraphElements(){
+  linkSel = linkLayer.selectAll("line")
+    .data(graphLinks, d=> `${typeof d.source==="string"?d.source:d.source.id}->${typeof d.target==="string"?d.target:d.target.id}:${d.kind}`)
+    .join("line")
+    .attr("stroke","var(--edge)")
+    .attr("stroke-width", d=> d.kind==="chain"?2:1)
+    .attr("stroke-dasharray", d=> d.kind==="uses" ? "2,3" : (d.custom ? "4,3" : null))
+    .attr("opacity", 0.72);
+
+  let dragMoved = false;
+  const dragBehavior = d3.drag()
+    .on("start", (ev,d)=>{
+      dragMoved = false;
+      if(!isSimFrozen && !ev.active) sim.alphaTarget(0.25).restart();
+      d.fx = d.x; d.fy = d.y;
+    })
+    .on("drag", (ev,d)=>{
+      if(Math.hypot(ev.x - d.x, ev.y - d.y) > 3) dragMoved = true;
+      d.fx = ev.x; d.fy = ev.y;
+      if(isSimFrozen){ d.x = ev.x; d.y = ev.y; updatePositions(); }
+    })
+    .on("end", (ev,d)=>{
+      if(!isSimFrozen && !ev.active) sim.alphaTarget(0);
+      if(!dragMoved && currentLayout === "force" && !isSimFrozen){ d.fx = null; d.fy = null; }
+    });
+
+  nodeSel = nodeLayer.selectAll("g.node")
+    .data(graphNodes, d=>d.id)
+    .join(enter=>{
+      const grp = enter.append("g").attr("class","node").style("cursor","pointer");
+      grp.append("circle")
+        .attr("r", radius)
+        .attr("fill", color)
+        .attr("fill-opacity", d=> d.type==="phase" ? 0.94 : 0.88)
+        .attr("stroke", d=> d.tag==="new" ? "var(--new)" : d.type==="custom" ? "var(--fg)" : "var(--bg)")
+        .attr("stroke-width", d=> d.tag==="new" ? 2.5 : d.type==="custom" ? 2 : 1.5)
+        .attr("stroke-dasharray", d=> d.type==="custom" ? "3,2" : null);
+      grp.append("text")
+        .text(d=> d.label.length>24 ? d.label.slice(0,22)+"…" : d.label)
+        .attr("x", d=> radius(d)+6).attr("y", 4)
+        .attr("font-size", d=> d.type==="phase" ? 12 : 10.5)
+        .attr("font-family", GRAPH_FONT)
+        .attr("font-weight", d=> d.type==="phase" ? 600 : 500)
+        .attr("fill","var(--fg)")
+        .style("paint-order","stroke").style("stroke","var(--bg)").style("stroke-width","3.5px").style("stroke-opacity",0.9);
+      grp.append("title").text(d=>d.label);
+      return grp;
+    });
+
+  nodeSel.call(dragBehavior);
+  nodeSel.on("click", (ev,d)=>{ ev.stopPropagation(); showDetail(d); });
+  applyLabelVisibility();
+  if(typeof applyTypeFilter === "function") applyTypeFilter();
+}
+syncGraphElements();
+
+const zoom = d3.zoom().scaleExtent([0.22, 3.2]).on("zoom", ev=> g.attr("transform", ev.transform));
+svg.call(zoom);
+document.getElementById("resetZoom").addEventListener("click", ()=>{
+  svg.transition().duration(400).call(zoom.transform, d3.zoomIdentity);
+});
+
+function fitNodesInView(targetNodes, duration){
+  const list = (targetNodes && targetNodes.length ? targetNodes : graphNodes)
+    .filter(n=> Number.isFinite(n.x) && Number.isFinite(n.y));
+  if(!list.length) return;
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  list.forEach(n=>{
+    if(n.x < minX) minX = n.x;
+    if(n.x > maxX) maxX = n.x;
+    if(n.y < minY) minY = n.y;
+    if(n.y > maxY) maxY = n.y;
+  });
+  const pad = 90;
+  const bw = Math.max(120, (maxX - minX) + pad * 2);
+  const bh = Math.max(120, (maxY - minY) + pad * 2);
+  const scale = Math.min(1.65, Math.max(0.28, Math.min((W - 80) / bw, (H - 110) / bh)));
+  const cx = (minX + maxX) / 2;
+  const cy = (minY + maxY) / 2;
+  const tx = W / 2 - cx * scale;
+  const ty = H / 2 - cy * scale;
+  svg.transition().duration(duration ?? 450).call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+}
+
+function applyGraphLayout(mode){
+  currentLayout = mode;
+  document.querySelectorAll("#layoutPresets button").forEach(btn=>{
+    btn.classList.toggle("active", btn.dataset.layout === mode);
+  });
+  if(mode === "force"){
+    graphNodes.forEach(n=>{ n.fx = null; n.fy = null; });
+    if(!isSimFrozen) sim.alpha(0.75).restart();
+    return;
+  }
+  const cx = W / 2, cy = H / 2;
+  if(mode === "chain"){
+    const colGap = 240;
+    const startX = cx - ((PHASES.length - 1) * colGap) / 2;
+    const phasePos = new Map();
+    PHASES.forEach((p, idx)=>{
+      const n = nodeIndex.get(p.id);
+      if(!n) return;
+      const x = startX + idx * colGap;
+      n.x = n.fx = x; n.y = n.fy = cy;
+      phasePos.set(p.id, {x, y: cy, idx});
+    });
+    const byPhase = new Map();
+    graphNodes.forEach(n=>{
+      if(n.type === "technique" || n.type === "custom"){
+        const pid = n.data?.phase || PHASES[0]?.id;
+        if(!byPhase.has(pid)) byPhase.set(pid, []);
+        byPhase.get(pid).push(n);
+      }
+    });
+    byPhase.forEach((list, pid)=>{
+      const base = phasePos.get(pid) || {x: cx, y: cy};
+      list.forEach((n, i)=>{
+        const dir = i % 2 === 0 ? -1 : 1;
+        const tier = Math.floor(i / 2) + 1;
+        const jitter = ((tier % 2) === 0 ? 18 : -18);
+        n.x = n.fx = base.x + jitter;
+        n.y = n.fy = base.y + dir * (62 + tier * 38);
+      });
+    });
+    const placed = new Set(graphNodes.filter(n=> n.fx !== null && n.fx !== undefined).map(n=> n.id));
+    let auxIdx = 0;
+    graphNodes.forEach(n=>{
+      if(placed.has(n.id)) return;
+      const linked = graphLinks
+        .map(l=> {
+          const s = typeof l.source==="string"?l.source:l.source.id;
+          const t = typeof l.target==="string"?l.target:l.target.id;
+          if(s === n.id) return nodeIndex.get(t);
+          if(t === n.id) return nodeIndex.get(s);
+          return null;
+        })
+        .filter(x=> x && Number.isFinite(x.fx));
+      const avgX = linked.length ? linked.reduce((a,b)=>a+b.fx,0)/linked.length : cx;
+      const avgY = linked.length ? linked.reduce((a,b)=>a+b.fy,0)/linked.length : cy;
+      const side = avgY < cy ? -1 : 1;
+      const spread = ((auxIdx++ % 5) - 2) * 32;
+      n.x = n.fx = avgX + spread;
+      n.y = n.fy = avgY + side * (86 + (auxIdx % 3) * 28);
+    });
+    updatePositions();
+    if(!isSimFrozen) sim.alpha(0.08).restart();
+    fitNodesInView(graphNodes, 480);
+  } else if(mode === "radial"){
+    const rPhase = 155, rTech = 325, rLeaf = 470;
+    const phaseAngle = new Map();
+    PHASES.forEach((p, idx)=>{
+      const ang = (idx / Math.max(1, PHASES.length)) * Math.PI * 2 - Math.PI / 2;
+      phaseAngle.set(p.id, ang);
+      const n = nodeIndex.get(p.id);
+      if(n){ n.x = n.fx = cx + Math.cos(ang) * rPhase; n.y = n.fy = cy + Math.sin(ang) * rPhase; }
+    });
+    const sectorSpan = (Math.PI * 2) / Math.max(1, PHASES.length);
+    const byPhase = new Map();
+    graphNodes.forEach(n=>{
+      if(n.type === "technique" || n.type === "custom"){
+        const pid = n.data?.phase || PHASES[0]?.id;
+        if(!byPhase.has(pid)) byPhase.set(pid, []);
+        byPhase.get(pid).push(n);
+      }
+    });
+    byPhase.forEach((list, pid)=>{
+      const baseAng = phaseAngle.get(pid) ?? 0;
+      const usable = sectorSpan * 0.84;
+      list.forEach((n, i)=>{
+        const frac = list.length === 1 ? 0 : (i / (list.length - 1)) - 0.5;
+        const ang = baseAng + frac * usable;
+        const r = rTech + ((i % 2) * 44);
+        n.x = n.fx = cx + Math.cos(ang) * r;
+        n.y = n.fy = cy + Math.sin(ang) * r;
+      });
+    });
+    const leaves = graphNodes.filter(n=> n.type === "tool" || n.type === "cve");
+    leaves.forEach((n, idx)=>{
+      const ang = (idx / Math.max(1, leaves.length)) * Math.PI * 2 - Math.PI / 2;
+      const r = rLeaf + ((idx % 2) * 34);
+      n.x = n.fx = cx + Math.cos(ang) * r;
+      n.y = n.fy = cy + Math.sin(ang) * r;
+    });
+    updatePositions();
+    if(!isSimFrozen) sim.alpha(0.08).restart();
+    fitNodesInView(graphNodes, 480);
+  }
+}
+
+/* ---------- Unified Window Dock (minimize / restore panels without losing state) ---------- */
+const windowDock = document.getElementById("windowDock");
+const watermarkEl = document.getElementById("watermark");
+const minimizedWindows = new Map(); /* key -> { title, color, restore(), close() } */
+
+function renderWindowDock(){
+  windowDock.replaceChildren();
+  const hasItems = minimizedWindows.size > 0;
+  windowDock.classList.toggle("has-items", hasItems);
+  if(watermarkEl) watermarkEl.style.opacity = hasItems ? "0" : "";
+  minimizedWindows.forEach((entry, key)=>{
+    const pill = document.createElement("div");
+    pill.className = "dock-pill";
+    pill.dataset.win = key;
+    const restoreBtn = document.createElement("button");
+    restoreBtn.type = "button";
+    restoreBtn.className = "dock-pill-main";
+    restoreBtn.title = `Restore ${entry.title}`;
+    restoreBtn.innerHTML = `<span class="dock-dot" style="background:${entry.color || 'var(--accent)'}"></span><span class="dock-label">${escapeHtml(entry.title)}</span>`;
+    restoreBtn.addEventListener("click", ()=>{
+      minimizedWindows.delete(key);
+      renderWindowDock();
+      entry.restore();
+    });
+    const closeBtn = document.createElement("button");
+    closeBtn.type = "button";
+    closeBtn.className = "dock-close";
+    closeBtn.title = `Close ${entry.title}`;
+    closeBtn.setAttribute("aria-label", `Close ${entry.title}`);
+    closeBtn.textContent = "✕";
+    closeBtn.addEventListener("click", ev=>{
+      ev.stopPropagation();
+      minimizedWindows.delete(key);
+      renderWindowDock();
+      if(entry.close) entry.close();
+    });
+    pill.append(restoreBtn, closeBtn);
+    windowDock.appendChild(pill);
+  });
+}
+function minimizeToDock(key, config){
+  minimizedWindows.set(key, config);
+  renderWindowDock();
+}
+function removeFromDock(key){
+  if(minimizedWindows.delete(key)) renderWindowDock();
+}
+
+/* ---------- Workspace Toolbox (Graph / Tools / Export) ---------- */
 const toolboxBtn = document.getElementById("toolboxBtn");
 const toolboxPanel = document.getElementById("toolboxPanel");
 const phaseChoices = document.getElementById("phaseChoices");
 const colorTarget = document.getElementById("colorTarget");
 const nodeColorInput = document.getElementById("nodeColor");
 const backgroundColorInput = document.getElementById("backgroundColor");
+
+function openToolboxPanel(){
+  removeFromDock("toolbox");
+  toolboxPanel.classList.add("open");
+  toolboxBtn.setAttribute("aria-expanded", "true");
+}
+function closeToolboxPanel(){
+  removeFromDock("toolbox");
+  toolboxPanel.classList.remove("open");
+  toolboxBtn.setAttribute("aria-expanded", "false");
+}
+function minimizeToolboxPanel(){
+  toolboxPanel.classList.remove("open");
+  toolboxBtn.setAttribute("aria-expanded", "false");
+  minimizeToDock("toolbox", {
+    title: "Toolbox",
+    color: "var(--accent)",
+    restore: ()=> openToolboxPanel(),
+    close: ()=> closeToolboxPanel()
+  });
+}
+
+document.querySelectorAll(".tb-tab").forEach(tab=>{
+  tab.addEventListener("click", ()=>{
+    document.querySelectorAll(".tb-tab").forEach(t=>{
+      const on = t === tab;
+      t.classList.toggle("active", on);
+      t.setAttribute("aria-selected", on);
+    });
+    document.querySelectorAll(".tb-pane").forEach(p=> p.classList.toggle("active", p.id === tab.dataset.pane));
+  });
+});
+
+document.querySelectorAll("#layoutPresets button").forEach(btn=>{
+  btn.addEventListener("click", ()=> applyGraphLayout(btn.dataset.layout));
+});
+const toggleFreezeBtn = document.getElementById("toggleFreeze");
+toggleFreezeBtn.addEventListener("click", ()=>{
+  isSimFrozen = !isSimFrozen;
+  toggleFreezeBtn.classList.toggle("active", isSimFrozen);
+  toggleFreezeBtn.setAttribute("aria-pressed", isSimFrozen);
+  toggleFreezeBtn.textContent = isSimFrozen ? "Resume layout" : "Freeze layout";
+  if(isSimFrozen) sim.stop();
+  else sim.alpha(0.35).restart();
+});
+document.getElementById("fitGraph").addEventListener("click", ()=> fitNodesInView(graphNodes, 450));
+document.getElementById("unpinNodes").addEventListener("click", ()=>{
+  graphNodes.forEach(n=>{ n.fx = null; n.fy = null; });
+  currentLayout = "force";
+  document.querySelectorAll("#layoutPresets button").forEach(btn=> btn.classList.toggle("active", btn.dataset.layout === "force"));
+  if(isSimFrozen){
+    isSimFrozen = false;
+    toggleFreezeBtn.classList.remove("active");
+    toggleFreezeBtn.setAttribute("aria-pressed", "false");
+    toggleFreezeBtn.textContent = "Freeze layout";
+  }
+  sim.alpha(0.6).restart();
+});
+const cycleLabelsBtn = document.getElementById("cycleLabels");
+cycleLabelsBtn.addEventListener("click", ()=>{
+  labelMode = labelMode === "all" ? "key" : labelMode === "key" ? "off" : "all";
+  cycleLabelsBtn.textContent = `Labels: ${labelMode === "all" ? "All" : labelMode === "key" ? "Key" : "Off"}`;
+  applyLabelVisibility();
+});
+const spacingSlider = document.getElementById("spacingSlider");
+const spacingVal = document.getElementById("spacingVal");
+spacingSlider.addEventListener("input", ()=>{
+  simSpacing = Number(spacingSlider.value) || 240;
+  spacingVal.textContent = String(simSpacing);
+  sim.force("charge", d3.forceManyBody().strength(-simSpacing));
+  sim.force("collide", d3.forceCollide().radius(d=> radius(d) + Math.round(simSpacing / 16)));
+  if(!isSimFrozen) sim.alpha(0.35).restart();
+});
+
 function saveColorSettings(){
   try{ localStorage.setItem("findmyattackpath-colors", JSON.stringify(colorSettings)); }
   catch(error){ console.warn("Graph colors could not be saved", error); }
 }
 function refreshNodeColors(){
   nodeSel.select("circle").attr("fill", nodeColor);
-  nodeColorInput.value = colorTarget.value.startsWith("node:")
-    ? (colorSettings.nodes[colorTarget.value.slice(5)] || palette[nodeIndex.get(colorTarget.value.slice(5)).type])
-    : (palette[colorTarget.value] || defaultPalette.phase);
+  const val = colorTarget.value;
+  if(val.startsWith("node:")){
+    const n = nodeIndex.get(val.slice(5));
+    nodeColorInput.value = colorSettings.nodes[val.slice(5)] || (n ? palette[n.type] : defaultPalette.phase) || "#2563eb";
+  } else {
+    nodeColorInput.value = palette[val] || defaultPalette.phase;
+  }
+}
+function refreshColorTargets(){
+  const prev = colorTarget.value;
+  colorTarget.replaceChildren();
+  Object.keys(defaultPalette).forEach(type=>{
+    const option = document.createElement("option");
+    option.value = type; option.textContent = `${type[0].toUpperCase()}${type.slice(1)} nodes`;
+    colorTarget.appendChild(option);
+  });
+  graphNodes.forEach(node=>{
+    const option = document.createElement("option");
+    option.value = `node:${node.id}`; option.textContent = node.label;
+    colorTarget.appendChild(option);
+  });
+  if(prev && [...colorTarget.options].some(o=> o.value === prev)) colorTarget.value = prev;
+  refreshNodeColors();
 }
 PHASES.forEach(phase=>{
   const label = document.createElement("label");
@@ -1667,27 +2290,23 @@ PHASES.forEach(phase=>{
   label.append(checkbox, document.createTextNode(phase.label));
   phaseChoices.appendChild(label);
 });
-Object.keys(defaultPalette).forEach(type=>{
-  const option = document.createElement("option");
-  option.value = type; option.textContent = `${type[0].toUpperCase()}${type.slice(1)} nodes`;
-  colorTarget.appendChild(option);
+document.getElementById("selectAllPhases").addEventListener("click", ()=>{
+  phaseChoices.querySelectorAll("input").forEach(i=> i.checked = true);
 });
-graphNodes.forEach(node=>{
-  const option = document.createElement("option");
-  option.value = `node:${node.id}`; option.textContent = node.label;
-  colorTarget.appendChild(option);
+document.getElementById("selectNoPhases").addEventListener("click", ()=>{
+  phaseChoices.querySelectorAll("input").forEach(i=> i.checked = false);
 });
-backgroundColorInput.value = colorSettings.background || rootColors.getPropertyValue("--bg").trim();
+refreshColorTargets();
+backgroundColorInput.value = colorSettings.background || getLiveVar("--bg");
 colorTarget.addEventListener("change", refreshNodeColors);
-refreshNodeColors();
 nodeColorInput.addEventListener("input", ()=>{
   const target = colorTarget.value;
   if(target.startsWith("node:")) colorSettings.nodes[target.slice(5)] = nodeColorInput.value;
   else{
     colorSettings.types[target] = nodeColorInput.value;
     rootStyle.setProperty(`--${target==="technique"?"tech":target}`, nodeColorInput.value);
+    palette[target] = nodeColorInput.value;
   }
-  palette[target] = nodeColorInput.value;
   refreshNodeColors(); saveColorSettings();
 });
 backgroundColorInput.addEventListener("input", ()=>{
@@ -1701,31 +2320,391 @@ document.getElementById("resetColors").addEventListener("click", ()=>{
   rootStyle.removeProperty("--bg");
   Object.keys(defaultPalette).forEach(type=>rootStyle.removeProperty(`--${type==="technique"?"tech":type}`));
   localStorage.removeItem("findmyattackpath-colors");
-  backgroundColorInput.value = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
+  backgroundColorInput.value = getLiveVar("--bg");
   refreshNodeColors();
 });
 toolboxBtn.addEventListener("click", ev=>{
   ev.stopPropagation();
-  const open = toolboxPanel.classList.toggle("open");
-  toolboxBtn.setAttribute("aria-expanded", open);
+  if(toolboxPanel.classList.contains("open")) closeToolboxPanel();
+  else openToolboxPanel();
 });
+document.getElementById("minimizeToolbox").addEventListener("click", minimizeToolboxPanel);
+document.getElementById("closeToolbox").addEventListener("click", closeToolboxPanel);
 document.getElementById("openToolbox").addEventListener("click", ev=>{
   ev.stopPropagation();
-  toolboxPanel.classList.add("open");
-  toolboxBtn.setAttribute("aria-expanded", "true");
+  openToolboxPanel();
   menuPanel.classList.remove("open");
 });
-document.addEventListener("click", ev=>{
-  if(!toolboxPanel.contains(ev.target) && !toolboxBtn.contains(ev.target)){
-    toolboxPanel.classList.remove("open");
-    toolboxBtn.setAttribute("aria-expanded", "false");
+
+/* ---------- Shortest Path Finder (BFS) ---------- */
+const pathFromSel = document.getElementById("pathFrom");
+const pathToSel = document.getElementById("pathTo");
+const pathResultEl = document.getElementById("pathResult");
+
+function populatePathSelectors(){
+  const prevFrom = pathFromSel.value;
+  const prevTo = pathToSel.value;
+  const sorted = [...graphNodes].sort((a,b)=> a.type.localeCompare(b.type) || a.label.localeCompare(b.label));
+  [pathFromSel, pathToSel].forEach(sel=>{
+    sel.replaceChildren();
+    sorted.forEach(n=>{
+      const opt = document.createElement("option");
+      opt.value = n.id;
+      opt.textContent = `[${n.type}] ${n.label}`;
+      sel.appendChild(opt);
+    });
+  });
+  if(prevFrom && nodeIndex.has(prevFrom)) pathFromSel.value = prevFrom;
+  else if(nodeIndex.has("recon")) pathFromSel.value = "recon";
+  if(prevTo && nodeIndex.has(prevTo)) pathToSel.value = prevTo;
+  else if(nodeIndex.has("dcsync")) pathToSel.value = "dcsync";
+  else if(sorted.length > 1) pathToSel.value = sorted[sorted.length - 1].id;
+}
+populatePathSelectors();
+
+function findShortestPath(startId, endId){
+  if(startId === endId) return [startId];
+  const adj = new Map();
+  graphLinks.forEach(l=>{
+    const s = typeof l.source === "string" ? l.source : l.source.id;
+    const t = typeof l.target === "string" ? l.target : l.target.id;
+    if(!adj.has(s)) adj.set(s, []);
+    if(!adj.has(t)) adj.set(t, []);
+    adj.get(s).push(t);
+    adj.get(t).push(s);
+  });
+  const q = [startId];
+  const prev = new Map([[startId, null]]);
+  while(q.length){
+    const cur = q.shift();
+    for(const nxt of (adj.get(cur) || [])){
+      if(prev.has(nxt)) continue;
+      prev.set(nxt, cur);
+      if(nxt === endId){
+        const path = [];
+        let p = endId;
+        while(p !== null){ path.push(p); p = prev.get(p); }
+        return path.reverse();
+      }
+      q.push(nxt);
+    }
+  }
+  return null;
+}
+
+function clearPathHighlight(){
+  activePathIds = null;
+  activePathEdges = null;
+  pathResultEl.textContent = "";
+  nodeSel.select("circle").attr("opacity", 1).attr("stroke", d=> d.tag==="new" ? "var(--new)" : d.type==="custom" ? "var(--fg)" : "var(--bg)").attr("stroke-width", d=> d.tag==="new" ? 2.5 : d.type==="custom" ? 2 : 1.5);
+  nodeSel.select("text").attr("opacity", 1);
+  clearHighlight();
+  applyLabelVisibility();
+}
+
+function highlightPathIds(path){
+  activePathIds = new Set(path);
+  activePathEdges = new Set();
+  for(let i=0; i<path.length-1; i++){
+    activePathEdges.add(`${path[i]}::${path[i+1]}`);
+    activePathEdges.add(`${path[i+1]}::${path[i]}`);
+  }
+  nodeSel.select("circle")
+    .attr("opacity", d=> activePathIds.has(d.id) ? 1 : 0.16)
+    .attr("stroke", d=> activePathIds.has(d.id) ? "var(--accent)" : (d.tag==="new" ? "var(--new)" : "var(--bg)"))
+    .attr("stroke-width", d=> activePathIds.has(d.id) ? 3.2 : (d.tag==="new" ? 2.5 : 1.5));
+  nodeSel.select("text").attr("opacity", d=> activePathIds.has(d.id) ? 1 : 0.14);
+  linkSel
+    .attr("stroke", d=>{
+      const s = typeof d.source==="string"?d.source:d.source.id;
+      const t = typeof d.target==="string"?d.target:d.target.id;
+      return activePathEdges.has(`${s}::${t}`) ? "var(--accent)" : "var(--edge-dim)";
+    })
+    .attr("stroke-width", d=>{
+      const s = typeof d.source==="string"?d.source:d.source.id;
+      const t = typeof d.target==="string"?d.target:d.target.id;
+      return activePathEdges.has(`${s}::${t}`) ? 3.2 : (d.kind==="chain"?2:1);
+    })
+    .attr("opacity", d=>{
+      const s = typeof d.source==="string"?d.source:d.source.id;
+      const t = typeof d.target==="string"?d.target:d.target.id;
+      return activePathEdges.has(`${s}::${t}`) ? 1 : 0.14;
+    });
+  applyLabelVisibility();
+  const pathNodes = path.map(id=> nodeIndex.get(id)).filter(Boolean);
+  fitNodesInView(pathNodes, 480);
+}
+
+document.getElementById("findPathBtn").addEventListener("click", ()=>{
+  const from = pathFromSel.value, to = pathToSel.value;
+  if(!from || !to) return;
+  const path = findShortestPath(from, to);
+  if(!path){
+    pathResultEl.textContent = "No connected path found between these two nodes.";
+    return;
+  }
+  highlightPathIds(path);
+  pathResultEl.replaceChildren();
+  const summary = document.createElement("div");
+  summary.textContent = `${path.length - 1} hop${path.length - 1 === 1 ? "" : "s"} found:`;
+  const chain = document.createElement("div");
+  chain.className = "tb-hop-chain";
+  path.forEach((id, idx)=>{
+    const n = nodeIndex.get(id);
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "tb-hop";
+    chip.textContent = n ? n.label : id;
+    chip.addEventListener("click", ()=> locateNodeOnGraph(id));
+    chain.appendChild(chip);
+    if(idx < path.length - 1){
+      const arr = document.createElement("span");
+      arr.className = "tb-hop-arrow";
+      arr.textContent = "→";
+      chain.appendChild(arr);
+    }
+  });
+  pathResultEl.append(summary, chain);
+});
+document.getElementById("clearPathBtn").addEventListener("click", clearPathHighlight);
+document.getElementById("useCurrentFrom").addEventListener("click", ()=>{
+  if(currentDetailNode && nodeIndex.has(currentDetailNode.id)){
+    pathFromSel.value = currentDetailNode.id;
   }
 });
+
+/* ---------- Bookmarks & Study Checklist ---------- */
+const bookmarkListEl = document.getElementById("bookmarkList");
+const bookmarkCountEl = document.getElementById("bookmarkCount");
+let savedBookmarks = [];
+try{
+  const parsed = JSON.parse(localStorage.getItem("findmyattackpath-bookmarks") || "[]");
+  if(Array.isArray(parsed)) savedBookmarks = parsed.filter(b=> b && b.id);
+}catch{}
+function saveBookmarks(){
+  try{ localStorage.setItem("findmyattackpath-bookmarks", JSON.stringify(savedBookmarks)); }catch{}
+}
+function isBookmarked(id){ return savedBookmarks.some(b=> b.id === id); }
+function updateBookmarkButtons(){
+  const rBtn = document.getElementById("readerBookmarkBtn");
+  if(rBtn && activeReaderFile){
+    const docId = activeReaderFile.meta?.id || activeReaderFile.entry.id;
+    const on = isBookmarked(docId);
+    rBtn.textContent = on ? "★" : "☆";
+    rBtn.classList.toggle("active", on);
+    rBtn.title = on ? "Remove bookmark" : "Bookmark writeup";
+  }
+  const dBtn = document.getElementById("detailBookmarkBtn");
+  if(dBtn && currentDetailNode){
+    const on = isBookmarked(currentDetailNode.id);
+    dBtn.textContent = on ? "★ Saved" : "☆ Save";
+    dBtn.classList.toggle("starred", on);
+  }
+}
+function renderBookmarks(){
+  bookmarkCountEl.textContent = String(savedBookmarks.length);
+  bookmarkListEl.replaceChildren();
+  if(!savedBookmarks.length){
+    const empty = document.createElement("p");
+    empty.className = "toolbox-note";
+    empty.style.margin = "0";
+    empty.textContent = "Click ☆ in any writeup or node detail to bookmark it here.";
+    bookmarkListEl.appendChild(empty);
+    updateBookmarkButtons();
+    return;
+  }
+  savedBookmarks.forEach(item=>{
+    const row = document.createElement("div");
+    row.className = "tb-list-item";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = !!item.done;
+    cb.title = "Mark as studied / completed";
+    cb.addEventListener("change", ()=>{
+      item.done = cb.checked;
+      saveBookmarks();
+      labelSpan.style.textDecoration = item.done ? "line-through" : "";
+      labelSpan.style.opacity = item.done ? "0.6" : "";
+    });
+    const main = document.createElement("div");
+    main.className = "tb-list-main";
+    const labelSpan = document.createElement("span");
+    labelSpan.textContent = item.label || item.id;
+    if(item.done){ labelSpan.style.textDecoration = "line-through"; labelSpan.style.opacity = "0.6"; }
+    main.append(cb, labelSpan);
+    main.addEventListener("click", ev=>{
+      if(ev.target === cb) return;
+      const doc = DOC_BY_ID.get(item.id);
+      if(nodeIndex.has(item.id)) locateNodeOnGraph(item.id);
+      else if(doc) openReader(doc);
+    });
+    const del = document.createElement("button");
+    del.type = "button";
+    del.className = "dock-close";
+    del.textContent = "✕";
+    del.title = "Remove bookmark";
+    del.addEventListener("click", ()=>{
+      savedBookmarks = savedBookmarks.filter(b=> b.id !== item.id);
+      saveBookmarks();
+      renderBookmarks();
+    });
+    row.append(main, del);
+    bookmarkListEl.appendChild(row);
+  });
+  updateBookmarkButtons();
+}
+function toggleBookmark(id, label, type){
+  if(!id) return;
+  if(isBookmarked(id)){
+    savedBookmarks = savedBookmarks.filter(b=> b.id !== id);
+  } else {
+    savedBookmarks.unshift({ id, label: label || id, type: type || "doc", done: false });
+  }
+  saveBookmarks();
+  renderBookmarks();
+}
+document.getElementById("clearBookmarksBtn").addEventListener("click", ()=>{
+  savedBookmarks = [];
+  saveBookmarks();
+  renderBookmarks();
+});
+renderBookmarks();
+
+/* ---------- Markdown Scratchpad ---------- */
+const scratchInput = document.getElementById("scratchInput");
+const scratchPreview = document.getElementById("scratchPreview");
+const toggleScratchPreviewBtn = document.getElementById("toggleScratchPreview");
+try{ scratchInput.value = localStorage.getItem("findmyattackpath-scratchpad") || ""; }catch{}
+function updateScratchPreview(){
+  if(!scratchPreview.classList.contains("open")) return;
+  const rendered = renderMarkdown(scratchInput.value || "*No notes yet.*");
+  scratchPreview.innerHTML = rendered.html;
+  wireMarkdownInteractions(scratchPreview, rendered.codeBlocks, "", scratchPreview);
+}
+scratchInput.addEventListener("input", ()=>{
+  try{ localStorage.setItem("findmyattackpath-scratchpad", scratchInput.value); }catch{}
+  updateScratchPreview();
+});
+toggleScratchPreviewBtn.addEventListener("click", ()=>{
+  const open = scratchPreview.classList.toggle("open");
+  scratchInput.style.display = open ? "none" : "";
+  toggleScratchPreviewBtn.textContent = open ? "Edit" : "Preview";
+  if(open) updateScratchPreview();
+});
+document.getElementById("copyScratchBtn").addEventListener("click", async ev=>{
+  const ok = await copyTextToClipboard(scratchInput.value);
+  flashButtonLabel(ev.currentTarget, ok ? "Copied ✓" : "Failed");
+});
+document.getElementById("exportScratchBtn").addEventListener("click", ()=>{
+  saveDiagramFile("attack-path-notes.md", "text/markdown;charset=utf-8", scratchInput.value || "# Attack Path Notes\n");
+});
+
+/* ---------- Custom Graph Nodes ---------- */
+const customNodeParent = document.getElementById("customNodeParent");
+const customNodeLabel = document.getElementById("customNodeLabel");
+const customNodeNote = document.getElementById("customNodeNote");
+const customNodeList = document.getElementById("customNodeList");
+
+PHASES.forEach(p=>{
+  const opt = document.createElement("option");
+  opt.value = p.id; opt.textContent = p.label;
+  customNodeParent.appendChild(opt);
+});
+function saveCustomNodes(){
+  try{ localStorage.setItem("findmyattackpath-custom-nodes", JSON.stringify(customNodesData)); }catch{}
+}
+function removeCustomNodeById(id){
+  customNodesData = customNodesData.filter(c=> c.id !== id);
+  saveCustomNodes();
+  nodeIndex.delete(id);
+  graphIds.delete(id);
+  for(let i = graphNodes.length - 1; i >= 0; i--){
+    if(graphNodes[i].id === id) graphNodes.splice(i, 1);
+  }
+  for(let i = graphLinks.length - 1; i >= 0; i--){
+    const s = typeof graphLinks[i].source === "string" ? graphLinks[i].source : graphLinks[i].source.id;
+    const t = typeof graphLinks[i].target === "string" ? graphLinks[i].target : graphLinks[i].target.id;
+    if(s === id || t === id) graphLinks.splice(i, 1);
+  }
+  sim.nodes(graphNodes);
+  sim.force("link").links(graphLinks);
+  syncGraphElements();
+  refreshColorTargets();
+  populatePathSelectors();
+  renderCustomNodeList();
+  if(currentDetailNode && currentDetailNode.id === id){
+    detailEl.classList.remove("open","detail-expanded");
+    currentDetailNode = null;
+    clearHighlight();
+  }
+  if(!isSimFrozen) sim.alpha(0.3).restart();
+}
+function renderCustomNodeList(){
+  customNodeList.replaceChildren();
+  if(!customNodesData.length){
+    const empty = document.createElement("p");
+    empty.className = "toolbox-note";
+    empty.style.margin = "0";
+    empty.textContent = "Add custom targets, lab hosts, or findings directly onto the graph.";
+    customNodeList.appendChild(empty);
+    return;
+  }
+  customNodesData.forEach(c=>{
+    const row = document.createElement("div");
+    row.className = "tb-list-item";
+    const main = document.createElement("div");
+    main.className = "tb-list-main";
+    main.innerHTML = `<span class="dock-dot" style="background:var(--custom)"></span><span>${escapeHtml(c.label)}</span>`;
+    main.addEventListener("click", ()=> locateNodeOnGraph(c.id));
+    const del = document.createElement("button");
+    del.type = "button";
+    del.className = "dock-close";
+    del.textContent = "✕";
+    del.title = "Delete custom node";
+    del.addEventListener("click", ()=> removeCustomNodeById(c.id));
+    row.append(main, del);
+    customNodeList.appendChild(row);
+  });
+}
+document.getElementById("addCustomNodeBtn").addEventListener("click", ()=>{
+  const label = customNodeLabel.value.trim();
+  if(!label){ customNodeLabel.focus(); return; }
+  const id = `custom-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,6)}`;
+  const item = { id, label, phase: customNodeParent.value || PHASES[0]?.id, note: customNodeNote.value.trim() };
+  customNodesData.push(item);
+  saveCustomNodes();
+  attachCustomNodeToGraph(item);
+  const parent = nodeIndex.get(item.phase);
+  const added = nodeIndex.get(id);
+  if(parent && added && Number.isFinite(parent.x)){
+    added.x = parent.x + (Math.random() - 0.5) * 70;
+    added.y = parent.y + (Math.random() - 0.5) * 70;
+  }
+  sim.nodes(graphNodes);
+  sim.force("link").links(graphLinks);
+  syncGraphElements();
+  refreshColorTargets();
+  populatePathSelectors();
+  renderCustomNodeList();
+  customNodeLabel.value = "";
+  customNodeNote.value = "";
+  if(!isSimFrozen) sim.alpha(0.45).restart();
+  else updatePositions();
+  if(added) showDetail(added);
+});
+document.getElementById("clearCustomNodesBtn").addEventListener("click", ()=>{
+  const ids = customNodesData.map(c=> c.id);
+  ids.forEach(removeCustomNodeById);
+});
+renderCustomNodeList();
+
+/* ---------- Export helpers (JSON / CSV / CSS / SVG / PNG / Markdown Briefing) ---------- */
 function selectedGraphData(){
   const selectedPhases = new Set([...phaseChoices.querySelectorAll("input:checked")].map(input=>input.value));
   const selectedIds = new Set(graphNodes.filter(node=>node.type==="phase" && selectedPhases.has(node.id)).map(node=>node.id));
   const techniques = TECH.filter(technique=>selectedPhases.has(technique.phase));
   techniques.forEach(technique=>selectedIds.add(technique.id));
+  graphNodes.filter(n=> n.type==="custom" && selectedPhases.has(n.data?.phase)).forEach(n=> selectedIds.add(n.id));
   graphLinks.forEach(link=>{
     const source = typeof link.source === "string" ? link.source : link.source.id;
     const target = typeof link.target === "string" ? link.target : link.target.id;
@@ -1740,33 +2719,89 @@ function selectedGraphData(){
   return {selectedPhases, selectedNodes, selectedLinks};
 }
 function csvCell(value){ return `"${String(value ?? "").replace(/"/g,'""')}"`; }
-function selectedSvg(nodes, selectedLinks){
-  if(!nodes.length) return "";
+function selectedSvg(nodesList, selectedLinks){
+  if(!nodesList.length) return "";
   const pad = 70;
-  const minX = Math.min(...nodes.map(node=>Number.isFinite(node.x) ? node.x : 0));
-  const minY = Math.min(...nodes.map(node=>Number.isFinite(node.y) ? node.y : 0));
-  const maxX = Math.max(...nodes.map(node=>(Number.isFinite(node.x) ? node.x : 0) + node.label.length * 7 + 35));
-  const maxY = Math.max(...nodes.map(node=>(Number.isFinite(node.y) ? node.y : 0) + 35));
-  const width = Math.max(500, maxX-minX+pad*2);
-  const height = Math.max(300, maxY-minY+pad*2);
+  const bgVal = colorSettings.background || getLiveVar("--bg");
+  const fgVal = getLiveVar("--fg");
+  const edgeVal = getLiveVar("--edge");
+  const mutedVal = getLiveVar("--muted");
+  const minX = Math.min(...nodesList.map(node=>Number.isFinite(node.x) ? node.x : 0));
+  const minY = Math.min(...nodesList.map(node=>Number.isFinite(node.y) ? node.y : 0));
+  const maxX = Math.max(...nodesList.map(node=>(Number.isFinite(node.x) ? node.x : 0) + node.label.length * 7 + 35));
+  const maxY = Math.max(...nodesList.map(node=>(Number.isFinite(node.y) ? node.y : 0) + 35));
+  const width = Math.max(500, Math.round(maxX-minX+pad*2));
+  const height = Math.max(300, Math.round(maxY-minY+pad*2));
   const nodeId = node=> typeof node === "string" ? node : node.id;
   const lines = selectedLinks.map(link=>{
     const source = nodeIndex.get(nodeId(link.source));
     const target = nodeIndex.get(nodeId(link.target));
     if(!source || !target) return "";
-    return `<line x1="${source.x-minX+pad}" y1="${source.y-minY+pad}" x2="${target.x-minX+pad}" y2="${target.y-minY+pad}" stroke="${rootColors.getPropertyValue("--edge").trim()}" stroke-width="1.5"/>`;
+    return `<line x1="${source.x-minX+pad}" y1="${source.y-minY+pad}" x2="${target.x-minX+pad}" y2="${target.y-minY+pad}" stroke="${edgeVal}" stroke-width="1.5"/>`;
   }).join("");
-  const marks = nodes.map(node=>{
+  const marks = nodesList.map(node=>{
     const x = (Number.isFinite(node.x) ? node.x : 0)-minX+pad;
     const y = (Number.isFinite(node.y) ? node.y : 0)-minY+pad;
-    const stroke = node.tag==="new" ? (colorSettings.types.cve || defaultPalette.cve) : rootColors.getPropertyValue("--bg").trim();
-    return `<g data-node-id="${escapeHtml(node.id)}" data-node-type="${node.type}"><circle cx="${x}" cy="${y}" r="${radius(node)}" fill="${nodeColor(node)}" stroke="${stroke}" stroke-width="2"/><text x="${x+radius(node)+7}" y="${y+4}" fill="${rootColors.getPropertyValue("--fg").trim()}" font-family="Inter, sans-serif" font-size="13">${escapeHtml(node.label)}</text></g>`;
+    const stroke = node.tag==="new" ? (colorSettings.types.cve || defaultPalette.cve) : bgVal;
+    return `<g data-node-id="${escapeHtml(node.id)}" data-node-type="${node.type}"><circle cx="${x}" cy="${y}" r="${radius(node)}" fill="${nodeColor(node)}" stroke="${stroke}" stroke-width="2"/><text x="${x+radius(node)+7}" y="${y+4}" fill="${fgVal}" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="13">${escapeHtml(node.label)}</text></g>`;
   }).join("");
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" role="img"><rect width="100%" height="100%" fill="${rootColors.getPropertyValue("--bg").trim()}"/><g>${lines}${marks}</g><text x="${width-14}" y="${height-12}" text-anchor="end" fill="${rootColors.getPropertyValue("--muted").trim()}" font-family="Inter, sans-serif" font-size="9">Created by Alham Rizvi</text></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img"><rect width="100%" height="100%" fill="${bgVal}"/><g>${lines}${marks}</g><text x="${width-14}" y="${height-12}" text-anchor="end" fill="${mutedVal}" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="9">Created by Alham Rizvi</text></svg>`;
+}
+function saveSvgAsPng(svgString, filename){
+  const blob = new Blob([svgString], {type: "image/svg+xml;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+  img.onload = ()=>{
+    const scale = 2;
+    const canvas = document.createElement("canvas");
+    canvas.width = img.width * scale;
+    canvas.height = img.height * scale;
+    const ctx = canvas.getContext("2d");
+    ctx.scale(scale, scale);
+    ctx.drawImage(img, 0, 0);
+    URL.revokeObjectURL(url);
+    canvas.toBlob(pngBlob=>{
+      if(!pngBlob) return;
+      const dl = URL.createObjectURL(pngBlob);
+      const a = document.createElement("a");
+      a.href = dl; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=> URL.revokeObjectURL(dl), 1000);
+    }, "image/png");
+  };
+  img.onerror = ()=> URL.revokeObjectURL(url);
+  img.src = url;
+}
+function buildMarkdownBriefing(selectedPhases, selectedNodes){
+  const lines = [
+    "# Active Directory Attack Path Briefing",
+    "",
+    `_Generated from Find My Attack Path · ${selectedNodes.length} nodes across ${selectedPhases.size} phase(s)_`,
+    ""
+  ];
+  PHASES.filter(p=> selectedPhases.has(p.id)).forEach(p=>{
+    lines.push(`## ${p.label}`, "");
+    const pTechs = TECH.filter(t=> t.phase === p.id);
+    pTechs.forEach(t=>{
+      const meta = [t.mitre ? `ATT&CK ${t.mitre}` : "", t.cve ? t.cve.toUpperCase() : ""].filter(Boolean).join(" · ");
+      lines.push(`- **${t.label}**${meta ? ` (${meta})` : ""}`);
+      if(t.detect) lines.push(`  - _Detection:_ ${t.detect}`);
+      if(t.tools && t.tools.length) lines.push(`  - _Tools:_ ${t.tools.map(toolLabel).join(", ")}`);
+    });
+    const pCustom = customNodesData.filter(c=> c.phase === p.id);
+    pCustom.forEach(c=>{
+      lines.push(`- **[Custom] ${c.label}**${c.note ? ` — ${c.note}` : ""}`);
+    });
+    lines.push("");
+  });
+  if(scratchInput.value.trim()){
+    lines.push("## Workspace Scratchpad Notes", "", scratchInput.value.trim(), "");
+  }
+  return lines.join("\n");
 }
 document.getElementById("downloadSelection").addEventListener("click", ()=>{
   const {selectedPhases, selectedNodes, selectedLinks} = selectedGraphData();
-  const note = document.querySelector("#toolboxPanel .toolbox-note");
+  const note = document.querySelector("#tbExportPane .toolbox-note");
   if(!selectedPhases.size){
     note.textContent = "Select at least one phase before exporting.";
     return;
@@ -1776,7 +2811,7 @@ document.getElementById("downloadSelection").addEventListener("click", ()=>{
   if(format === "json"){
     const data = {
       phases:[...selectedPhases],
-      background:colorSettings.background || rootColors.getPropertyValue("--bg").trim(),
+      background:colorSettings.background || getLiveVar("--bg"),
       colors:{types:palette, nodes:colorSettings.nodes},
       nodes:selectedNodes.map(node=>({id:node.id,type:node.type,label:node.label,phase:node.data.phase||null,data:node.data})),
       links:selectedLinks.map(link=>({source:typeof link.source==="string"?link.source:link.source.id,
@@ -1792,7 +2827,12 @@ document.getElementById("downloadSelection").addEventListener("click", ()=>{
     const typeRules=Object.entries(palette).map(([type,value])=>
       `[data-node-type="${type}"] circle { fill: ${value}; }`).join("\n");
     const rules=selectedNodes.map(node=>`[data-node-id="${node.id.replace(/["\\]/g,"\\$&")}"] circle { fill: ${nodeColor(node)}; }`).join("\n");
-    saveDiagramFile(`${filename}.css`,"text/css;charset=utf-8",`:root {\n${vars}\n  --bg: ${colorSettings.background || rootColors.getPropertyValue("--bg").trim()};\n}\n${typeRules}\n${rules}\n`);
+    saveDiagramFile(`${filename}.css`,"text/css;charset=utf-8",`:root {\n${vars}\n  --bg: ${colorSettings.background || getLiveVar("--bg")};\n}\n${typeRules}\n${rules}\n`);
+  }else if(format === "png"){
+    const svgContent = selectedSvg(selectedNodes, selectedLinks);
+    if(svgContent) saveSvgAsPng(svgContent, `${filename}.png`);
+  }else if(format === "md"){
+    saveDiagramFile(`${filename}.md`, "text/markdown;charset=utf-8", buildMarkdownBriefing(selectedPhases, selectedNodes));
   }else{
     const svgContent=selectedSvg(selectedNodes,selectedLinks);
     if(svgContent) saveDiagramFile(`${filename}.svg`,"image/svg+xml;charset=utf-8",svgContent);
@@ -1800,27 +2840,11 @@ document.getElementById("downloadSelection").addEventListener("click", ()=>{
   note.textContent = `Exported ${selectedNodes.length} nodes from ${selectedPhases.size} selected phase${selectedPhases.size===1?"":"s"}.`;
 });
 
-const sim = d3.forceSimulation(graphNodes)
-  .force("link", d3.forceLink(graphLinks).id(d=>d.id).distance(d=> d.kind==="chain" ? 150 : d.kind==="belongs" ? 62 : 52).strength(0.5))
-  .force("charge", d3.forceManyBody().strength(-240))
-  .force("center", d3.forceCenter(W/2, H/2))
-  .force("collide", d3.forceCollide().radius(d=>radius(d)+15))
-  .on("tick", ()=>{
-    linkSel.attr("x1",d=>d.source.x).attr("y1",d=>d.source.y).attr("x2",d=>d.target.x).attr("y2",d=>d.target.y);
-    nodeSel.attr("transform", d=>`translate(${d.x},${d.y})`);
-  });
-
-const zoom = d3.zoom().scaleExtent([0.25,3]).on("zoom", ev=> g.attr("transform", ev.transform));
-svg.call(zoom);
-document.getElementById("resetZoom").addEventListener("click", ()=>{
-  svg.transition().duration(400).call(zoom.transform, d3.zoomIdentity);
-});
-
 window.addEventListener("resize", ()=>{
   W = window.innerWidth; H = window.innerHeight;
   svg.attr("viewBox", [0,0,W,H]);
   sim.force("center", d3.forceCenter(W/2,H/2));
-  sim.alpha(0.1).restart();
+  if(!isSimFrozen && currentLayout === "force") sim.alpha(0.1).restart();
 });
 
 /* ---------- wires: highlight the links touching the selected node ---------- */
@@ -1839,7 +2863,6 @@ function highlightWiresFor(id){
 }
 
 /* ---------- theme + clipboard + markdown interaction helpers ---------- */
-let currentDetailNode = null;
 let mermaidUidCounter = 0;
 const containerRenderTokens = new WeakMap();
 
@@ -2011,7 +3034,7 @@ async function renderMermaidInContainer(container, sources, label){
       startOnLoad: false,
       securityLevel: "strict",
       theme: dark ? "dark" : "default",
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      fontFamily: "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       flowchart: { useMaxWidth: true, htmlLabels: true },
       sequence: { useMaxWidth: true }
     });
@@ -2152,9 +3175,29 @@ function locateNodeOnGraph(id){
   }
 }
 
+function closeDetailPanel(){
+  removeFromDock("detail");
+  detailEl.classList.remove("open","detail-expanded");
+  currentDetailNode = null;
+  clearHighlight();
+  applyLabelVisibility();
+}
+function minimizeDetailPanel(){
+  const savedNode = currentDetailNode;
+  if(!savedNode) return;
+  detailEl.classList.remove("open","detail-expanded");
+  minimizeToDock("detail", {
+    title: savedNode.label,
+    color: nodeColor(savedNode),
+    restore: ()=> showDetail(savedNode),
+    close: ()=> closeDetailPanel()
+  });
+}
+
 function showDetail(d){
+  removeFromDock("detail");
   currentDetailNode = d;
-  const t = d.data;
+  const t = d.data || {};
   const docFile = DOC_BY_ID.get(d.id) || null;
   const currentPath = (docFile && docFile.entry.path) || t.docPath || "";
   const allCodeBlocks = [];
@@ -2168,10 +3211,13 @@ function showDetail(d){
     return extra.map(s=>`<div class="field"><label>${escapeHtml(s.title || "More")}</label><div class="md-prose md-prose-compact">${renderChunk(s.text, false)}</div></div>`).join("");
   }
 
-  let html = `<button class="closeBtn" id="closeDetail" aria-label="Close detail">✕</button>`;
-  html += `<div class="detail-toolbar">`;
-  if(docFile) html += `<button id="openDetailInReader" class="primary" type="button">Read full writeup</button>`;
+  const starred = isBookmarked(d.id);
+  let html = `<div class="detail-toolbar">`;
+  if(docFile) html += `<button id="openDetailInReader" class="primary" type="button">Read writeup</button>`;
+  html += `<button id="detailBookmarkBtn" class="${starred ? "starred" : ""}" type="button" title="${starred ? "Remove bookmark" : "Bookmark node"}">${starred ? "★ Saved" : "☆ Save"}</button>`;
   html += `<button id="expandDetail" type="button" aria-expanded="false">Expand</button>`;
+  html += `<button id="minimizeDetail" class="icon-sm" type="button" aria-label="Minimize detail" title="Minimize to dock">—</button>`;
+  html += `<button id="closeDetail" class="icon-sm" type="button" aria-label="Close detail" title="Close">✕</button>`;
   html += `</div>`;
   html += `<h3>${escapeHtml(d.label)}${d.tag==='new'?'<span class="tag-new">new</span>':''}</h3>`;
   html += `<div class="type-badge type-${escapeHtml(d.type)}">${escapeHtml(d.type)}</div>`;
@@ -2204,15 +3250,25 @@ function showDetail(d){
     html += `<div class="field"><label>Disclosed</label><p>${escapeHtml(t.year)}${t.source ? ` · <a href="${escapeHtml(sanitizeUrl(t.source) || '#')}" target="_blank" rel="noopener">Advisory ↗</a>` : ""}</p></div>`;
     html += `<div class="field"><div class="md-prose md-prose-compact">${renderChunk(t.desc, true)}</div></div>`;
     html += renderExtra(t.extra);
+  } else if(d.type==="custom"){
+    if(t.phase){
+      html += `<div class="phase-of">Linked phase: <button type="button" class="tool-pill" data-jump="${escapeHtml(t.phase)}" style="margin-left:4px">${escapeHtml(phaseLabel(t.phase))}</button></div>`;
+    }
+    html += `<div class="field"><label>Custom note</label><div class="md-prose md-prose-compact">${renderChunk(t.note || "*No notes added for this custom node.*", false)}</div></div>`;
+    html += `<div class="field"><button class="tb-btn" id="deleteCustomFromDetail" type="button">Delete custom node</button></div>`;
   }
 
   detailEl.innerHTML = html;
   detailEl.scrollTop = 0;
   detailEl.classList.add("open");
   detailEl.querySelectorAll("[data-jump]").forEach(p=> p.addEventListener("click", ()=> focusNode(p.dataset.jump)));
-  document.getElementById("closeDetail").addEventListener("click", ()=>{
-    detailEl.classList.remove("open","detail-expanded"); currentDetailNode = null; clearHighlight();
+  document.getElementById("closeDetail").addEventListener("click", closeDetailPanel);
+  document.getElementById("minimizeDetail").addEventListener("click", minimizeDetailPanel);
+  document.getElementById("detailBookmarkBtn").addEventListener("click", ()=>{
+    toggleBookmark(d.id, d.label, d.type);
   });
+  const delCustomBtn = document.getElementById("deleteCustomFromDetail");
+  if(delCustomBtn) delCustomBtn.addEventListener("click", ()=> removeCustomNodeById(d.id));
   const openReaderBtn = document.getElementById("openDetailInReader");
   if(openReaderBtn && docFile){
     openReaderBtn.addEventListener("click", ()=> openReader(docFile));
@@ -2226,9 +3282,10 @@ function showDetail(d){
   if(allMermaidSources.length){
     renderMermaidInContainer(detailEl, allMermaidSources, d.label);
   }
-  highlightWiresFor(d.id);
+  if(!activePathIds) highlightWiresFor(d.id);
+  applyLabelVisibility();
 }
-svg.on("click", ()=>{ detailEl.classList.remove("open","detail-expanded"); currentDetailNode = null; clearHighlight(); });
+svg.on("click", ()=>{ if(detailEl.classList.contains("open")) closeDetailPanel(); });
 
 /* ---------- menu (search, legend, filters, actions) ---------- */
 const menuBtn = document.getElementById("menuBtn");
@@ -2258,8 +3315,6 @@ searchInput.addEventListener("input", ()=>{
   linkSel.attr("opacity", 0.7 * (q?0.2:1));
 });
 
-const TYPES = [["phase","phases"],["technique","techniques"],["tool","tools"],["cve","CVEs"]];
-const activeTypes = new Set(TYPES.map(t=>t[0]));
 const filterBar = document.getElementById("typeFilters");
 TYPES.forEach(([key,label])=>{
   const btn = document.createElement("button");
@@ -2274,11 +3329,16 @@ TYPES.forEach(([key,label])=>{
 });
 function applyTypeFilter(){
   nodeSel.style("display", d=> activeTypes.has(d.type) ? null : "none");
-  linkSel.style("display", d=> (activeTypes.has(d.source.type)&&activeTypes.has(d.target.type)) ? null : "none");
+  linkSel.style("display", d=>{
+    const s = typeof d.source === "string" ? nodeIndex.get(d.source) : d.source;
+    const t = typeof d.target === "string" ? nodeIndex.get(d.target) : d.target;
+    return (s && t && activeTypes.has(s.type) && activeTypes.has(t.type)) ? null : "none";
+  });
 }
 
-/* ---------- dedicated full-screen Markdown Writeup Reader ---------- */
+/* ---------- GitBook-style Markdown Writeup Reader Window ---------- */
 const readerOverlay = document.getElementById("readerOverlay");
+const readerBody = document.getElementById("readerBody");
 const readerSidebar = document.getElementById("readerSidebar");
 const readerSidebarBackdrop = document.getElementById("readerSidebarBackdrop");
 const readerList = document.getElementById("readerList");
@@ -2304,6 +3364,8 @@ const readerModeRaw = document.getElementById("readerModeRaw");
 const readerLocateGraph = document.getElementById("readerLocateGraph");
 const readerCopyMd = document.getElementById("readerCopyMd");
 const readerDownloadMd = document.getElementById("readerDownloadMd");
+const readerBookmarkBtn = document.getElementById("readerBookmarkBtn");
+const maximizeReaderBtn = document.getElementById("maximizeReader");
 
 const CAT_LABELS = {
   phase: "Kill-Chain Phases",
@@ -2384,14 +3446,16 @@ function buildOrderedDocs(){
 let orderedDocs = buildOrderedDocs();
 let filteredReaderDocs = orderedDocs.slice();
 let activeReaderCat = "all";
-let activeReaderFile = null;
 let activeReaderMode = "rendered";
 let readerReturnFocus = null;
-let readerFontSize = 15.5;
+let readerFontSize = 15;
 let readerHeadings = [];
+let savedReaderScrollTop = 0;
+let isReaderMaximized = false;
+const collapsedReaderGroups = new Set();
 
 function applyReaderFontSize(px, persist){
-  readerFontSize = Math.min(19.5, Math.max(13, Number(px) || 15.5));
+  readerFontSize = Math.min(19, Math.max(13, Number(px) || 15));
   readerOverlay.style.setProperty("--reader-font-size", `${readerFontSize}px`);
   if(persist){
     try{ localStorage.setItem("findmyattackpath-reader-size", String(readerFontSize)); }catch{}
@@ -2400,6 +3464,24 @@ function applyReaderFontSize(px, persist){
 try{
   const savedSize = parseFloat(localStorage.getItem("findmyattackpath-reader-size"));
   if(Number.isFinite(savedSize)) applyReaderFontSize(savedSize, false);
+}catch{}
+
+function setReaderMaximized(max, persist){
+  isReaderMaximized = Boolean(max);
+  readerOverlay.classList.toggle("maximized", isReaderMaximized);
+  if(maximizeReaderBtn){
+    maximizeReaderBtn.title = isReaderMaximized ? "Restore windowed size" : "Maximize to fullscreen";
+    maximizeReaderBtn.setAttribute("aria-label", maximizeReaderBtn.title);
+    maximizeReaderBtn.innerHTML = isReaderMaximized
+      ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7"/></svg>'
+      : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>';
+  }
+  if(persist){
+    try{ localStorage.setItem("findmyattackpath-reader-max", isReaderMaximized ? "1" : "0"); }catch{}
+  }
+}
+try{
+  if(localStorage.getItem("findmyattackpath-reader-max") === "1") setReaderMaximized(true, false);
 }catch{}
 
 function updateCategoryCounts(){
@@ -2435,27 +3517,36 @@ function renderReaderSidebar(){
   const showGroups = activeReaderCat === "all";
   let lastType = null;
   filteredReaderDocs.forEach(file=>{
-    if(showGroups && file.entry.type !== lastType){
-      lastType = file.entry.type;
-      const gHead = document.createElement("div");
-      gHead.className = "reader-group-title";
-      const groupCount = filteredReaderDocs.filter(x=> x.entry.type === lastType).length;
-      gHead.innerHTML = `<span>${escapeHtml(CAT_LABELS[lastType] || lastType)}</span><span>${groupCount}</span>`;
+    const type = file.entry.type;
+    if(showGroups && type !== lastType){
+      lastType = type;
+      const isCollapsed = !q && collapsedReaderGroups.has(type);
+      const gHead = document.createElement("button");
+      gHead.type = "button";
+      gHead.className = "reader-group-title" + (isCollapsed ? " collapsed" : "");
+      const groupCount = filteredReaderDocs.filter(x=> x.entry.type === type).length;
+      gHead.innerHTML = `<span class="group-left"><span class="group-chev">▾</span><span>${escapeHtml(CAT_LABELS[type] || type)}</span></span><span>${groupCount}</span>`;
+      gHead.addEventListener("click", ()=>{
+        if(collapsedReaderGroups.has(type)) collapsedReaderGroups.delete(type);
+        else collapsedReaderGroups.add(type);
+        renderReaderSidebar();
+      });
       readerList.appendChild(gHead);
     }
+    if(showGroups && !q && collapsedReaderGroups.has(type)) return;
     const item = document.createElement("button");
     item.type = "button";
     item.className = "reader-item" + (activeReaderFile && activeReaderFile.entry.path === file.entry.path ? " active" : "");
     item.dataset.path = file.entry.path;
     const title = docDisplayTitle(file);
     const subParts = [];
-    if(file.entry.type === "technique"){
+    if(type === "technique"){
       if(file.meta.phase) subParts.push(phaseLabel(file.meta.phase));
       if(file.meta.mitre) subParts.push(file.meta.mitre);
-    } else if(file.entry.type === "tool"){
+    } else if(type === "tool"){
       if(file.meta.category) subParts.push(file.meta.category);
       if(file.meta.repo) subParts.push(file.meta.repo);
-    } else if(file.entry.type === "cve"){
+    } else if(type === "cve"){
       if(file.meta.year) subParts.push(String(file.meta.year));
       subParts.push(file.entry.id.toUpperCase());
     } else {
@@ -2464,7 +3555,7 @@ function renderReaderSidebar(){
     const isNew = file.meta && file.meta.tag === "new";
     item.innerHTML =
       `<div class="reader-item-row">` +
-        `<span class="reader-item-dot dot-${escapeHtml(file.entry.type)}"></span>` +
+        `<span class="reader-item-dot dot-${escapeHtml(type)}"></span>` +
         `<span class="reader-item-title">${escapeHtml(title)}${isNew ? '<span class="tag-new" style="margin-left:5px">new</span>' : ""}</span>` +
       `</div>` +
       `<div class="reader-item-sub">${escapeHtml(subParts.join(" · "))}</div>`;
@@ -2480,6 +3571,17 @@ function setMobileDrawerOpen(open){
   readerSidebarBackdrop.classList.toggle("open", open);
 }
 
+function setDesktopSidebarCollapsed(collapsed){
+  readerSidebar.classList.toggle("collapsed", collapsed);
+  readerBody.classList.toggle("sidebar-collapsed", collapsed);
+}
+
+function syncTocHiddenState(){
+  const hidden = activeReaderMode === "raw" || readerHeadings.length < 2;
+  readerToc.classList.toggle("empty", hidden);
+  readerBody.classList.toggle("toc-hidden", hidden);
+}
+
 function setReaderMode(mode){
   activeReaderMode = mode === "raw" ? "raw" : "rendered";
   const isRaw = activeReaderMode === "raw";
@@ -2487,17 +3589,14 @@ function setReaderMode(mode){
   readerModeRaw.classList.toggle("active", isRaw);
   readerContent.style.display = isRaw ? "none" : "";
   readerRawWrap.classList.toggle("open", isRaw);
-  readerToc.classList.toggle("empty", isRaw || readerHeadings.length < 2);
+  syncTocHiddenState();
 }
 
 function updateReaderToc(headings){
   readerHeadings = headings || [];
   readerTocList.replaceChildren();
-  if(readerHeadings.length < 2 || activeReaderMode === "raw"){
-    readerToc.classList.add("empty");
-    return;
-  }
-  readerToc.classList.remove("empty");
+  syncTocHiddenState();
+  if(readerHeadings.length < 2 || activeReaderMode === "raw") return;
   readerHeadings.forEach((h, idx)=>{
     const a = document.createElement("a");
     a.className = `toc-link toc-l${h.level}${idx === 0 ? " active" : ""}`;
@@ -2705,6 +3804,7 @@ function selectReaderDoc(file, opts){
       btn.scrollIntoView({block:"nearest"});
     }
   });
+  updateBookmarkButtons();
 
   /* Deep-link hash */
   if(cfg.updateHash !== false && readerOverlay.classList.contains("open")){
@@ -2716,7 +3816,27 @@ function selectReaderDoc(file, opts){
   }
 }
 
+function restoreReaderFromDock(){
+  removeFromDock("reader");
+  readerOverlay.classList.add("open");
+  readerOverlay.setAttribute("aria-hidden", "false");
+  indexOverlay.classList.remove("open");
+  aboutOverlay.classList.remove("open");
+  menuPanel.classList.remove("open");
+  if(activeReaderFile){
+    requestAnimationFrame(()=>{
+      readerMain.scrollTop = savedReaderScrollTop;
+      updateTocScrollSpy();
+    });
+  } else {
+    openReader();
+  }
+  readerMain.focus({preventScroll:true});
+}
+
 function openReader(file){
+  const wasMinimized = minimizedWindows.has("reader");
+  removeFromDock("reader");
   if(!readerOverlay.classList.contains("open")){
     readerReturnFocus = document.activeElement;
     readerOverlay.classList.add("open");
@@ -2724,7 +3844,15 @@ function openReader(file){
     indexOverlay.classList.remove("open");
     aboutOverlay.classList.remove("open");
     menuPanel.classList.remove("open");
-    toolboxPanel.classList.remove("open");
+  }
+  /* If reopening from dock without a specific file, preserve current doc & scroll */
+  if(!file && wasMinimized && activeReaderFile){
+    requestAnimationFrame(()=>{
+      readerMain.scrollTop = savedReaderScrollTop;
+      updateTocScrollSpy();
+    });
+    readerMain.focus({preventScroll:true});
+    return;
   }
   const target = file
     || (currentDetailNode && DOC_BY_ID.get(currentDetailNode.id))
@@ -2736,7 +3864,31 @@ function openReader(file){
   readerMain.focus({preventScroll:true});
 }
 
+function minimizeReader(){
+  if(!readerOverlay.classList.contains("open")) return;
+  savedReaderScrollTop = readerMain.scrollTop;
+  readerOverlay.classList.remove("open");
+  readerOverlay.setAttribute("aria-hidden", "true");
+  setMobileDrawerOpen(false);
+  const title = activeReaderFile ? docDisplayTitle(activeReaderFile) : "Writeups";
+  const type = activeReaderFile?.entry?.type;
+  const dotColor = type === "phase" ? "var(--phase)" : type === "technique" ? "var(--tech)" : type === "cve" ? "var(--cve)" : type === "tool" ? "var(--tool)" : "var(--accent)";
+  minimizeToDock("reader", {
+    title,
+    color: dotColor,
+    restore: ()=> restoreReaderFromDock(),
+    close: ()=> {
+      if(location.hash.startsWith("#doc=")){
+        try{ history.replaceState(null, "", location.pathname + location.search); }catch{}
+      }
+      savedReaderScrollTop = 0;
+    }
+  });
+}
+
 function closeReader(){
+  removeFromDock("reader");
+  savedReaderScrollTop = 0;
   if(!readerOverlay.classList.contains("open")) return;
   readerOverlay.classList.remove("open");
   readerOverlay.setAttribute("aria-hidden", "true");
@@ -2785,11 +3937,25 @@ async function openDocByRefInReader(ref, currentPath){
 
 /* Reader toolbar event listeners */
 document.getElementById("closeReader").addEventListener("click", closeReader);
+document.getElementById("minimizeReader").addEventListener("click", minimizeReader);
+if(maximizeReaderBtn){
+  maximizeReaderBtn.addEventListener("click", ()=> setReaderMaximized(!isReaderMaximized, true));
+}
+readerOverlay.addEventListener("click", ev=>{
+  if(ev.target === readerOverlay) minimizeReader();
+});
+if(readerBookmarkBtn){
+  readerBookmarkBtn.addEventListener("click", ()=>{
+    if(!activeReaderFile) return;
+    const docId = activeReaderFile.meta?.id || activeReaderFile.entry.id;
+    toggleBookmark(docId, docDisplayTitle(activeReaderFile), activeReaderFile.entry.type);
+  });
+}
 document.getElementById("readerSidebarToggle").addEventListener("click", ()=>{
   if(window.innerWidth <= 880){
     setMobileDrawerOpen(!readerSidebar.classList.contains("mobile-open"));
   } else {
-    readerSidebar.classList.toggle("collapsed");
+    setDesktopSidebarCollapsed(!readerSidebar.classList.contains("collapsed"));
   }
 });
 readerSidebarBackdrop.addEventListener("click", ()=> setMobileDrawerOpen(false));
@@ -2811,7 +3977,7 @@ readerDownloadMd.addEventListener("click", ()=>{
 readerLocateGraph.addEventListener("click", ()=>{
   const nid = readerLocateGraph.dataset.nodeId;
   if(!nid) return;
-  closeReader();
+  minimizeReader();
   locateNodeOnGraph(nid);
 });
 readerSearch.addEventListener("input", renderReaderSidebar);
@@ -2837,11 +4003,10 @@ document.addEventListener("keydown", ev=>{
       closeReader();
       return;
     }
-    if(indexOverlay.classList.contains("open")){ indexOverlay.classList.remove("open"); return; }
+    if(indexOverlay.classList.contains("open")){ closeIndexModal(); return; }
     if(aboutOverlay.classList.contains("open")){ aboutOverlay.classList.remove("open"); return; }
-    if(detailEl.classList.contains("open")){
-      detailEl.classList.remove("open","detail-expanded"); currentDetailNode = null; clearHighlight();
-    }
+    if(detailEl.classList.contains("open")){ closeDetailPanel(); return; }
+    if(toolboxPanel.classList.contains("open")){ closeToolboxPanel(); return; }
     return;
   }
   if(!readerOverlay.classList.contains("open")) return;
@@ -2850,7 +4015,7 @@ document.addEventListener("keydown", ev=>{
   if((ev.key === "/" && !typing) || ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === "k")){
     ev.preventDefault();
     if(window.innerWidth <= 880) setMobileDrawerOpen(true);
-    else readerSidebar.classList.remove("collapsed");
+    else setDesktopSidebarCollapsed(false);
     readerSearch.focus();
     readerSearch.select();
   } else if(ev.altKey && (ev.key === "ArrowLeft" || ev.key === "ArrowRight") && activeReaderFile){
@@ -2876,13 +4041,31 @@ window.addEventListener("hashchange", handleDocHash);
 
 /* ---------- resource index modal ---------- */
 const indexOverlay = document.getElementById("indexOverlay");
-document.getElementById("openIndex").addEventListener("click", (ev)=>{
-  ev.stopPropagation();
+function openIndexModal(){
+  removeFromDock("index");
   indexOverlay.classList.add("open");
   menuPanel.classList.remove("open");
+}
+function closeIndexModal(){
+  removeFromDock("index");
+  indexOverlay.classList.remove("open");
+}
+function minimizeIndexModal(){
+  indexOverlay.classList.remove("open");
+  minimizeToDock("index", {
+    title: "Resource index",
+    color: "var(--tool)",
+    restore: ()=> openIndexModal(),
+    close: ()=> closeIndexModal()
+  });
+}
+document.getElementById("openIndex").addEventListener("click", (ev)=>{
+  ev.stopPropagation();
+  openIndexModal();
 });
-document.getElementById("closeIndex").addEventListener("click", ()=> indexOverlay.classList.remove("open"));
-indexOverlay.addEventListener("click", (ev)=>{ if(ev.target===indexOverlay) indexOverlay.classList.remove("open"); });
+document.getElementById("minimizeIndex").addEventListener("click", minimizeIndexModal);
+document.getElementById("closeIndex").addEventListener("click", closeIndexModal);
+indexOverlay.addEventListener("click", (ev)=>{ if(ev.target===indexOverlay) minimizeIndexModal(); });
 
 const aboutOverlay = document.getElementById("aboutOverlay");
 document.getElementById("openAbout").addEventListener("click", (ev)=>{
@@ -3065,14 +4248,12 @@ const jsonPath = document.getElementById("jsonPath");
 addFileViewerButtons(jsonList, jsonViewer, jsonPath, "json", ["docs/manifest.json","vercel.json"]);
 document.getElementById("openTxtDocs").addEventListener("click", ev=>{
   ev.stopPropagation();
-  indexOverlay.classList.add("open");
-  menuPanel.classList.remove("open");
+  openIndexModal();
   document.getElementById("txtTab").click();
 });
 document.getElementById("openJsonDocs").addEventListener("click", ev=>{
   ev.stopPropagation();
-  indexOverlay.classList.add("open");
-  menuPanel.classList.remove("open");
+  openIndexModal();
   document.getElementById("jsonTab").click();
 });
 document.getElementById("docsBtn").addEventListener("click", ()=>{
