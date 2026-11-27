@@ -57,9 +57,12 @@ refresh the embedded fallback in `index.html` as well (for single-file hosting),
 `python3 scripts/embed-docs.py` before deploying; see [`scripts/embed-docs.py`](scripts/embed-docs.py).
 
 The resource index includes searchable tool and reference tabs plus recent project commits.
-Use the lower-right toolbox to recolor the graph or download selected phases as JSON, CSV,
-CSS, or SVG. Node detail panels can be expanded for wide tables and diagrams; Mermaid diagrams
-also have a full-size viewer with SVG and source downloads.
+Use the lower-right toolbox to recolor node types or individual nodes, change canvas and
+relationship connector colors, apply high-contrast or color-blind-friendly palettes, find shortest
+paths, bookmark study items, add custom nodes, and download selected phases as JSON, CSV, CSS,
+or SVG. Toolbox state and color choices are remembered in this browser. Node detail panels can
+be expanded for wide tables and diagrams; Mermaid diagrams also have a full-size viewer with SVG
+and source downloads.
 
 ## The kill chain the graph is built around
 
