@@ -131,7 +131,7 @@
     });
     const validColor = v => typeof v === "string" && /^#[0-9a-f]{6}$/i.test(v);
 
-    let colorSettings = { background: "", edge: "", edgeDim: "", types: {}, nodes: {} };
+    let colorSettings = { background: "", edge: "", edgeDim: "", types: {}, nodes: {}, linkKinds: {} };
     try{
       const saved = JSON.parse(localStorage.getItem("findmyattackpath-colors") || "{}");
       if(validColor(saved.background)) colorSettings.background = saved.background;
@@ -143,11 +143,17 @@
       if(saved.nodes && typeof saved.nodes === "object"){
         Object.entries(saved.nodes).forEach(([id, v])=>{ if(validColor(v)) colorSettings.nodes[id] = v; });
       }
+      if(saved.linkKinds && typeof saved.linkKinds === "object"){
+        ["chain","belongs","uses","exploits"].forEach(kind=>{
+          if(validColor(saved.linkKinds[kind])) colorSettings.linkKinds[kind] = saved.linkKinds[kind];
+        });
+      }
     }catch{}
 
     if(colorSettings.background) rootStyle.setProperty("--bg", colorSettings.background);
     if(colorSettings.edge) rootStyle.setProperty("--edge", colorSettings.edge);
     if(colorSettings.edgeDim) rootStyle.setProperty("--edge-dim", colorSettings.edgeDim);
+    Object.entries(colorSettings.linkKinds).forEach(([kind, value])=> rootStyle.setProperty(`--link-${kind}`, value));
     Object.entries(colorSettings.types).forEach(([type, value])=>{
       rootStyle.setProperty(`--${type === "technique" ? "tech" : type}`, value);
     });
@@ -223,6 +229,9 @@
       });
     }
 
+    function linkStroke(d){ return `var(--link-${d.kind}, var(--edge))`; }
+    function connectorColor(d){ return colorSettings.linkKinds[d.kind] || colorSettings.edge || getLiveVar("--edge"); }
+
     function applyTypeFilter(){
       nodeSel.style("display", d=> activeTypes.has(d.type) ? null : "none");
       linkSel.style("display", d=>{
@@ -236,7 +245,7 @@
       linkSel = linkLayer.selectAll("line")
         .data(graphLinks, d=> `${typeof d.source === "string" ? d.source : d.source.id}->${typeof d.target === "string" ? d.target : d.target.id}:${d.kind}`)
         .join("line")
-        .attr("stroke", "var(--edge)")
+        .attr("stroke", linkStroke)
         .attr("stroke-width", d=> d.kind === "chain" ? 2 : 1)
         .attr("stroke-dasharray", d=> d.kind === "uses" ? "2,3" : (d.custom ? "4,3" : null))
         .attr("opacity", 0.72);
@@ -418,7 +427,7 @@
     /* Wire highlighting & BFS Shortest Path Finder */
     function clearHighlight(){
       linkSel
-        .attr("stroke", "var(--edge)")
+        .attr("stroke", linkStroke)
         .attr("stroke-width", d=> d.kind === "chain" ? 2 : 1)
         .attr("opacity", 0.72);
     }
@@ -615,6 +624,12 @@
         const variable = target === "__edge" ? "--edge" : "--edge-dim";
         colorSettings[key] = hex;
         rootStyle.setProperty(variable, hex);
+      } else if(target.startsWith("__link:")){
+        const kind = target.slice(7);
+        if(["chain","belongs","uses","exploits"].includes(kind)){
+          colorSettings.linkKinds[kind] = hex;
+          rootStyle.setProperty(`--link-${kind}`, hex);
+        }
       } else if(target.startsWith("node:")){
         colorSettings.nodes[target.slice(5)] = hex;
       } else {
@@ -625,12 +640,67 @@
       saveColorSettings();
     }
 
+    function clearConnectorColor(kind){
+      if(!["chain","belongs","uses","exploits"].includes(kind)) return;
+      delete colorSettings.linkKinds[kind];
+      rootStyle.removeProperty(`--link-${kind}`);
+      saveColorSettings();
+    }
+
     function resetColors(){
-      colorSettings = { background: "", edge: "", edgeDim: "", types: {}, nodes: {} };
-      ["--bg","--edge","--edge-dim","--phase","--tech","--tool","--cve","--custom"]
+      colorSettings = { background: "", edge: "", edgeDim: "", types: {}, nodes: {}, linkKinds: {} };
+      ["--bg","--edge","--edge-dim","--phase","--tech","--tool","--cve","--custom",
+        "--link-chain","--link-belongs","--link-uses","--link-exploits"]
         .forEach(variable=> rootStyle.removeProperty(variable));
       try{ localStorage.removeItem("findmyattackpath-colors"); }catch{}
       refreshNodeColors();
+      if(activePathIds) clearPathHighlight();
+      else clearHighlight();
+    }
+
+    function applyColorPreset(name){
+      if(name === "default"){
+        resetColors();
+        return;
+      }
+      const darkSurface = (()=>{
+        const match = getLiveVar("--bg").match(/[0-9a-f]{2}/ig);
+        if(!match || match.length < 3) return false;
+        const [r,g,b] = match.slice(0,3).map(v=>parseInt(v,16));
+        return (r * 0.299 + g * 0.587 + b * 0.114) < 128;
+      })();
+      const presets = {
+        contrast: darkSurface ? {
+          types: { phase: "#62d6c4", technique: "#66bfff", tool: "#ffd166", cve: "#ff806e", custom: "#d0d5dd" },
+          links: { chain: "#62d6c4", belongs: "#66bfff", uses: "#ffd166", exploits: "#ff806e" }
+        } : {
+          types: { phase: "#005a4f", technique: "#005ea8", tool: "#8a4b00", cve: "#a61b1b", custom: "#4b5563" },
+          links: { chain: "#005a4f", belongs: "#005ea8", uses: "#8a4b00", exploits: "#a61b1b" }
+        },
+        colorblind: {
+          types: { phase: "#0072b2", technique: "#e69f00", tool: "#009e73", cve: "#d55e00", custom: "#cc79a7" },
+          links: { chain: "#0072b2", belongs: "#009e73", uses: "#e69f00", exploits: "#d55e00" }
+        }
+      };
+      const preset = presets[name];
+      if(!preset) return;
+      colorSettings = {
+        background: colorSettings.background,
+        edge: colorSettings.edge,
+        edgeDim: colorSettings.edgeDim,
+        types: { ...preset.types },
+        nodes: {},
+        linkKinds: { ...preset.links }
+      };
+      ["--phase","--tech","--tool","--cve","--custom",
+        "--link-chain","--link-belongs","--link-uses","--link-exploits"]
+        .forEach(variable=> rootStyle.removeProperty(variable));
+      Object.entries(colorSettings.types).forEach(([type, value])=> rootStyle.setProperty(`--${type === "technique" ? "tech" : type}`, value));
+      Object.entries(colorSettings.linkKinds).forEach(([kind, value])=> rootStyle.setProperty(`--link-${kind}`, value));
+      refreshNodeColors();
+      if(activePathIds) clearPathHighlight();
+      else clearHighlight();
+      saveColorSettings();
     }
 
     /* Exports (JSON / CSV / CSS / SVG / PNG / Markdown briefing) */
@@ -658,7 +728,7 @@
       if(!nodesList.length) return "";
       const pad = 70;
       const bgVal = colorSettings.background || getLiveVar("--bg");
-      const fgVal = getLiveVar("--fg"), edgeVal = getLiveVar("--edge"), mutedVal = getLiveVar("--muted");
+      const fgVal = getLiveVar("--fg"), mutedVal = getLiveVar("--muted");
       const minX = Math.min(...nodesList.map(n=> Number.isFinite(n.x) ? n.x : 0));
       const minY = Math.min(...nodesList.map(n=> Number.isFinite(n.y) ? n.y : 0));
       const maxX = Math.max(...nodesList.map(n=> (Number.isFinite(n.x) ? n.x : 0) + n.label.length * 7 + 35));
@@ -670,7 +740,7 @@
       const lines = linksList.map(l=>{
         const s = nodeIndex.get(nid(l.source)), t = nodeIndex.get(nid(l.target));
         if(!s || !t) return "";
-        return `<line x1="${s.x - minX + pad}" y1="${s.y - minY + pad}" x2="${t.x - minX + pad}" y2="${t.y - minY + pad}" stroke="${edgeVal}" stroke-width="1.5"/>`;
+        return `<line x1="${s.x - minX + pad}" y1="${s.y - minY + pad}" x2="${t.x - minX + pad}" y2="${t.y - minY + pad}" stroke="${connectorColor(l)}" stroke-width="1.5"/>`;
       }).join("");
       const marks = nodesList.map(n=>{
         const x = (Number.isFinite(n.x) ? n.x : 0) - minX + pad;
@@ -719,7 +789,8 @@
             nodes: colorSettings.nodes,
             connectors: {
               normal: colorSettings.edge || getLiveVar("--edge"),
-              faded: colorSettings.edgeDim || getLiveVar("--edge-dim")
+              faded: colorSettings.edgeDim || getLiveVar("--edge-dim"),
+              byRelationship: { ...colorSettings.linkKinds }
             }
           },
           nodes: selectedNodes.map(n=> ({ id: n.id, type: n.type, label: n.label, phase: n.data.phase || null, data: n.data })),
@@ -733,7 +804,8 @@
         const vars = Object.entries(palette).map(([t, v])=> `  --${t === "technique" ? "tech" : t}: ${v};`).join("\n");
         const typeRules = Object.entries(palette).map(([t, v])=> `[data-node-type="${t}"] circle { fill: ${v}; }`).join("\n");
         const nodeRules = selectedNodes.map(n=> `[data-node-id="${n.id.replace(/["\\]/g, "\\$&")}"] circle { fill: ${nodeColor(n)}; }`).join("\n");
-        saveFile(`${filename}.css`, "text/css;charset=utf-8", `:root {\n${vars}\n  --bg: ${colorSettings.background || getLiveVar("--bg")};\n  --edge: ${colorSettings.edge || getLiveVar("--edge")};\n  --edge-dim: ${colorSettings.edgeDim || getLiveVar("--edge-dim")};\n}\n${typeRules}\n${nodeRules}\n`);
+        const linkVars = Object.entries(colorSettings.linkKinds).map(([kind, value])=> `  --link-${kind}: ${value};`).join("\n");
+        saveFile(`${filename}.css`, "text/css;charset=utf-8", `:root {\n${vars}\n  --bg: ${colorSettings.background || getLiveVar("--bg")};\n  --edge: ${colorSettings.edge || getLiveVar("--edge")};\n  --edge-dim: ${colorSettings.edgeDim || getLiveVar("--edge-dim")};\n${linkVars}\n}\n${typeRules}\n${nodeRules}\n`);
       } else if(format === "png"){
         const svgStr = buildSvg(selectedNodes, selectedLinks);
         if(svgStr) saveSvgAsPng(svgStr, `${filename}.png`);
@@ -806,6 +878,8 @@
       cycleLabels,
       setSpacing,
       setColorOverride,
+      applyColorPreset,
+      clearConnectorColor,
       resetColors,
       highlightWiresFor,
       clearHighlight,

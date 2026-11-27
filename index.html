@@ -70,10 +70,14 @@
 <div class="hint-overlay" id="hintOverlay">loading attack graph…</div>
 <div id="watermark">Created by Alham Rizvi</div>
 
-<button id="toolboxBtn" class="glass" type="button" aria-label="Open workspace toolbox" aria-expanded="false" title="Workspace toolbox">
+<button id="toolboxBtn" class="glass" type="button" aria-label="Open workspace toolbox" aria-expanded="false" aria-describedby="toolboxHint" title="Layout, colors, path finding and export tools">
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5h16M4 12h16M4 16.5h16"/><circle cx="8" cy="7.5" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="10" cy="16.5" r="2"/></svg>
   <span>Toolbox</span>
 </button>
+<div id="toolboxHint" class="toolbox-hint" role="note" hidden>
+  Layout, colors, path finding, bookmarks and exports are in the Toolbox.
+  <button id="dismissToolboxHint" type="button" aria-label="Dismiss toolbox tip">×</button>
+</div>
 
 <section id="toolboxPanel" class="glass-solid" aria-label="Workspace toolbox">
   <div class="tb-head">
@@ -84,12 +88,12 @@
     </div>
   </div>
   <div class="tb-tabs" role="tablist" aria-label="Toolbox sections">
-    <button class="tb-tab active" type="button" role="tab" aria-selected="true" data-pane="tbGraphPane">Graph</button>
-    <button class="tb-tab" type="button" role="tab" aria-selected="false" data-pane="tbToolsPane">Tools</button>
-    <button class="tb-tab" type="button" role="tab" aria-selected="false" data-pane="tbExportPane">Export</button>
+    <button id="tbGraphTab" class="tb-tab active" type="button" role="tab" aria-controls="tbGraphPane" aria-selected="true" tabindex="0" data-pane="tbGraphPane">Graph</button>
+    <button id="tbToolsTab" class="tb-tab" type="button" role="tab" aria-controls="tbToolsPane" aria-selected="false" tabindex="-1" data-pane="tbToolsPane">Tools</button>
+    <button id="tbExportTab" class="tb-tab" type="button" role="tab" aria-controls="tbExportPane" aria-selected="false" tabindex="-1" data-pane="tbExportPane">Export</button>
   </div>
   <div class="tb-body">
-    <div class="tb-pane active" id="tbGraphPane" role="tabpanel">
+    <div class="tb-pane active" id="tbGraphPane" role="tabpanel" aria-labelledby="tbGraphTab">
       <div class="tb-sec">
         <details id="colorsDetails" open>
           <summary>Colors — nodes, canvas &amp; connectors</summary>
@@ -115,8 +119,31 @@
               <input id="fadedConnectorColor" type="color" value="#dfe4e1">
             </div>
           </div>
-          <button class="tb-btn" id="resetColors" type="button" style="width:100%;margin-top:4px">Reset colors</button>
-          <p class="toolbox-note">Choose a node type or an individual node to recolor it. Colors are saved in this browser.</p>
+          <details class="tb-advanced-colors">
+            <summary>Colors by relationship</summary>
+            <label class="tb-lbl" for="connectorTarget">Relationship</label>
+            <select id="connectorTarget">
+              <option value="chain">Phase chain</option>
+              <option value="belongs">Phase to technique</option>
+              <option value="uses">Technique to tool</option>
+              <option value="exploits">Technique to CVE</option>
+            </select>
+            <label class="tb-lbl" for="connectorKindColor">Relationship color</label>
+            <input id="connectorKindColor" type="color" value="#aeb6b3">
+            <button class="tb-btn" id="inheritConnectorColor" type="button" style="width:100%;margin-top:5px">Use general connector color</button>
+          </details>
+          <div class="tb-color-preview" role="img" aria-label="Preview of selected node and connector colors">
+            <span id="colorPreviewNode" aria-hidden="true"></span>
+            <span id="colorPreviewLine" aria-hidden="true"></span>
+            <span id="colorPreviewLabel">Preview</span>
+          </div>
+          <div class="tb-color-presets" aria-label="Color palette presets">
+            <span class="tb-sec-title">Palette presets</span>
+            <button class="tb-btn" type="button" data-color-preset="contrast">High contrast</button>
+            <button class="tb-btn" type="button" data-color-preset="colorblind">Color-blind friendly</button>
+          </div>
+          <button class="tb-btn" id="resetColors" type="button" style="width:100%;margin-top:6px">Reset all colors</button>
+          <p class="toolbox-note" id="colorStatus" role="status" aria-live="polite">Color changes are saved in this browser.</p>
         </details>
       </div>
 
@@ -143,7 +170,7 @@
       </div>
     </div>
 
-    <div class="tb-pane" id="tbToolsPane" role="tabpanel">
+    <div class="tb-pane" id="tbToolsPane" role="tabpanel" aria-labelledby="tbToolsTab">
       <div class="tb-sec">
         <div class="tb-sec-title">
           <span>Shortest path finder</span>
@@ -197,7 +224,7 @@
       </div>
     </div>
 
-    <div class="tb-pane" id="tbExportPane" role="tabpanel">
+    <div class="tb-pane" id="tbExportPane" role="tabpanel" aria-labelledby="tbExportTab">
       <div class="tb-sec">
         <div class="tb-sec-title">
           <span>Include phases</span>

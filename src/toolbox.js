@@ -46,6 +46,28 @@
     const backgroundColorInput = document.getElementById("backgroundColor");
     const connectorColorInput = document.getElementById("connectorColor");
     const fadedConnectorColorInput = document.getElementById("fadedConnectorColor");
+    const connectorTarget = document.getElementById("connectorTarget");
+    const connectorKindColorInput = document.getElementById("connectorKindColor");
+    const colorStatus = document.getElementById("colorStatus");
+    const toolboxHint = document.getElementById("toolboxHint");
+    const TOOLBOX_STATE_KEY = "findmyattackpath-toolbox-state";
+    const TOOLBOX_TAB_KEY = "findmyattackpath-toolbox-tab";
+    let savedToolboxState = "closed";
+    let savedToolboxTab = "tbGraphPane";
+    try{
+      savedToolboxState = localStorage.getItem(TOOLBOX_STATE_KEY) || "closed";
+      savedToolboxTab = localStorage.getItem(TOOLBOX_TAB_KEY) || "tbGraphPane";
+      if(!localStorage.getItem("findmyattackpath-toolbox-hint-seen")) toolboxHint.hidden = false;
+    }catch{}
+
+    function setToolboxState(state){
+      try{ localStorage.setItem(TOOLBOX_STATE_KEY, state); }catch{}
+    }
+    function hideToolboxHint(){
+      toolboxHint.hidden = true;
+      try{ localStorage.setItem("findmyattackpath-toolbox-hint-seen", "1"); }catch{}
+    }
+    document.getElementById("dismissToolboxHint").addEventListener("click", hideToolboxHint);
 
     makeWindowInteractive(toolboxPanel, { handle: ".tb-head", minW: 290, minH: 260 });
 
@@ -53,15 +75,19 @@
       removeFromDock("toolbox");
       toolboxPanel.classList.add("open");
       toolboxBtn.setAttribute("aria-expanded", "true");
+      setToolboxState("open");
+      hideToolboxHint();
     }
     function closeToolbox(){
       removeFromDock("toolbox");
       toolboxPanel.classList.remove("open");
       toolboxBtn.setAttribute("aria-expanded", "false");
+      setToolboxState("closed");
     }
     function minimizeToolbox(){
       toolboxPanel.classList.remove("open");
       toolboxBtn.setAttribute("aria-expanded", "false");
+      setToolboxState("minimized");
       minimizeToDock({
         id: "toolbox",
         label: "Toolbox",
@@ -83,15 +109,32 @@
       menuPanel.classList.remove("open");
     });
 
-    /* Toolbox 3-Tab Switcher */
-    document.querySelectorAll(".tb-tab").forEach(tab=>{
-      tab.addEventListener("click", ()=>{
-        document.querySelectorAll(".tb-tab").forEach(t=>{
-          const on = t === tab;
-          t.classList.toggle("active", on);
-          t.setAttribute("aria-selected", on);
-        });
-        document.querySelectorAll(".tb-pane").forEach(p=> p.classList.toggle("active", p.id === tab.dataset.pane));
+    /* Toolbox tabs support click, keyboard navigation, and remember selection. */
+    const toolboxTabs = [...document.querySelectorAll(".tb-tab")];
+    function activateToolboxTab(tab, focus = false){
+      toolboxTabs.forEach(t=>{
+        const on = t === tab;
+        t.classList.toggle("active", on);
+        t.setAttribute("aria-selected", String(on));
+        t.tabIndex = on ? 0 : -1;
+      });
+      document.querySelectorAll(".tb-pane").forEach(p=> p.classList.toggle("active", p.id === tab.dataset.pane));
+      try{ localStorage.setItem(TOOLBOX_TAB_KEY, tab.dataset.pane); }catch{}
+      if(focus) tab.focus();
+    }
+    const initialTab = toolboxTabs.find(t=> t.dataset.pane === savedToolboxTab) || toolboxTabs[0];
+    if(initialTab) activateToolboxTab(initialTab);
+    toolboxTabs.forEach((tab, idx)=>{
+      tab.addEventListener("click", ()=> activateToolboxTab(tab));
+      tab.addEventListener("keydown", ev=>{
+        let next = idx;
+        if(ev.key === "ArrowRight") next = (idx + 1) % toolboxTabs.length;
+        else if(ev.key === "ArrowLeft") next = (idx - 1 + toolboxTabs.length) % toolboxTabs.length;
+        else if(ev.key === "Home") next = 0;
+        else if(ev.key === "End") next = toolboxTabs.length - 1;
+        else return;
+        ev.preventDefault();
+        activateToolboxTab(toolboxTabs[next], true);
       });
     });
 
@@ -140,6 +183,28 @@
       backgroundColorInput.value = cs.background || graph.getLiveVar("--bg") || "#f2f4f2";
       connectorColorInput.value = cs.edge || graph.getLiveVar("--edge") || "#aeb6b3";
       fadedConnectorColorInput.value = cs.edgeDim || graph.getLiveVar("--edge-dim") || "#dfe4e1";
+      connectorKindColorInput.value = cs.linkKinds?.[connectorTarget.value] || cs.edge || graph.getLiveVar("--edge") || "#aeb6b3";
+      updateColorPreview();
+    }
+
+    function updateColorPreview(){
+      const previewNode = document.getElementById("colorPreviewNode");
+      const previewLine = document.getElementById("colorPreviewLine");
+      if(!previewNode || !previewLine) return;
+      const connectorSettings = graph.getColorSettings();
+      const previewConnector = connectorSettings.linkKinds?.[connectorTarget.value] || connectorColorInput.value;
+      previewNode.style.backgroundColor = nodeColorInput.value;
+      previewLine.style.backgroundColor = previewConnector;
+      const nodeLabel = colorTarget.options[colorTarget.selectedIndex]?.textContent || "Node";
+      const relationshipLabel = connectorTarget.options[connectorTarget.selectedIndex]?.textContent || "Connector";
+      document.getElementById("colorPreviewLabel").textContent = `${nodeLabel} · ${relationshipLabel}`;
+      previewNode.setAttribute("aria-label", `${nodeLabel} color ${nodeColorInput.value}`);
+      previewLine.setAttribute("aria-label", `${relationshipLabel} color ${previewConnector}`);
+    }
+
+    function announceColorChange(message = "Colors saved in this browser."){
+      colorStatus.textContent = message;
+      updateColorPreview();
     }
 
     function refreshColorTargets(){
@@ -163,13 +228,44 @@
 
     refreshColorTargets();
     colorTarget.addEventListener("change", syncColorInputs);
-    nodeColorInput.addEventListener("input", ()=> graph.setColorOverride(colorTarget.value, nodeColorInput.value));
-    backgroundColorInput.addEventListener("input", ()=> graph.setColorOverride("__bg", backgroundColorInput.value));
-    connectorColorInput.addEventListener("input", ()=> graph.setColorOverride("__edge", connectorColorInput.value));
-    fadedConnectorColorInput.addEventListener("input", ()=> graph.setColorOverride("__edge-dim", fadedConnectorColorInput.value));
+    nodeColorInput.addEventListener("input", ()=>{
+      graph.setColorOverride(colorTarget.value, nodeColorInput.value);
+      announceColorChange("Node color saved in this browser.");
+    });
+    backgroundColorInput.addEventListener("input", ()=>{
+      graph.setColorOverride("__bg", backgroundColorInput.value);
+      announceColorChange("Canvas color saved in this browser.");
+    });
+    connectorColorInput.addEventListener("input", ()=>{
+      graph.setColorOverride("__edge", connectorColorInput.value);
+      syncColorInputs();
+      announceColorChange("Connector color saved in this browser.");
+    });
+    fadedConnectorColorInput.addEventListener("input", ()=>{
+      graph.setColorOverride("__edge-dim", fadedConnectorColorInput.value);
+      announceColorChange("Faded connector color saved in this browser.");
+    });
+    connectorTarget.addEventListener("change", syncColorInputs);
+    connectorKindColorInput.addEventListener("input", ()=>{
+      graph.setColorOverride(`__link:${connectorTarget.value}`, connectorKindColorInput.value);
+      announceColorChange("Relationship color saved in this browser.");
+    });
+    document.getElementById("inheritConnectorColor").addEventListener("click", ()=>{
+      graph.clearConnectorColor(connectorTarget.value);
+      syncColorInputs();
+      announceColorChange("This relationship now uses the general connector color.");
+    });
+    document.querySelectorAll("[data-color-preset]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        graph.applyColorPreset(btn.dataset.colorPreset);
+        syncColorInputs();
+        announceColorChange(`${btn.textContent.trim()} palette applied and saved.`);
+      });
+    });
     document.getElementById("resetColors").addEventListener("click", ()=>{
       graph.resetColors();
       syncColorInputs();
+      announceColorChange("All colors reset to the current theme defaults.");
     });
 
     /* Tab 2A: Shortest Path Finder (BFS) */
@@ -694,6 +790,7 @@
     /* 6. Global Esc Key Priority Handler ---------------------------------- */
     document.addEventListener("keydown", ev=>{
       if(ev.key !== "Escape") return;
+      if(!toolboxHint.hidden){ hideToolboxHint(); return; }
       if(diagramOverlay.classList.contains("open")){ closeDiagram(); return; }
       if(reader.isOpen()){
         if(reader.isMobileDrawerOpen()){ reader.closeMobileDrawer(); return; }
@@ -704,6 +801,9 @@
       if(reader.isDetailOpen()){ reader.closeDetail(); return; }
       if(toolboxPanel.classList.contains("open")){ closeToolbox(); return; }
     });
+
+    if(savedToolboxState === "open") openToolbox();
+    else if(savedToolboxState === "minimized") minimizeToolbox();
 
     FMAP.toolbox = { open: openToolbox, close: closeToolbox, minimize: minimizeToolbox, removeCustomNode: removeCustomNodeUI };
     FMAP.modals = { openIndex: openIndexModal, closeIndex: closeIndexModal, openAbout, closeAbout, openDiagram, closeDiagram };
