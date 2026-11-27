@@ -126,15 +126,18 @@
       phase: getLiveVar("--phase") || "#3d6b66",
       technique: getLiveVar("--tech") || "#0f8a8a",
       tool: getLiveVar("--tool") || "#b4790f",
-      cve: getLiveVar("--cve") || "#b2402f"
+      cve: getLiveVar("--cve") || "#b2402f",
+      custom: getLiveVar("--custom") || "#4b5563"
     });
     const validColor = v => typeof v === "string" && /^#[0-9a-f]{6}$/i.test(v);
 
-    let colorSettings = { background: "", types: {}, nodes: {} };
+    let colorSettings = { background: "", edge: "", edgeDim: "", types: {}, nodes: {} };
     try{
       const saved = JSON.parse(localStorage.getItem("findmyattackpath-colors") || "{}");
       if(validColor(saved.background)) colorSettings.background = saved.background;
-      ["phase","technique","tool","cve"].forEach(type=>{
+      if(validColor(saved.edge)) colorSettings.edge = saved.edge;
+      if(validColor(saved.edgeDim)) colorSettings.edgeDim = saved.edgeDim;
+      ["phase","technique","tool","cve","custom"].forEach(type=>{
         if(validColor(saved.types?.[type])) colorSettings.types[type] = saved.types[type];
       });
       if(saved.nodes && typeof saved.nodes === "object"){
@@ -143,13 +146,15 @@
     }catch{}
 
     if(colorSettings.background) rootStyle.setProperty("--bg", colorSettings.background);
+    if(colorSettings.edge) rootStyle.setProperty("--edge", colorSettings.edge);
+    if(colorSettings.edgeDim) rootStyle.setProperty("--edge-dim", colorSettings.edgeDim);
     Object.entries(colorSettings.types).forEach(([type, value])=>{
       rootStyle.setProperty(`--${type === "technique" ? "tech" : type}`, value);
     });
 
     const nodeColor = d =>{
       if(colorSettings.nodes[d.id]) return colorSettings.nodes[d.id];
-      if(d.type === "custom") return getLiveVar("--custom") || "#4b5563";
+      if(d.type === "custom") return colorSettings.types.custom || getLiveVar("--custom") || "#4b5563";
       return colorSettings.types[d.type] || getDefaultPalette()[d.type] || "#3d6b66";
     };
 
@@ -605,6 +610,11 @@
       if(target === "__bg"){
         colorSettings.background = hex;
         rootStyle.setProperty("--bg", hex);
+      } else if(target === "__edge" || target === "__edge-dim"){
+        const key = target === "__edge" ? "edge" : "edgeDim";
+        const variable = target === "__edge" ? "--edge" : "--edge-dim";
+        colorSettings[key] = hex;
+        rootStyle.setProperty(variable, hex);
       } else if(target.startsWith("node:")){
         colorSettings.nodes[target.slice(5)] = hex;
       } else {
@@ -616,9 +626,9 @@
     }
 
     function resetColors(){
-      colorSettings = { background: "", types: {}, nodes: {} };
-      rootStyle.removeProperty("--bg");
-      ["phase","technique","tool","cve"].forEach(type=> rootStyle.removeProperty(`--${type === "technique" ? "tech" : type}`));
+      colorSettings = { background: "", edge: "", edgeDim: "", types: {}, nodes: {} };
+      ["--bg","--edge","--edge-dim","--phase","--tech","--tool","--cve","--custom"]
+        .forEach(variable=> rootStyle.removeProperty(variable));
       try{ localStorage.removeItem("findmyattackpath-colors"); }catch{}
       refreshNodeColors();
     }
@@ -704,7 +714,14 @@
         const payload = {
           phases: [...selectedPhases],
           background: colorSettings.background || getLiveVar("--bg"),
-          colors: { types: palette, nodes: colorSettings.nodes },
+          colors: {
+            types: palette,
+            nodes: colorSettings.nodes,
+            connectors: {
+              normal: colorSettings.edge || getLiveVar("--edge"),
+              faded: colorSettings.edgeDim || getLiveVar("--edge-dim")
+            }
+          },
           nodes: selectedNodes.map(n=> ({ id: n.id, type: n.type, label: n.label, phase: n.data.phase || null, data: n.data })),
           links: selectedLinks.map(l=> ({ source: typeof l.source === "string" ? l.source : l.source.id, target: typeof l.target === "string" ? l.target : l.target.id, kind: l.kind }))
         };
@@ -716,7 +733,7 @@
         const vars = Object.entries(palette).map(([t, v])=> `  --${t === "technique" ? "tech" : t}: ${v};`).join("\n");
         const typeRules = Object.entries(palette).map(([t, v])=> `[data-node-type="${t}"] circle { fill: ${v}; }`).join("\n");
         const nodeRules = selectedNodes.map(n=> `[data-node-id="${n.id.replace(/["\\]/g, "\\$&")}"] circle { fill: ${nodeColor(n)}; }`).join("\n");
-        saveFile(`${filename}.css`, "text/css;charset=utf-8", `:root {\n${vars}\n  --bg: ${colorSettings.background || getLiveVar("--bg")};\n}\n${typeRules}\n${nodeRules}\n`);
+        saveFile(`${filename}.css`, "text/css;charset=utf-8", `:root {\n${vars}\n  --bg: ${colorSettings.background || getLiveVar("--bg")};\n  --edge: ${colorSettings.edge || getLiveVar("--edge")};\n  --edge-dim: ${colorSettings.edgeDim || getLiveVar("--edge-dim")};\n}\n${typeRules}\n${nodeRules}\n`);
       } else if(format === "png"){
         const svgStr = buildSvg(selectedNodes, selectedLinks);
         if(svgStr) saveSvgAsPng(svgStr, `${filename}.png`);
