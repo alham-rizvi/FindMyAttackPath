@@ -91,6 +91,36 @@
   <div class="tb-body">
     <div class="tb-pane active" id="tbGraphPane" role="tabpanel">
       <div class="tb-sec">
+        <details id="colorsDetails" open>
+          <summary>Colors — nodes, canvas &amp; connectors</summary>
+          <label class="tb-lbl" for="colorTarget">Customize colors for</label>
+          <select id="colorTarget"></select>
+          <div class="tb-row" style="margin-top:6px">
+            <div>
+              <label class="tb-lbl" for="nodeColor" style="margin-top:0">Node color</label>
+              <input id="nodeColor" type="color" value="#3d6b66">
+            </div>
+            <div>
+              <label class="tb-lbl" for="backgroundColor" style="margin-top:0">Canvas background</label>
+              <input id="backgroundColor" type="color" value="#f2f4f2">
+            </div>
+          </div>
+          <div class="tb-row">
+            <div>
+              <label class="tb-lbl" for="connectorColor" style="margin-top:0">Connectors</label>
+              <input id="connectorColor" type="color" value="#aeb6b3">
+            </div>
+            <div>
+              <label class="tb-lbl" for="fadedConnectorColor" style="margin-top:0">Faded connectors</label>
+              <input id="fadedConnectorColor" type="color" value="#dfe4e1">
+            </div>
+          </div>
+          <button class="tb-btn" id="resetColors" type="button" style="width:100%;margin-top:4px">Reset colors</button>
+          <p class="toolbox-note">Choose a node type or an individual node to recolor it. Colors are saved in this browser.</p>
+        </details>
+      </div>
+
+      <div class="tb-sec">
         <div class="tb-sec-title"><span>Layout preset</span></div>
         <div class="tb-seg" id="layoutPresets">
           <button type="button" data-layout="force" class="active">Force</button>
@@ -110,25 +140,6 @@
           <input id="spacingSlider" type="range" min="120" max="440" step="20" value="240" aria-label="Node repulsion spacing">
           <span class="mono" id="spacingVal">240</span>
         </div>
-      </div>
-
-      <div class="tb-sec">
-        <details id="colorsDetails">
-          <summary>Node &amp; canvas colors</summary>
-          <label class="tb-lbl" for="colorTarget">Customize colors for</label>
-          <select id="colorTarget"></select>
-          <div class="tb-row" style="margin-top:6px">
-            <div>
-              <label class="tb-lbl" for="nodeColor" style="margin-top:0">Node color</label>
-              <input id="nodeColor" type="color" value="#3d6b66">
-            </div>
-            <div>
-              <label class="tb-lbl" for="backgroundColor" style="margin-top:0">Canvas background</label>
-              <input id="backgroundColor" type="color" value="#f2f4f2">
-            </div>
-          </div>
-          <button class="tb-btn" id="resetColors" type="button" style="width:100%;margin-top:4px">Reset colors</button>
-        </details>
       </div>
     </div>
 

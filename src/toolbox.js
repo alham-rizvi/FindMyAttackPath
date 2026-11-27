@@ -44,6 +44,8 @@
     const colorTarget = document.getElementById("colorTarget");
     const nodeColorInput = document.getElementById("nodeColor");
     const backgroundColorInput = document.getElementById("backgroundColor");
+    const connectorColorInput = document.getElementById("connectorColor");
+    const fadedConnectorColorInput = document.getElementById("fadedConnectorColor");
 
     makeWindowInteractive(toolboxPanel, { handle: ".tb-head", minW: 290, minH: 260 });
 
@@ -136,12 +138,14 @@
         nodeColorInput.value = cs.types[val] || defaults[val] || defaults.phase || "#3d6b66";
       }
       backgroundColorInput.value = cs.background || graph.getLiveVar("--bg") || "#f2f4f2";
+      connectorColorInput.value = cs.edge || graph.getLiveVar("--edge") || "#aeb6b3";
+      fadedConnectorColorInput.value = cs.edgeDim || graph.getLiveVar("--edge-dim") || "#dfe4e1";
     }
 
     function refreshColorTargets(){
       const prev = colorTarget.value;
       colorTarget.replaceChildren();
-      ["phase","technique","tool","cve"].forEach(type=>{
+      ["phase","technique","tool","cve","custom"].forEach(type=>{
         const opt = document.createElement("option");
         opt.value = type;
         opt.textContent = `${type[0].toUpperCase()}${type.slice(1)} nodes`;
@@ -161,6 +165,8 @@
     colorTarget.addEventListener("change", syncColorInputs);
     nodeColorInput.addEventListener("input", ()=> graph.setColorOverride(colorTarget.value, nodeColorInput.value));
     backgroundColorInput.addEventListener("input", ()=> graph.setColorOverride("__bg", backgroundColorInput.value));
+    connectorColorInput.addEventListener("input", ()=> graph.setColorOverride("__edge", connectorColorInput.value));
+    fadedConnectorColorInput.addEventListener("input", ()=> graph.setColorOverride("__edge-dim", fadedConnectorColorInput.value));
     document.getElementById("resetColors").addEventListener("click", ()=>{
       graph.resetColors();
       syncColorInputs();
